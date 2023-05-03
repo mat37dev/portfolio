@@ -1,0 +1,167 @@
+/* Base */
+*{
+    box-sizing: border-box;
+}
+
+html{
+    font-size: 62.5%;
+}
+
+/* Général */
+body{
+    font-family: Verdana, Geneva, Tahoma, sans-serif;
+    font-size: 1.6rem;
+    color: #555;
+    margin: 0;
+}
+
+a{
+    text-decoration: none;
+}
+
+img{
+    max-width: 100%;
+    height: auto;
+}
+
+.list-unstyled{
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+
+.container{
+    padding: 1rem 2rem;
+
+}
+
+.d-flex{
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.grid{
+    display: flex;
+    flex-wrap: wrap;
+}
+
+.grid__item{
+    width: 100%;
+}
+
+@media  screen and (min-width: 750px) {
+    .container{
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 2rem;
+    }
+}
+/* Général */
+
+/* Header */
+.header{
+    background: #FFF;
+    border-bottom: 1px solid #EEE;
+}
+.header .logo{
+    font-family: 'Poppins', sans-serif;
+    font-weight: 500;
+    font-size: 2rem;
+    letter-spacing: 2px;
+}
+
+.navbar{
+    display: none;
+}
+
+.header li{
+    display: inline-flex;
+    align-items: center;
+    padding: 0 0.5rem;
+}
+
+.header .right{
+    display: flex;
+    align-items: center;
+}
+
+.header a{
+    color: #333;
+}
+
+.socials{
+    display: flex;
+}
+
+.socials a{
+    padding: 0 2px;
+}
+
+.socials .icon{
+    height: 18px;
+}
+
+.burger{
+    background: none;
+    border: none;
+    width: 35px;
+    height: 35px;
+    cursor: pointer;
+    position: relative;
+    margin-left: 1rem;
+}
+
+.burger .bar{
+    display: block;
+    width: 22px;
+    height: 3px;
+    background: #333;
+}
+
+.burger .bar::before, .burger .bar::after{
+    display: block;
+    content: "";
+    width: 22px;
+    height: 3px;
+    background: #333;
+    position: absolute;
+}
+
+.burger .bar::before{
+    transform: translateY(-8px);
+}
+
+.burger .bar::after{
+    transform: translateY(8px);
+}
+
+@media screen and (max-width: 749px) {
+    
+}
+
+@media screen and (min-width: 750px){
+    .navbar{
+        display: flex;
+    }
+
+    .burger{
+        display: none;
+    }
+}
+/* Header */
+
+/* Hero */
+.hero{
+    background: #5b6c78;
+    color: #FFF;
+}
+
+.hero__item{
+    flex: 1 0 50%;
+}
+
+@media screen and (min-width: 750px){
+
+}
+/* Hero */
