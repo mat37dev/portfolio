@@ -13,6 +13,26 @@ body{
     font-size: 1.6rem;
     color: #555;
     margin: 0;
+    line-height: 1.6;
+}
+
+h1, h2, h3, h4, h5, h6{
+    font-family: 'Poppins', sans-serif;
+    color: #000;
+    line-height: 1;
+}
+
+h1, .h1{
+    font-size: 3.1rem;
+    font-weight: 700;
+}
+
+h2, .h2{
+    font-size: 2.8rem;
+    text-transform: uppercase;
+}
+h3, .h3{
+    font-size: 2.1rem;
 }
 
 a{
@@ -24,10 +44,21 @@ img{
     height: auto;
 }
 
+li{
+    margin-bottom: 1rem;
+}
+
 .list-unstyled{
     list-style: none;
     margin: 0;
     padding: 0;
+}
+
+.category{
+    margin: 0;
+    font-size: 1rem;
+    text-transform: uppercase;
+    color: #5b6c78;
 }
 
 .container{
@@ -44,17 +75,46 @@ img{
 .grid{
     display: flex;
     flex-wrap: wrap;
+    justify-content: center;
 }
 
 .grid__item{
     width: 100%;
+    padding: 1rem;
+    flex-grow: 1;
+    flex-shrink: 0;
 }
+
+
 
 @media  screen and (min-width: 750px) {
     .container{
         max-width: 1200px;
         margin: 0 auto;
         padding: 2rem;
+    }
+
+    .grid__item {
+        max-width: 50%;
+    }
+}
+
+section{
+    padding: 5.5rem 0;
+}
+
+.section-title{
+    margin-top: 0;
+    font-size: 3.8rem;
+}
+
+.section-header{
+    text-align: center;
+}
+
+@media screen and (min-width: 750px){
+    .section-title{
+        font-size: 4.8rem;
     }
 }
 /* Général */
@@ -63,6 +123,9 @@ img{
 .header{
     background: #FFF;
     border-bottom: 1px solid #EEE;
+    position: sticky;
+    top: 0;
+    z-index: 1;
 }
 .header .logo{
     font-family: 'Poppins', sans-serif;
@@ -93,13 +156,16 @@ img{
 .socials{
     display: flex;
 }
+.socials li{
+    margin-bottom: 0;
+}
 
 .socials a{
     padding: 0 2px;
 }
 
 .socials .icon{
-    height: 18px;
+    font-size: 24px;
 }
 
 .burger{
@@ -136,10 +202,6 @@ img{
     transform: translateY(8px);
 }
 
-@media screen and (max-width: 749px) {
-    
-}
-
 @media screen and (min-width: 750px){
     .navbar{
         display: flex;
@@ -155,13 +217,303 @@ img{
 .hero{
     background: #5b6c78;
     color: #FFF;
+    padding: 1rem 0 0 0;
+}
+
+.hero .title{
+    color: inherit;
+    font-size: 4rem;
+    margin: 1.6rem 0 0 0;
 }
 
 .hero__item{
-    flex: 1 0 50%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+}
+
+.hero__item span{
+    text-transform: uppercase;
+}
+
+@media screen and (max-width: 749px){
+    .hero__item.left{
+        order: 2;
+    }
+    .hero__item.right{
+        order: 1;
+    }
 }
 
 @media screen and (min-width: 750px){
+    .hero__item{
+        flex: 1 0 50%;
+        text-align: left;
+    }
 
+    .hero__item.left{
+        align-items: flex-start;
+    }
+
+    .hero .title{
+        font-size: 5rem;
+    }
+
+    .hero__avatar img{
+        max-width: 400px;
+        border-radius: 50%;
+    }
 }
 /* Hero */
+
+/* About */
+
+.about .section-title{
+    margin-top: 2.8rem;
+}
+
+@media screen and (min-width: 750px){
+    .about img{
+        padding-right: 3rem;
+    }
+}
+/* About */
+
+/* Services */
+.services{
+    background: #F5F5F5;
+}
+
+.service__icon{
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 90px;
+    height: 90px;
+    border: 2px solid #5b6c78;
+    border-radius: 50%;
+}
+
+.service__icon i{
+    font-size: 35px;
+}
+
+.service__content{
+    flex: 1;
+}
+
+.service h3{
+    margin-bottom: 0;
+}
+
+@media screen and (max-width: 749px){
+    .service{
+        text-align: center;
+    }
+
+    .service__icon{
+        margin: 0 auto;
+    }
+}
+
+@media screen and (min-width: 750px){
+    .service{
+        display: flex;
+        align-items: center;
+    }
+
+    .service__icon{
+        margin-right: 2rem;
+    }
+}
+/* Services */
+
+/* Compétences */
+.skills h4, .skills p {
+    margin: 0 0 0.3rem 0;
+}
+.skills li{
+    background: #F5F5F5;
+    border-left: 3px solid rgb(91,107,120);
+    padding:0.9rem 2rem;
+}
+
+.skills .progressbar{
+    background: #F5F5F5;
+    color: #FFF;
+    margin-bottom: 1rem;
+}
+
+.skills .bar{
+    background: #5b6c78;
+    padding: 1rem;
+}
+/* Compétences */
+
+/* Projets */
+.portfolio{
+    background: #F5F5F5;
+}
+
+.portfolio .grid__item{
+    max-width: 50%;
+    margin-bottom: 0;
+}
+
+.portfolio-filters .grid__item{
+    max-width: 50%;
+    margin-bottom: 0;
+}
+
+.portfolio-filters a{
+    color: #333;
+    background: #EEE;
+    display: flex;
+    flex: 1;
+    justify-content: center;
+    padding: 1rem;
+}
+
+.portfolio-filters a.active{
+    color: #FFF;
+    background: #5b6c78;
+}
+
+@media screen and (max-width: 749px){
+    .portfolio a{
+        font-size: 1.4rem;
+    }
+}
+
+@media screen and (min-width: 750px){
+    .portfolio-filters .grid__item{
+        max-width: 25%;
+    }
+
+    .portfolio .grid__item{
+        max-width: 33.3333%;
+    }
+}
+
+/* Projets */
+
+/* Cards */
+.card{
+    background: #FFF;
+    text-transform: uppercase;
+    position: relative;
+}
+.card__inner{
+    padding: 2rem;
+}
+
+.card__title{
+    margin: 0 0 1rem;
+    font-size: 1.6rem;
+}
+
+.card__overlay{
+    background: rgba(0,0,0,0.8);
+    position: absolute;
+    top: 0;
+    z-index: 0;
+    width: 100%;
+    height: 100%;
+    display: none;
+}
+
+
+.card__overlay a{
+    font-size: 4.5rem;
+    color: #FFF;
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+}
+/* Cards */
+
+/* Contact */
+.form{
+    max-width: 600px;
+    margin: 4rem auto 0 auto;
+}
+.form input, .form textarea{
+    display: block;
+    width: 100%;
+    padding: 1rem;
+    margin-bottom: 2rem;
+}
+
+.form textarea{
+    min-height: 200px;
+}
+
+.form .btn{
+    border: none;
+    background: #333;
+    color: white;
+    width: auto;
+    min-width: 160px;
+    font-size: 2rem;
+    text-transform: uppercase;
+}
+
+.form .btn:hover{
+    cursor: pointer;
+    background: #000;
+}
+
+/* Contact */
+
+/* Footer */
+footer{
+    background: #333;
+    color: #EEE;
+    text-align: center;
+    font-size: 1.4rem;
+}
+
+footer p
+{
+    margin: 0;
+}
+
+footer .grid{
+    align-items: center;
+}
+
+footer .socials{
+    justify-content: center;
+    text-align: center;
+}
+
+footer .socials li{
+    padding: 0 0.7rem;
+}
+
+footer .socials a{
+    color: #FFF;
+    border: 1px solid #FFF;
+    border-radius: 50%;
+    padding: 1rem;
+    width: 42px;
+    height: 42px;
+    display: flex;
+    justify-content: center;
+}
+
+@media screen and (min-width: 750px){
+    footer{
+        text-align: left;
+    }
+
+    footer .grid__item{
+        max-width: 33.3333%;
+    }
+}
+
+/* Footer */
