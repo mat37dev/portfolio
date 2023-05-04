@@ -15,6 +15,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;500;700&display=swap" rel="stylesheet">
 
     <link rel="stylesheet" href="css/global.css">
+    <script src="/js/global.js" defer></script>
 </head>
 <body>
 <!--   Header     -->
@@ -63,7 +64,7 @@
 
             <div class="hero__item right">
                 <div class="hero__avatar">
-                    <img src="image/avatar.png" alt="Avatar Crosnier Mathieu - Développeur Back End">
+                    <img src="image/avatar.png" width="300" height="300" loading="lazy" alt="Avatar Crosnier Mathieu - Développeur Back End">
                 </div>
             </div>
 
@@ -77,7 +78,7 @@
         <div class="grid">
 
             <div class="grid__item">
-                <img width="350px" src="image/profile.jpg" alt="Crosnier Mathieu - Développeur Back End">
+                <img width="350px" src="image/profile.jpg" width="350" height="571" loading="lazy" alt="Crosnier Mathieu - Développeur Back End">
             </div>
 
             <div class="grid__item">
@@ -268,26 +269,26 @@
                 <!--    Début Compétences item    -->
                 <h3>Compétences en développement</h3>
                 <div class="progressbar">
-                    <div class="bar">PHP</div>
+                    <div class="bar" data-width="75">PHP</div>
                 </div>
                 <div class="progressbar">
-                    <div class="bar">JavaScript</div>
+                    <div class="bar" data-width="75">JavaScript</div>
                 </div>
                 <div class="progressbar">
-                    <div class="bar">Java</div>
+                    <div class="bar" data-width="75">Java</div>
                 </div>
                 <!--    Fin Compétences item    -->
 
                 <!--    Début Compétences item    -->
                 <h3>Compétences en Logiciel</h3>
                 <div class="progressbar">
-                    <div class="bar">PHP</div>
+                    <div class="bar" data-width="75">PHP</div>
                 </div>
                 <div class="progressbar">
-                    <div class="bar">JavaScript</div>
+                    <div class="bar" data-width="75">JavaScript</div>
                 </div>
                 <div class="progressbar">
-                    <div class="bar">Java</div>
+                    <div class="bar" data-width="75">Java</div>
                 </div>
                 <!--    Fin Compétences item    -->
             </div>
@@ -308,13 +309,19 @@
         <!--    Filtre Des Projets  -->
         <ul class="grid portfolio-filters list-unstyled">
             <li class="grid__item">
-                <a href="#" class="active">Tous les Projets</a>
-            </li><li class="grid__item">
-                <a href="#">Développement Scolaire</a>
-            </li><li class="grid__item">
-                <a href="#">Jeux-Vidéos</a>
-            </li><li class="grid__item">
-                <a href="#">Stage</a>
+                <a href="#" class="active" data-filter = "all">Tous les Projets</a>
+            </li>
+            <li class="grid__item">
+                <a href="#" data-filter = "web">Web</a>
+            </li>
+            <li class="grid__item">
+                <a href="#" data-filter = "ecole">Développement Scolaire</a>
+            </li>
+            <li class="grid__item">
+                <a href="#" data-filter = "jeux-video">Jeux-Vidéos</a>
+            </li>
+            <li class="grid__item">
+                <a href="#" data-filter = "stage">Stage</a>
             </li>
         </ul>
 
@@ -322,8 +329,8 @@
         <div class="grid">
             <!--    Début Carte Projet Item -->
             <div class="grid__item">
-                <div class="card">
-                    <img src="https://picsum.photos/600/400?random=1" alt="Projet name" class="card__image">
+                <div class="card" data-category="jeux-video">
+                    <img src="https://picsum.photos/600/400?random=1" width="400" height="400" loading="lazy" alt="Projet name" class="card__image">
                     <div class="card__inner">
                         <h3 class="card__title">Titre du projet</h3>
                         <p class="category">
@@ -331,91 +338,43 @@
                         </p>
                     </div>
                     <div class="card__overlay">
-                        <a href="#">+</a>
+                        <a href="#" class="card__link" data-id="modal-1">+</a>
                     </div>
                 </div>
-            </div>
-            <!--    Fin Carte Projet Item -->
-            <!--    Début Carte Projet Item -->
-            <div class="grid__item">
-                <div class="card">
-                    <img src="https://picsum.photos/600/400?random=1" alt="Projet name" class="card__image">
-                    <div class="card__inner">
-                        <h3 class="card__title">Titre du projet</h3>
-                        <p class="category">
-                            Développement Web
-                        </p>
-                    </div>
-                    <div class="card__overlay">
-                        <a href="#">+</a>
-                    </div>
-                </div>
-            </div>
-            <!--    Fin Carte Projet Item -->
-            <!--    Début Carte Projet Item -->
-            <div class="grid__item">
-                <div class="card">
-                    <img src="https://picsum.photos/600/400?random=1" alt="Projet name" class="card__image">
-                    <div class="card__inner">
-                        <h3 class="card__title">Titre du projet</h3>
-                        <p class="category">
-                            Développement Web
-                        </p>
-                    </div>
-                    <div class="card__overlay">
-                        <a href="#">+</a>
+                <!-- Modal Début -->
+                <div class="modal" id="modal-1">
+                    <button class="modal__close">&times;</button>
+                    <div class="modal__content">
+                        <div class="container">
+                            <div class="grid">
+                                <div class="grid__item">
+                                    <img src="https://picsum.photos/600/400?random=1" alt="Projet name" class="card__image">
+                                    <img src="https://picsum.photos/600/400?random=1" alt="Projet name" class="card__image">
+                                </div>
+                                <div class="grid__item">
+                                    <h4 class="modal__title h2">Titre de la modal</h4>
+                                    <p>
+                                        <i class="fa-regular fa-calendar"></i>
+                                        <i>Date: 05/11/26 - 06/12/27</i>
+                                    </p>
+                                    <p class="category">
+                                        <i class="fa-solid fa-browser"></i>
+                                        Site Web
+                                    </p>
+                                    <p>
+                                        Lorem ipsum dolor sit amet, consectetur adipisicing elit. Alias cupiditate earum illum
+                                        natus nemo odit officia perferendis placeat praesentium, quidem, quod repudiandae sint
+                                        temporibus, unde vel veritatis voluptatibus. Ab, odio.
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
+                <!-- Modal Fin -->
             </div>
             <!--    Fin Carte Projet Item -->
-            <!--    Début Carte Projet Item -->
-            <div class="grid__item">
-                <div class="card">
-                    <img src="https://picsum.photos/600/400?random=1" alt="Projet name" class="card__image">
-                    <div class="card__inner">
-                        <h3 class="card__title">Titre du projet</h3>
-                        <p class="category">
-                            Développement Web
-                        </p>
-                    </div>
-                    <div class="card__overlay">
-                        <a href="#">+</a>
-                    </div>
-                </div>
-            </div>
-            <!--    Fin Carte Projet Item -->
-            <!--    Début Carte Projet Item -->
-            <div class="grid__item">
-                <div class="card">
-                    <img src="https://picsum.photos/600/400?random=1" alt="Projet name" class="card__image">
-                    <div class="card__inner">
-                        <h3 class="card__title">Titre du projet</h3>
-                        <p class="category">
-                            Développement Web
-                        </p>
-                    </div>
-                    <div class="card__overlay">
-                        <a href="#">+</a>
-                    </div>
-                </div>
-            </div>
-            <!--    Fin Carte Projet Item -->
-            <!--    Début Carte Projet Item -->
-            <div class="grid__item">
-                <div class="card">
-                    <img src="https://picsum.photos/600/400?random=1" alt="Projet name" class="card__image">
-                    <div class="card__inner">
-                        <h3 class="card__title">Titre du projet</h3>
-                        <p class="category">
-                            Développement Web
-                        </p>
-                    </div>
-                    <div class="card__overlay">
-                        <a href="#">+</a>
-                    </div>
-                </div>
-            </div>
-            <!--    Fin Carte Projet Item -->
+
         </div>
         <!--    Fin Liste des Projets   -->
     </div>
