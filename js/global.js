@@ -61,6 +61,7 @@ tabsFilters();
 function showProjectDetails(){
     //On récupère les éléments
     const links = document.querySelectorAll('.card a');
+    const annexe = document.querySelectorAll('.bloc-e4__content a');
     const modals = document.querySelectorAll('.modal');
     const btns = document.querySelectorAll('.modal__close');
 
@@ -73,6 +74,14 @@ function showProjectDetails(){
 
     //Lors du click sur une carte
     links.forEach(element => {
+        element.addEventListener('click', (event) => {
+            event.preventDefault();
+            document.querySelector(`[id=${element.dataset.id}]`).classList.add('show');
+        });
+    });
+
+    //Lors du click sur une carte
+    annexe.forEach(element => {
         element.addEventListener('click', (event) => {
             event.preventDefault();
             document.querySelector(`[id=${element.dataset.id}]`).classList.add('show');

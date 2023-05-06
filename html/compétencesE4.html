@@ -6,7 +6,7 @@
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
     <title>Portfolio| Crosnier Mathieu</title>
     <meta name="description" content="Portfolio de Mathieu Crosnier - Développeur Back End - Etudiant">
-    <link rel="shortcut icon" href="image/favicon.ico" type="image/x-icon">
+    <link rel="shortcut icon" href="../image/favicon.ico" type="image/x-icon">
     <script src="https://kit.fontawesome.com/6477c38972.js" crossorigin="anonymous"></script>
 
     <!--    Font Google -->
@@ -59,7 +59,7 @@
             </div>
             <div class="grid__item bloc-e4__content">
                 <h3>CRM Kodoka</h3>
-                <img src="../image/kodoka/kodoka.png" alt="Kodoka CRM">
+                <img class="bloc-e4__img" src="../image/kodoka/kodoka.png" alt="Kodoka CRM">
                 <p>
                     ▸Recenser et identifier les ressources numériques <br>
                     ▸ Exploiter des référentiels, normes et standards adoptés par le prestataire informatique <br>
@@ -68,8 +68,40 @@
                     ▸ Gérer des sauvegardes <br>
                     ▸ Vérifier le respect des règles d’utilisation des ressources numériques <br>
                 </p>
-                <a href="">Annexe 1</a>
+                <a href="#" data-id="modal-1">Annexe 1</a>
                 <a href="">Annexe 2</a>
+                <!-- Modal Début -->
+                <div class="modal" id="modal-1">
+                    <button class="modal__close">&times;</button>
+                    <div class="modal__content">
+                        <div class="container">
+                            <div class="section-header">
+                                <h4 class="modal__title h2">Stage CRM Kodoka</h4>
+                            </div>
+                            <div class="grid">
+                                <div class="grid__item bloc-e4__grid">
+                                    <div class="bloc-e4_justification">
+                                        <h5>▸ Exploiter des référentiels, normes et standards adoptés par le prestataire informatique</h5>
+                                        <p>Base de données aucune information en claire. Demande de l'entreprise.</p>
+                                        <img src="../image/kodoka/bdd.png" loading="lazy" alt="Image Base de données" class="card__image">
+                                    </div>
+                                   <div class="bloc-e4_justification">
+                                       <h5>▸ Mettre en place et vérifier les niveaux d’habilitation associés à un service</h5>
+                                       <p>Système de permission permettant de vérifier avant chaque page les droits d'accès d'un utilisateur.</p>
+                                       <img src="../image/kodoka/permissions.png" loading="lazy" alt="Système de permission" class="card__image">
+                                   </div>
+                                    <div class="bloc-e4_justification">
+                                        <h5>▸ Gérer des sauvegardes</h5>
+                                        <p>Tout le projet est sauvegardé sur GitHub (en plus de nos espaces disques).</p>
+                                        <img src="../image/kodoka/gererSauvegarde.png" loading="lazy" alt="Image Base de données" class="card__image">
+                                    </div>
+
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <!-- Modal Fin -->
             </div>
             <div class="grid__item bloc-e4__content">
 
