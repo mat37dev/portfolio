@@ -82,10 +82,12 @@ function showProjectDetails(){
 
     //Lors du click sur une carte
     annexe.forEach(element => {
-        element.addEventListener('click', (event) => {
-            event.preventDefault();
-            document.querySelector(`[id=${element.dataset.id}]`).classList.add('show');
-        });
+        if(element.hasAttribute('data-id')){
+            element.addEventListener('click', (event) => {
+                event.preventDefault();
+                document.querySelector(`[id=${element.dataset.id}]`).classList.add('show');
+            });
+        }
     });
 
     //Fonction lors du click pour fermer un modal
