@@ -3,6 +3,7 @@ import { useState } from "react";
 import Image from "next/image";
 
 import skimateImage from "/public/projectImages/skimate.jpg";
+import notreCuisineImage from "/public/projectImages/notre-cuisine.svg";
 import kodokaImage from "/public/projectImages/kodoka.png";
 import geek4FunImage from "/public/projectImages/geek4Fun.png";
 import covoiturageImage from "/public/projectImages/covoiturage.png";
@@ -22,6 +23,18 @@ const PROJECTS = [
         techStack: ["Symfony", "React Native", "React", "API", "SQL", "NoSQL", "MapBox"],
         image: skimateImage,
         imageAlt: "Capture d'écran de SkiMate, application mobile pour les skieurs",
+    },
+    {
+        id: 6,
+        title: "Notre cuisine",
+        filterCat: "Web",
+        date: "2026",
+        description:
+            "Site de recettes partagées, installable comme une application sur téléphone (PWA). Les quantités se recalculent selon le nombre de personnes, trois niveaux d'accès gèrent la publication, et une API permet à Claude de lire et de publier des recettes.",
+        techStack: ["Next.js", "TypeScript", "Tailwind", "Supabase", "PWA", "Vercel"],
+        github: "https://github.com/mat37dev/notre-cuisine",
+        image: notreCuisineImage,
+        imageAlt: "Logo de Notre cuisine : un carnet de recettes avec une marmite en creux",
     },
     {
         id: 2,
