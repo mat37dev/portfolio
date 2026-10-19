@@ -4,6 +4,7 @@ import Link from "next/link";
 import { Menu, X } from "lucide-react";
 import { GithubIcon, LinkedinIcon } from "@/app/components/icons/BrandIcons";
 import ThemeToggle from "@/app/components/ThemeToggle";
+import Logo from "@/app/components/Logo";
 
 const NAV_LINKS = [
     { href: "#parcours", label: "Parcours" },
@@ -24,8 +25,9 @@ const Navbar = () => {
             <div className="flex items-center justify-between gap-4 py-4 px-5 sm:px-8 lg:px-12">
                 <Link
                     href="#hero"
-                    className={`font-heading font-extrabold text-[19px] text-ink tracking-tight ${FOCUS_RING}`}
+                    className={`flex items-center gap-2.5 font-heading font-extrabold text-[19px] text-ink tracking-tight ${FOCUS_RING}`}
                 >
+                    <Logo size={36} />
                     Mathieu Crosnier
                 </Link>
 

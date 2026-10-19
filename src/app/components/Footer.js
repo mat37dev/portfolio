@@ -1,9 +1,11 @@
 import Link from "next/link";
 import { GithubIcon, LinkedinIcon } from "@/app/components/icons/BrandIcons";
+import Logo from "@/app/components/Logo";
 
 const Footer = () => {
     return (
         <footer className="px-5 sm:px-8 lg:px-12 py-6 text-center bg-anthracite border-t border-[oklch(30%_0.014_235)]">
+            <Logo size={32} onDark className="mx-auto mb-4" />
             <div className="flex items-center justify-center gap-6 mb-3">
                 <Link
                     href="https://github.com/mat37dev"
