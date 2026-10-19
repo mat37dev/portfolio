@@ -25,8 +25,8 @@
       "sizes": "any"
     }
   ],
-  "theme_color": "#111827",
-  "background_color": "#111827",
+  "theme_color": "#f6f8fa",
+  "background_color": "#f6f8fa",
   "display_override": ["fullscreen", "minimal-ui"],
   "display": "standalone"
 }

@@ -10,7 +10,7 @@ const securityHeaders = [
 
 const nextConfig = {
     experimental: {
-        optimizePackageImports: ['icon-library'],
+        optimizePackageImports: ["lucide-react"],
     },
     async headers() {
         return [

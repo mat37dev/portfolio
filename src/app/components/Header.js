@@ -1,99 +1,127 @@
 "use client";
 import { useState } from "react";
 import Link from "next/link";
-import { Github, Linkedin, Menu, X } from "lucide-react";
+import { Menu, X } from "lucide-react";
+import { GithubIcon, LinkedinIcon } from "@/app/components/icons/BrandIcons";
+import ThemeToggle from "@/app/components/ThemeToggle";
+
+const NAV_LINKS = [
+    { href: "#parcours", label: "Parcours" },
+    { href: "#competences", label: "Compétences" },
+    { href: "#projets", label: "Projets" },
+    { href: "#contact", label: "Contact" },
+];
+
+const FOCUS_RING =
+    "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-snow rounded-md";
 
 const Navbar = () => {
     const [isOpen, setIsOpen] = useState(false);
-
     const close = () => setIsOpen(false);
 
     return (
-        <nav className="fixed mx-auto border border-[#33353F] top-0 left-0 right-0 z-50 bg-gray-900 bg-opacity-100">
-            <div className="flex container lg:py-4 flex-wrap items-center justify-between mx-auto py-2 p-8 md:p-12 lg:p-20">
+        <header className="sticky top-0 z-20 border-b border-line bg-header backdrop-blur-md">
+            <div className="flex items-center justify-between gap-4 py-4 px-5 sm:px-8 lg:px-12">
                 <Link
-                    href={"/"}
-                    className="text-2xl md:text-3xl text-white font-normal"
+                    href="#hero"
+                    className={`font-heading font-extrabold text-[19px] text-ink tracking-tight ${FOCUS_RING}`}
                 >
-                    Portfolio
+                    Mathieu Crosnier
                 </Link>
 
-                {/* Hamburger button — visible only on mobile */}
-                <button
-                    className="md:hidden text-white p-2"
-                    onClick={() => setIsOpen((prev) => !prev)}
-                    aria-label={isOpen ? "Fermer le menu" : "Ouvrir le menu"}
-                >
-                    {isOpen ? <X size={24} /> : <Menu size={24} />}
-                </button>
+                {/* Nav desktop */}
+                <nav className="hidden md:flex items-center gap-6 lg:gap-8 text-sm font-medium">
+                    {NAV_LINKS.map((link) => (
+                        <Link
+                            key={link.href}
+                            href={link.href}
+                            className={`text-body hover:text-ink transition-colors ${FOCUS_RING}`}
+                        >
+                            {link.label}
+                        </Link>
+                    ))}
+                    <Link
+                        href="https://github.com/mat37dev"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        aria-label="Mon GitHub"
+                        className={`p-2.5 -m-2.5 text-body hover:text-ink transition-colors ${FOCUS_RING}`}
+                    >
+                        <GithubIcon size={18} />
+                    </Link>
+                    <Link
+                        href="https://www.linkedin.com/in/mathieu-crosnier-b78a16238/"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        aria-label="Mon LinkedIn"
+                        className={`p-2.5 -m-2.5 text-body hover:text-ink transition-colors ${FOCUS_RING}`}
+                    >
+                        <LinkedinIcon size={18} />
+                    </Link>
+                    <ThemeToggle />
+                    <Link
+                        href="#contact"
+                        className={`px-5 py-2.5 rounded-lg bg-accent text-white text-sm font-semibold hover:bg-accent-dark transition-colors ${FOCUS_RING}`}
+                    >
+                        Me contacter
+                    </Link>
+                </nav>
 
-                {/* Desktop nav + mobile overlay */}
-                <div
-                    className={`${
-                        isOpen ? "block" : "hidden"
-                    } md:block w-full md:w-auto absolute md:static top-full left-0 right-0 bg-gray-900 md:bg-transparent border-t border-[#33353F] md:border-0`}
-                >
-                    <ul className="flex flex-col md:flex-row p-4 md:p-0 md:space-x-8 mt-0 space-y-4 md:space-y-0">
-                        <li>
-                            <Link
-                                href="#about"
-                                aria-label="A propos de moi"
-                                className="hover:text-slate-200 block"
-                                onClick={close}
-                            >
-                                A propos
-                            </Link>
-                        </li>
-                        <li>
-                            <Link
-                                href="#projects"
-                                className="hover:text-slate-200 block"
-                                aria-label="Section Projets"
-                                onClick={close}
-                            >
-                                Projets
-                            </Link>
-                        </li>
-                        <li>
-                            <Link
-                                href="#skill"
-                                className="hover:text-slate-200 block"
-                                aria-label="Section Compétences"
-                                onClick={close}
-                            >
-                                Mes Compétences
-                            </Link>
-                        </li>
+                {/* Bouton hamburger — mobile uniquement, cible tactile 48px */}
+                <div className="md:hidden flex items-center gap-1">
+                    <ThemeToggle />
+                    <button
+                        className={`text-ink w-12 h-12 flex items-center justify-center -mr-2 ${FOCUS_RING}`}
+                        onClick={() => setIsOpen((prev) => !prev)}
+                        aria-label={isOpen ? "Fermer le menu" : "Ouvrir le menu"}
+                        aria-expanded={isOpen}
+                    >
+                        {isOpen ? <X size={24} /> : <Menu size={24} />}
+                    </button>
+                </div>
+            </div>
+
+            {/* Menu mobile */}
+            {isOpen && (
+                <nav className="md:hidden border-t border-line bg-snow px-5 py-4">
+                    <ul className="flex flex-col gap-1">
+                        {NAV_LINKS.map((link) => (
+                            <li key={link.href}>
+                                <Link
+                                    href={link.href}
+                                    className={`block py-3 text-body font-medium hover:text-ink ${FOCUS_RING}`}
+                                    onClick={close}
+                                >
+                                    {link.label}
+                                </Link>
+                            </li>
+                        ))}
                         <li>
                             <Link
                                 href="https://github.com/mat37dev"
-                                className="hover:text-slate-200 flex items-center gap-2 md:block"
-                                aria-label="Mon Github"
                                 target="_blank"
                                 rel="noopener noreferrer"
+                                className={`flex items-center gap-2 py-3 text-body font-medium hover:text-ink ${FOCUS_RING}`}
                                 onClick={close}
                             >
-                                <Github />
-                                <span className="md:hidden">GitHub</span>
+                                <GithubIcon size={18} /> GitHub
                             </Link>
                         </li>
                         <li>
                             <Link
                                 href="https://www.linkedin.com/in/mathieu-crosnier-b78a16238/"
-                                className="hover:text-slate-200 flex items-center gap-2 md:block"
                                 target="_blank"
                                 rel="noopener noreferrer"
-                                aria-label="Mon Linkedin"
+                                className={`flex items-center gap-2 py-3 text-body font-medium hover:text-ink ${FOCUS_RING}`}
                                 onClick={close}
                             >
-                                <Linkedin />
-                                <span className="md:hidden">LinkedIn</span>
+                                <LinkedinIcon size={18} /> LinkedIn
                             </Link>
                         </li>
                     </ul>
-                </div>
-            </div>
-        </nav>
+                </nav>
+            )}
+        </header>
     );
 };
 

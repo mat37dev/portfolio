@@ -6,48 +6,97 @@ html {
     scroll-behavior: smooth;
 }
 
+/*
+ * Design tokens — refonte "montagne" (handoff Claude Design)
+ * Thème clair par défaut, variante sombre via la classe .dark sur <html>
+ * (posée par un script bloquant dans layout.js pour éviter le flash).
+ */
 :root {
-    --background: #ffffff;
-    --foreground: #171717;
+    --snow: oklch(98% 0.004 235);
+    --snow-alt: oklch(99% 0.002 235);
+    --line: oklch(90% 0.008 235);
+    --line-soft: oklch(91% 0.006 235);
+    --ink: oklch(20% 0.014 235);
+    --body: oklch(38% 0.012 235);
+    --muted: oklch(52% 0.01 235);
+    --accent: oklch(50% 0.1 235);
+    --accent-dark: oklch(42% 0.1 235);
+    --accent-soft: oklch(92% 0.03 235);
+    --wood: oklch(50% 0.07 35);
+    --card: oklch(100% 0 0);
+    --header-bg: oklch(98% 0.004 235 / 0.92);
+    /* Texte fixe pour les éléments à fond anthracite permanent (CTA, contact, footer) —
+       ne doit PAS suivre --snow, qui elle s'inverse en thème sombre. */
+    --on-anthracite: oklch(98% 0.004 235);
+    /* Texte atténué sur fond anthracite permanent (footer) — --muted est calibré
+       pour un fond clair et devient illisible (contraste 3.3) sur l'anthracite en
+       thème clair. Cette valeur reprend le --muted du thème sombre (contraste 5.6). */
+    --muted-on-anthracite: oklch(65% 0.01 235);
+    /* Badges pleins avec texte blanc (icônes de catégorie Compétences) — figés sur les
+       teintes claires, sinon --accent/--wood s'éclaircissent en sombre et le texte blanc
+       perd tout contraste dessus. */
+    --chip-1: oklch(50% 0.1 235);
+    --chip-2: oklch(42% 0.1 235);
+    --chip-3: oklch(50% 0.07 35);
+    --anthracite: oklch(20% 0.014 235);
+    --anthracite-2: oklch(24% 0.012 235);
+    --anthracite-3: oklch(26% 0.014 235);
+    --anthracite-line: oklch(35% 0.012 235);
+    --ongoing: oklch(58% 0.12 150);
+    --ongoing-bg: oklch(90% 0.05 150);
+    --ongoing-text: oklch(35% 0.1 150);
+    --flake: oklch(78% 0.05 235);
 }
 
-@media (prefers-color-scheme: dark) {
-    :root {
-        --background: #0a0a0a;
-        --foreground: #ededed;
-    }
+:root.dark {
+    --snow: oklch(20% 0.014 235);
+    --snow-alt: oklch(23% 0.013 235);
+    --line: oklch(32% 0.014 235);
+    --line-soft: oklch(30% 0.013 235);
+    --ink: oklch(96% 0.004 235);
+    --body: oklch(82% 0.008 235);
+    --muted: oklch(65% 0.01 235);
+    --accent: oklch(68% 0.09 235);
+    --accent-dark: oklch(76% 0.08 235);
+    --accent-soft: oklch(32% 0.05 235);
+    --wood: oklch(62% 0.07 35);
+    --card: oklch(24% 0.013 235);
+    --header-bg: oklch(20% 0.014 235 / 0.85);
+    --flake: oklch(85% 0.04 235);
 }
 
 body {
-    color: var(--foreground);
-    background: var(--background);
-    font-family: Arial, Helvetica, sans-serif;
+    color: var(--body);
+    background: var(--snow);
 }
 
-.pattern-bg {
-    position: absolute;
-    top: -6rem;
-    left: -6rem;
-    width: calc(100% + 12rem);
-    right: -6rem;
-    bottom: -6rem;
-    z-index: -1;
-    opacity: 0.3;
-    background-image: linear-gradient(#9696ff 3.3000000000000003px, transparent 3.3000000000000003px),
-    linear-gradient(to right, #9696ff 3.3000000000000003px, transparent 3.3000000000000003px);
-    background-size: 66px 66px;
-    @media (max-width: 768px) {
-        width: calc(100% + 4rem);
-        height: calc(100% + 4rem);
-        top: -3rem;
-        left: -3rem;
-        right: -3rem;
-        bottom: -3rem;
-        background-size: 30px 30px;
+/* Ancres : compenser le header sticky */
+section[id] {
+    scroll-margin-top: 88px;
+}
+
+/* Neige ambiante — les flocons traversent tout le viewport (unités vh) */
+@keyframes flakeFall {
+    0% {
+        transform: translate3d(0, -12vh, 0);
+    }
+    100% {
+        transform: translate3d(20px, 112vh, 0);
     }
 }
 
-.default-fade {
-    -webkit-mask: radial-gradient(ellipse 70% 60% at center, rgb(15 23 42) 0%, transparent 70%);
-    mask: radial-gradient(ellipse 70% 60% at center, rgb(15 23 42) 0%, transparent 70%);
+.snowflake {
+    position: absolute;
+    border-radius: 50%;
+    background: var(--flake);
+    box-shadow: 0 0 5px oklch(78% 0.05 235 / 0.7);
+    opacity: 0.9;
+    will-change: transform;
+    animation: flakeFall linear infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .snowflake {
+        display: none;
+    }
 }

@@ -1,16 +1,15 @@
-import ProjectSection from "@/app/components/ProjectSection";
 import HeroSection from "@/app/components/HeroSection";
 import TimelineSection from "@/app/components/TimelineSection";
-import ContactSection from "@/app/components/ContactSection";
 import SkillSection from "@/app/components/SkillSection";
-
+import ProjectSection from "@/app/components/ProjectSection";
+import ContactSection from "@/app/components/ContactSection";
 
 export default function Home() {
     return (
-        <main className="container mx-auto p-8 pb-20 sm:p-20 font-[family-name:var(--font-geist-sans)] ">
+        <main>
             <HeroSection />
-            <TimelineSection/>
-            <SkillSection/>
+            <TimelineSection />
+            <SkillSection />
             <ProjectSection />
             <ContactSection />
         </main>

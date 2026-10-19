@@ -1,23 +1,18 @@
 "use client";
 import { useState } from "react";
-import {Mails, MapPinHouse} from "lucide-react";
+import { Mails, MapPinHouse } from "lucide-react";
+import { GithubIcon } from "@/app/components/icons/BrandIcons";
+
+const inputClasses =
+    "w-full px-3.5 py-[11px] rounded-lg border border-anthracite-line bg-anthracite-3 text-white text-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-accent focus:border-accent";
+
+const labelClasses = "block text-[13px] font-semibold text-[oklch(80%_0.006_235)] mb-1.5";
+
+const FOCUS_RING_DARK =
+    "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-anthracite rounded-md";
 
 const ContactSection = () => {
-    const [status, setStatus] = useState("");
-    const [emailCopied, setEmailCopied] = useState(false);
-    const [addressCopied, setAddressCopied] = useState(false);
-
-    const copyEmail = () => {
-        navigator.clipboard.writeText("mathieu.crosnier15@outlook.fr").then(r => console.log(r));
-        setEmailCopied(true);
-        setTimeout(() => setEmailCopied(false), 2000);
-    };
-
-    const copyAddress = () => {
-        navigator.clipboard.writeText("Nantes 44000").then(r => console.log(r));
-        setAddressCopied(true);
-        setTimeout(() => setAddressCopied(false), 2000);
-    };
+    const [status, setStatus] = useState("idle");
 
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -40,144 +35,87 @@ const ContactSection = () => {
     };
 
     return (
-        <section id="contact" className="py-16 bg-gray-900">
-            <div className="grid grid-cols-1 gap-4 xl:grid-cols-4">
-                <div className="container mx-auto px-6 xl:col-span-3">
-                    <h2 className="text-3xl font-bold text-primary-400 mb-8 text-center">
-                        Me Contacter
-                    </h2>
-                    <div className="max-w-3xl mx-auto bg-gray-800/30 backdrop-blur-sm rounded-lg p-8 border border-gray-700/50 shadow-lg">
-                        <form onSubmit={handleSubmit} className="space-y-6">
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                <div>
-                                    <label
-                                        htmlFor="firstName"
-                                        className="block text-sm font-medium text-gray-300"
-                                    >
-                                        Prénom
-                                    </label>
-                                    <input
-                                        type="text"
-                                        name="firstName"
-                                        id="firstName"
-                                        required
-                                        className="mt-1 block w-full rounded-md border-gray-700 bg-gray-700/50 text-white shadow-sm focus:border-primary-600 focus:ring-primary-600"
-                                    />
-                                </div>
-                                <div>
-                                    <label
-                                        htmlFor="lastName"
-                                        className="block text-sm font-medium text-gray-300"
-                                    >
-                                        Nom
-                                    </label>
-                                    <input
-                                        type="text"
-                                        name="lastName"
-                                        id="lastName"
-                                        required
-                                        className="mt-1 block w-full rounded-md border-gray-700 bg-gray-700/50 text-white shadow-sm focus:border-primary-600 focus:ring-primary-600"
-                                    />
-                                </div>
-                            </div>
-                            <div>
-                                <label
-                                    htmlFor="email"
-                                    className="block text-sm font-medium text-gray-300"
-                                >
-                                    Email
-                                </label>
-                                <input
-                                    type="email"
-                                    name="email"
-                                    id="email"
-                                    required
-                                    className="mt-1 block w-full rounded-md border-gray-700 bg-gray-700/50 text-white shadow-sm focus:border-primary-600 focus:ring-primary-600"
-                                />
-                            </div>
-                            <div>
-                                <label
-                                    htmlFor="phone"
-                                    className="block text-sm font-medium text-gray-300"
-                                >
-                                    Téléphone
-                                </label>
-                                <input
-                                    type="tel"
-                                    name="phone"
-                                    id="phone"
-                                    className="mt-1 block w-full rounded-md border-gray-700 bg-gray-700/50 text-white shadow-sm focus:border-primary-600 focus:ring-primary-600"
-                                />
-                            </div>
-                            <div>
-                                <label
-                                    htmlFor="message"
-                                    className="block text-sm font-medium text-gray-300"
-                                >
-                                    Message
-                                </label>
-                                <textarea
-                                    name="message"
-                                    id="message"
-                                    rows="5"
-                                    required
-                                    className="mt-1 block w-full rounded-md border-gray-700 bg-gray-700/50 text-white shadow-sm focus:border-primary-600 focus:ring-primary-600"
-                                ></textarea>
-                            </div>
-                            <div>
-                                <button
-                                    type="submit"
-                                    disabled={status === "sending"}
-                                    className="w-full py-3 px-6 rounded-lg bg-primary-600 text-white font-medium hover:bg-primary-500 transition-colors duration-300 disabled:opacity-60 disabled:cursor-not-allowed"
-                                >
-                                    {status === "sending" ? "Envoi en cours…" : "Envoyer"}
-                                </button>
-                                {status === "success" && (
-                                    <p className="mt-4 text-green-500 text-center">
-                                        Message envoyé avec succès !
-                                    </p>
-                                )}
-                                {status === "error" && (
-                                    <p className="mt-4 text-red-400 text-center">
-                                        Une erreur est survenue. Réessayez ou contactez-moi directement par email.
-                                    </p>
-                                )}
-                            </div>
-                        </form>
-                    </div>
-                </div>
-                <div className="container mx-auto px-6 xl:col-span-1 flex flex-col items-start justify-center space-y-10">
-                    {/* Bloc Email */}
-                    <div
-                        className="flex items-center space-x-4 cursor-pointer relative"
-                        onClick={copyEmail}>
-                        <div className="size-16 bg-primary-600 rounded-full flex items-center justify-center">
-                            <Mails />
+        <section id="contact" className="px-5 sm:px-8 lg:px-12 py-14 sm:py-20 lg:py-24 bg-anthracite">
+            <h2 className="font-heading font-extrabold text-white tracking-tight text-center text-[clamp(26px,3vw,34px)] mb-11">
+                Contact
+            </h2>
+            <div className="grid grid-cols-[repeat(auto-fit,minmax(300px,1fr))] gap-10 max-w-[1080px] mx-auto">
+                <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+                    <div className="grid grid-cols-[repeat(auto-fit,minmax(160px,1fr))] gap-4">
+                        <div>
+                            <label htmlFor="firstName" className={labelClasses}>
+                                Prénom
+                            </label>
+                            <input type="text" name="firstName" id="firstName" required className={inputClasses} />
                         </div>
-                        <span className="text-gray-300">
-                            mathieu.crosnier15@outlook.fr
-                        </span>
-                        {emailCopied && (
-                            <div className="absolute top-full left-0 mt-1 px-2 py-1 bg-gray-700 text-white text-xs rounded">
-                                Copié!
-                            </div>
-                        )}
-                    </div>
-                    {/* Bloc Adresse */}
-                    <div
-                        className="flex items-center space-x-4 cursor-pointer relative"
-                        onClick={copyAddress}>
-                        <div className="size-16 bg-primary-600 rounded-full flex items-center justify-center">
-                            <MapPinHouse />
+                        <div>
+                            <label htmlFor="lastName" className={labelClasses}>
+                                Nom
+                            </label>
+                            <input type="text" name="lastName" id="lastName" required className={inputClasses} />
                         </div>
-                        <span className="text-gray-300">
-                            Nantes 44000
+                    </div>
+                    <div>
+                        <label htmlFor="email" className={labelClasses}>
+                            Email
+                        </label>
+                        <input type="email" name="email" id="email" required className={inputClasses} />
+                    </div>
+                    <div>
+                        <label htmlFor="message" className={labelClasses}>
+                            Message
+                        </label>
+                        <textarea
+                            name="message"
+                            id="message"
+                            rows="4"
+                            required
+                            className={`${inputClasses} resize-y`}
+                        />
+                    </div>
+                    <button
+                        type="submit"
+                        disabled={status === "sending"}
+                        className={`px-6 py-[13px] rounded-[9px] bg-accent text-white font-semibold text-[15px] hover:bg-accent-dark transition-colors disabled:opacity-60 disabled:cursor-not-allowed ${FOCUS_RING_DARK}`}
+                    >
+                        {status === "sending" ? "Envoi en cours…" : "Envoyer"}
+                    </button>
+                    {status === "success" && (
+                        <p className="text-[13px] text-[oklch(65%_0.12_150)]">Message envoyé, merci !</p>
+                    )}
+                    {status === "error" && (
+                        <p className="text-[13px] text-[oklch(65%_0.12_25)]">
+                            Une erreur est survenue, contactez-moi directement par email.
+                        </p>
+                    )}
+                </form>
+
+                <div className="flex flex-col gap-[22px] justify-center">
+                    <a
+                        href="mailto:mathieu.crosnier15@outlook.fr"
+                        className={`flex items-center gap-3.5 text-white hover:text-accent-soft transition-colors ${FOCUS_RING_DARK}`}
+                    >
+                        <span className="w-11 h-11 rounded-full bg-accent flex-none flex items-center justify-center">
+                            <Mails size={20} />
                         </span>
-                        {addressCopied && (
-                            <div className="absolute top-full left-0 mt-1 px-2 py-1 bg-gray-700 text-white text-xs rounded">
-                                Copié!
-                            </div>
-                        )}
+                        <span className="text-[15px]">mathieu.crosnier15@outlook.fr</span>
+                    </a>
+                    <a
+                        href="https://github.com/mat37dev"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className={`flex items-center gap-3.5 text-white hover:text-accent-soft transition-colors ${FOCUS_RING_DARK}`}
+                    >
+                        <span className="w-11 h-11 rounded-full bg-accent flex-none flex items-center justify-center">
+                            <GithubIcon size={20} />
+                        </span>
+                        <span className="text-[15px]">github.com/mat37dev</span>
+                    </a>
+                    <div className="flex items-center gap-3.5 text-white">
+                        <span className="w-11 h-11 rounded-full bg-accent flex-none flex items-center justify-center">
+                            <MapPinHouse size={20} />
+                        </span>
+                        <span className="text-[15px]">Nantes, France</span>
                     </div>
                 </div>
             </div>

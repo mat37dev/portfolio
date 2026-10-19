@@ -1,182 +1,110 @@
-"use client";
-import {CalendarDays} from "lucide-react";
+import Reveal from "@/app/components/Reveal";
+
+const EDUCATION = [
+    {
+        period: "2025 - 2027",
+        title: "Master SIN — Systèmes Informatiques et Numériques",
+        subtitle: "EPSI Nantes",
+        active: true,
+    },
+    {
+        period: "2023 - 2025",
+        title: "Concepteur Développeur d'Application",
+        subtitle: "Titre RNCP 6",
+    },
+    {
+        period: "2021 - 2023",
+        title: "BTS SIO — option SLAM",
+        subtitle: "Solutions Logicielles et Applications Métiers",
+    },
+    {
+        period: "2018 - 2021",
+        title: "Bac Général",
+        subtitle: "Spécialités Mathématiques, NSI",
+    },
+];
+
+const EXPERIENCE = [
+    {
+        period: "12/2025 - 08/2027",
+        title: "Alternance — Cloudity",
+        active: true,
+        desc: "Développement de solutions CRM sur mesure sur la plateforme Salesforce : Apex, automatisation de processus via Salesforce Flow, intégrations avec des systèmes tiers.",
+    },
+    {
+        period: "09/2023 - 08/2025",
+        title: "Alternance — Esima (Armée de l'air et de l'espace)",
+        desc: "Développement d'applications avec Symfony et Twig dans un cadre réglementé et sécurisé, avec utilisation de machines virtuelles hors ligne et respect des normes de style DSFR.",
+    },
+    {
+        period: "03/2023 - 04/2023",
+        title: "Stage — Kõdoka",
+        desc: "Conception d'une application web CRM en PHP avec un autre stagiaire, actualisation en AJAX et respect des normes de sécurité en vigueur.",
+    },
+    {
+        period: "05/2022 - 06/2022",
+        title: "Stage — Kamisys",
+        desc: "Optimisation d'un script de génération de données de test en volume avec JavaScript, Sequelize et MySQL.",
+    },
+];
 
 const ActiveBadge = () => (
-    <span className="text-xs bg-green-500/20 text-green-400 border border-green-500/30 rounded-full px-2 py-0.5 ml-2 align-middle whitespace-nowrap inline-block">
+    <span className="text-[11px] font-semibold bg-[var(--ongoing-bg)] text-[var(--ongoing-text)] px-2 py-0.5 rounded-full ml-1.5 align-middle whitespace-nowrap inline-block">
         En cours
     </span>
 );
 
+const TimelineEntry = ({ item, index }) => (
+    <Reveal delay={index * 70}>
+        <div className="grid grid-cols-[14px_1fr] gap-3.5">
+            <div className="flex flex-col items-center">
+                <div
+                    className={`w-2.5 h-2.5 rounded-full mt-[5px] flex-none ${
+                        item.active ? "bg-[var(--ongoing)]" : "bg-accent"
+                    }`}
+                />
+                <div className="w-0.5 flex-1 bg-line mt-1" />
+            </div>
+            <div className="pb-1.5">
+                <p className="text-xs text-muted font-medium mb-[3px]">{item.period}</p>
+                <h4 className="font-heading text-base font-bold text-ink">
+                    {item.title}
+                    {item.active && <ActiveBadge />}
+                </h4>
+                {item.subtitle && <p className="text-sm text-muted mt-0.5">{item.subtitle}</p>}
+                {item.desc && <p className="text-sm leading-[1.55] mt-1.5">{item.desc}</p>}
+            </div>
+        </div>
+    </Reveal>
+);
+
+const ColumnTitle = ({ children }) => (
+    <h3 className="font-heading text-[13px] font-bold uppercase tracking-[0.08em] text-accent-dark mb-5 pb-2.5 border-b-2 border-accent-soft">
+        {children}
+    </h3>
+);
+
 const TimelineSection = () => {
     return (
-        <section id="timeline" className="px-4 py-32 sm:px-6 lg:px-8">
-            <h2 className="text-3xl font-bold text-white mb-12 text-center">Parcours Professionnel</h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                {/* Section Education */}
+        <section id="parcours" className="px-5 sm:px-8 lg:px-12 py-14 sm:py-20 lg:py-24">
+            <h2 className="font-heading font-extrabold text-ink tracking-tight text-center text-[clamp(26px,3vw,34px)] mb-11">
+                Parcours
+            </h2>
+            <div className="grid grid-cols-[repeat(auto-fit,minmax(320px,1fr))] gap-8">
                 <div>
-                    <div className="bg-gray-800/30 backdrop-blur-sm rounded-lg p-6 border border-gray-700/50 shadow-lg">
-                        <h3 className="text-2xl font-bold mb-4 text-primary-400">Education</h3>
-                        <div className="space-y-6">
-                            {/* Master SIN — En cours */}
-                            <div className="relative flex items-start space-x-4">
-                                <div className="absolute left-6 ml-1.5 top-1 w-[5px] h-full bg-primary-600"></div>
-                                <div className="flex-shrink-0 relative z-10">
-                                    <div className="w-4 h-4 bg-green-500 rounded-full ml-2"></div>
-                                </div>
-                                <div className="relative z-10">
-                                    <h3 className="text-sm text-gray-400 flex items-center">
-                                        <CalendarDays className="mr-2" />2025 - 2027
-                                    </h3>
-                                    <h4 className="text-lg font-semibold text-white">
-                                        Master SIN — Systèmes Informatiques et Numériques
-                                        <ActiveBadge />
-                                    </h4>
-                                    <h5 className="text-gray-400">EPSI Nantes</h5>
-                                </div>
-                            </div>
-                            <div className="relative flex items-start space-x-4">
-                                <div className="absolute left-6 ml-1.5 top-1 w-[5px] h-full bg-primary-600"></div>
-                                <div className="flex-shrink-0 relative z-10">
-                                    <div className="w-4 h-4 bg-primary-600 rounded-full ml-2"></div>
-                                </div>
-                                <div className="relative z-10">
-                                    <h3 className="text-sm text-gray-400 flex items-center">
-                                        <CalendarDays className="mr-2" />2023 - 2025
-                                    </h3>
-                                    <h4 className="text-lg font-semibold text-white">
-                                        Concepteur Développeur d&#39;Application
-                                    </h4>
-                                    <h5 className="text-gray-400">
-                                        Titre: RNCP 6
-                                    </h5>
-                                </div>
-                            </div>
-                            <div className="relative flex items-start space-x-4">
-                                <div className="absolute left-6 ml-1.5 top-1 w-[5px] h-full bg-primary-600"></div>
-                                <div className="flex-shrink-0 relative z-10">
-                                    <div className="w-4 h-4 bg-primary-600 rounded-full ml-2"></div>
-                                </div>
-                                <div className="relative z-10">
-                                    <h3 className="text-sm text-gray-400 flex items-center">
-                                        <CalendarDays className="mr-2" />2021 - 2023
-                                    </h3>
-                                    <h4 className="text-lg font-semibold text-white">
-                                        BTS SIO option: SLAM
-                                    </h4>
-                                    <p className="text-gray-300 text-sm mt-1">
-                                        Option: <br />- SLAM
-                                    </p>
-                                </div>
-                            </div>
-                            <div className="relative flex items-start space-x-4">
-                                <div className="absolute left-6 ml-1.5 top-1 w-[5px] h-full bg-primary-600"></div>
-                                <div className="flex-shrink-0 relative z-10">
-                                    <div className="w-4 h-4 bg-primary-600 rounded-full ml-2"></div>
-                                </div>
-                                <div className="relative z-10">
-                                    <h3 className="text-sm text-gray-400 flex items-center">
-                                        <CalendarDays className="mr-2" />2018 - 2021
-                                    </h3>
-                                    <h4 className="text-lg font-semibold text-white">Bac Général</h4>
-                                    <p className="text-gray-300 text-sm mt-1">
-                                        Options:<br />- Mathématique<br />- NSI (Numérique et sciences de l&#39;informatique)
-                                    </p>
-                                </div>
-                            </div>
-                        </div>
+                    <ColumnTitle>Formation</ColumnTitle>
+                    <div className="flex flex-col gap-[22px]">
+                        {EDUCATION.map((item, i) => (
+                            <TimelineEntry key={item.title} item={item} index={i} />
+                        ))}
                     </div>
                 </div>
-
-                {/* Section Expérience */}
                 <div>
-                    <div className="bg-gray-800/30 backdrop-blur-sm rounded-lg p-6 border border-gray-700/50 shadow-lg">
-                        <h3 className="text-2xl font-bold mb-4 text-primary-400">Expérience</h3>
-                        <div className="space-y-6">
-                            {/* Cloudity — En cours */}
-                            <div className="relative flex items-start space-x-4">
-                                <div className="absolute left-6 ml-1.5 top-1 w-[5px] h-full bg-primary-600"></div>
-                                <div className="flex-shrink-0 relative z-10">
-                                    <div className="w-4 h-4 bg-green-500 rounded-full ml-2"></div>
-                                </div>
-                                <div className="relative z-10">
-                                    <h3 className="text-sm text-gray-400 flex items-center">
-                                        <CalendarDays className="mr-2" />12/2025 - 08/2027
-                                    </h3>
-                                    <h4 className="text-lg font-semibold text-white">
-                                        Alternance: Cloudity
-                                        <ActiveBadge />
-                                    </h4>
-                                    <p className="text-gray-300 text-sm mt-1">
-                                        Au sein de Cloudity, entreprise spécialisée dans la prestation de services sur
-                                        la plateforme Salesforce, je participe au développement de solutions CRM sur
-                                        mesure pour des clients. Je travaille principalement en Apex, automatise des
-                                        processus métier via Salesforce Flow, et développe des intégrations entre
-                                        Salesforce et des systèmes tiers.
-                                    </p>
-                                </div>
-                            </div>
-                            {/* Esima */}
-                            <div className="relative flex items-start space-x-4">
-                                <div className="absolute left-6 ml-1.5 top-1 w-[5px] h-full bg-primary-600"></div>
-                                <div className="flex-shrink-0 relative z-10">
-                                    <div className="w-4 h-4 bg-primary-600 rounded-full ml-2"></div>
-                                </div>
-                                <div className="relative z-10">
-                                    <h3 className="text-sm text-gray-400 flex items-center">
-                                        <CalendarDays className="mr-2" />01/09/2023 - 01/08/2025
-                                    </h3>
-                                    <h4 className="text-lg font-semibold text-white">Alternance: Esima-Armée de l&#39;air et de l&#39;espace</h4>
-                                    <p className="text-gray-300 text-sm mt-1">
-                                        Durant mon alternance à l&#39;Esima, j&#39;ai travaillé en équipe sur divers projets
-                                        tout au long de mon apprentissage. J&#39;y ai acquis de nouvelles méthodes de travail,
-                                        ainsi que de l&#39;expérience professionnelle et du savoir-faire. Les projets sur
-                                        lesquels nous avons travaillé m&#39;ont permis de découvrir Symfony et Twig. Les
-                                        normes de sécurité et le sérieux du travail m&#39;ont ainsi appris à évoluer dans
-                                        un cadre précis et réglementé. Par exemple, j&#39;ai pu approfondir mon utilisation
-                                        de machines virtuelles hors ligne et me familiariser avec différentes normes de style
-                                        imposées, telles que le DSFR.
-                                    </p>
-                                </div>
-                            </div>
-                            {/* Kodoka */}
-                            <div className="relative flex items-start space-x-4">
-                                <div className="absolute left-6 ml-1.5 top-1 w-[5px] h-full bg-primary-600"></div>
-                                <div className="flex-shrink-0 relative z-10">
-                                    <div className="w-4 h-4 bg-primary-600 rounded-full ml-2"></div>
-                                </div>
-                                <div className="relative z-10">
-                                    <h3 className="text-sm text-gray-400 flex items-center">
-                                        <CalendarDays className="mr-2" />06/03/2023 - 25/04/2023
-                                    </h3>
-                                    <h4 className="text-lg font-semibold text-white">Stage: Kõdoka</h4>
-                                    <p className="text-gray-300 text-sm mt-1">
-                                        Pendant mon stage, j&apos;ai travaillé avec un autre stagiaire sur la création
-                                        d&apos;une application web de type CRM pour l&apos;entreprise. Nous avons utilisé
-                                        PHP, HTML, CSS, JavaScript et AJAX pour assurer la fluidité de l&apos;actualisation.
-                                        L&apos;application a été entièrement développée par nos soins, en respectant les normes
-                                        de sécurité en vigueur.
-                                    </p>
-                                </div>
-                            </div>
-                            {/* Kamisys */}
-                            <div className="relative flex items-start space-x-4">
-                                <div className="absolute left-6 ml-1.5 top-1 w-[5px] h-full bg-primary-600"></div>
-                                <div className="flex-shrink-0 relative z-10">
-                                    <div className="w-4 h-4 bg-primary-600 rounded-full ml-2"></div>
-                                </div>
-                                <div className="relative z-10">
-                                    <h3 className="text-sm text-gray-400 flex items-center">
-                                        <CalendarDays className="mr-2" />23/05/2022 - 25/06/2022
-                                    </h3>
-                                    <h4 className="text-lg font-semibold text-white">Stage: Kamisys</h4>
-                                    <p className="text-gray-300 text-sm mt-1">
-                                        Durant ce stage, j&apos;ai eu pour mission d&apos;optimiser le script de génération de
-                                        données en grande quantité pour des tests. J&apos;ai beaucoup appris avec JavaScript,
-                                        Sequelize et MySQL.
-                                    </p>
-                                </div>
-                            </div>
-                        </div>
+                    <ColumnTitle>Expérience</ColumnTitle>
+                    <div className="flex flex-col gap-[22px]">
+                        {EXPERIENCE.map((item, i) => (
+                            <TimelineEntry key={item.title} item={item} index={i} />
+                        ))}
                     </div>
                 </div>
             </div>
