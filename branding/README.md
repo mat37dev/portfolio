@@ -1,4 +1,4 @@
-# Logo — Mathieu Crosnier
+# Logo - Mathieu Crosnier
 
 **Cime en C** : un M en deux sommets, entouré d'un C ouvert comme un cirque de montagne.
 Couleurs reprises des tokens du site (`--accent` et `--wood`).

@@ -4,7 +4,7 @@ import { Moon, Sun } from "lucide-react";
 
 /**
  * Toggle thème clair/sombre. La classe "dark" est déjà posée sur <html>
- * par le script bloquant dans layout.js (avant hydratation) — ce composant
+ * par le script bloquant dans layout.js (avant hydratation) - ce composant
  * ne fait que lire cet état au montage et le faire basculer au clic.
  */
 export default function ThemeToggle({ className = "" }) {

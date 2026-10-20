@@ -6,7 +6,7 @@ import { useEffect, useRef } from "react";
  * en haut de l'écran au fil du scroll. Discrète, mais fonctionnelle
  * (vraie sémantique progressbar), en écho au thème montagne.
  *
- * Perf : pas de useState ici — un re-render React à chaque frame de
+ * Perf : pas de useState ici - un re-render React à chaque frame de
  * scroll est coûteux (main-thread). On écrit directement dans le DOM
  * via ref, et on anime `transform: scaleX()` (compositée, pas de
  * layout) plutôt que `width` (qui force un reflow à chaque frame).

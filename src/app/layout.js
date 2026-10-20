@@ -34,20 +34,20 @@ const plexSans = IBM_Plex_Sans({
 
 export const metadata = {
     metadataBase: new URL("https://mathieucrosnier.fr"),
-    title: "Mathieu Crosnier — Développeur Fullstack | Nantes",
+    title: "Mathieu Crosnier - Développeur Fullstack | Nantes",
     description: "Portfolio de Mathieu Crosnier, développeur fullstack en Master SIN à l'EPSI Nantes, alternant chez Cloudity. Découvrez mes projets et compétences en développement web, Salesforce et applications mobiles.",
     keywords: "Mathieu Crosnier, développeur fullstack Nantes, développeur web Nantes, alternant Salesforce, Master SIN EPSI, Next.js, React, Apex, portfolio développeur fullstack, Cloudity",
     authors: [{ name: "Mathieu Crosnier" }],
     alternates: { canonical: "https://mathieucrosnier.fr" },
     openGraph: {
-        title: "Mathieu Crosnier — Développeur Fullstack | Nantes",
+        title: "Mathieu Crosnier - Développeur Fullstack | Nantes",
         description: "Portfolio de Mathieu Crosnier, développeur fullstack en Master SIN à l'EPSI Nantes, alternant chez Cloudity.",
         url: "https://mathieucrosnier.fr",
         type: "profile",
     },
     twitter: {
         card: "summary_large_image",
-        title: "Mathieu Crosnier — Développeur Fullstack | Nantes",
+        title: "Mathieu Crosnier - Développeur Fullstack | Nantes",
         description: "Portfolio de Mathieu Crosnier, développeur fullstack en Master SIN à l'EPSI Nantes.",
     },
 };

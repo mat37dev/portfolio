@@ -7,7 +7,7 @@ html {
 }
 
 /*
- * Design tokens — refonte "montagne" (handoff Claude Design)
+ * Design tokens - refonte "montagne" (handoff Claude Design)
  * Thème clair par défaut, variante sombre via la classe .dark sur <html>
  * (posée par un script bloquant dans layout.js pour éviter le flash).
  */
@@ -25,14 +25,14 @@ html {
     --wood: oklch(50% 0.07 35);
     --card: oklch(100% 0 0);
     --header-bg: oklch(98% 0.004 235 / 0.92);
-    /* Texte fixe pour les éléments à fond anthracite permanent (CTA, contact, footer) —
+    /* Texte fixe pour les éléments à fond anthracite permanent (CTA, contact, footer) -
        ne doit PAS suivre --snow, qui elle s'inverse en thème sombre. */
     --on-anthracite: oklch(98% 0.004 235);
-    /* Texte atténué sur fond anthracite permanent (footer) — --muted est calibré
+    /* Texte atténué sur fond anthracite permanent (footer) - --muted est calibré
        pour un fond clair et devient illisible (contraste 3.3) sur l'anthracite en
        thème clair. Cette valeur reprend le --muted du thème sombre (contraste 5.6). */
     --muted-on-anthracite: oklch(65% 0.01 235);
-    /* Badges pleins avec texte blanc (icônes de catégorie Compétences) — figés sur les
+    /* Badges pleins avec texte blanc (icônes de catégorie Compétences) - figés sur les
        teintes claires, sinon --accent/--wood s'éclaircissent en sombre et le texte blanc
        perd tout contraste dessus. */
     --chip-1: oklch(50% 0.1 235);
@@ -75,7 +75,7 @@ section[id] {
     scroll-margin-top: 88px;
 }
 
-/* Neige ambiante — les flocons traversent tout le viewport (unités vh) */
+/* Neige ambiante - les flocons traversent tout le viewport (unités vh) */
 @keyframes flakeFall {
     0% {
         transform: translate3d(0, -12vh, 0);
