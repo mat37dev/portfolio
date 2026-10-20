@@ -69,7 +69,7 @@ const Navbar = () => {
                     </Link>
                 </nav>
 
-                {/* Bouton hamburger — mobile uniquement, cible tactile 48px */}
+                {/* Bouton hamburger - mobile uniquement, cible tactile 48px */}
                 <div className="md:hidden flex items-center gap-1">
                     <ThemeToggle />
                     <button

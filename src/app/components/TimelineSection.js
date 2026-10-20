@@ -3,7 +3,7 @@ import Reveal from "@/app/components/Reveal";
 const EDUCATION = [
     {
         period: "2025 - 2027",
-        title: "Master SIN — Systèmes Informatiques et Numériques",
+        title: "Master SIN - Systèmes Informatiques et Numériques",
         subtitle: "EPSI Nantes",
         active: true,
     },
@@ -14,7 +14,7 @@ const EDUCATION = [
     },
     {
         period: "2021 - 2023",
-        title: "BTS SIO — option SLAM",
+        title: "BTS SIO - option SLAM",
         subtitle: "Solutions Logicielles et Applications Métiers",
     },
     {
@@ -27,23 +27,23 @@ const EDUCATION = [
 const EXPERIENCE = [
     {
         period: "12/2025 - 08/2027",
-        title: "Alternance — Cloudity",
+        title: "Alternance - Cloudity",
         active: true,
         desc: "Développement de solutions CRM sur mesure sur la plateforme Salesforce : Apex, automatisation de processus via Salesforce Flow, intégrations avec des systèmes tiers.",
     },
     {
         period: "09/2023 - 08/2025",
-        title: "Alternance — Esima (Armée de l'air et de l'espace)",
+        title: "Alternance - Esima (Armée de l'air et de l'espace)",
         desc: "Développement d'applications avec Symfony et Twig dans un cadre réglementé et sécurisé, avec utilisation de machines virtuelles hors ligne et respect des normes de style DSFR.",
     },
     {
         period: "03/2023 - 04/2023",
-        title: "Stage — Kõdoka",
+        title: "Stage - Kõdoka",
         desc: "Conception d'une application web CRM en PHP avec un autre stagiaire, actualisation en AJAX et respect des normes de sécurité en vigueur.",
     },
     {
         period: "05/2022 - 06/2022",
-        title: "Stage — Kamisys",
+        title: "Stage - Kamisys",
         desc: "Optimisation d'un script de génération de données de test en volume avec JavaScript, Sequelize et MySQL.",
     },
 ];

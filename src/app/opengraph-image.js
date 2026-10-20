@@ -5,7 +5,7 @@ export const alt = "Portfolio de Mathieu Crosnier";
 export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";
 
-// Palette alignée sur les tokens du site (globals.css) — thème clair "montagne".
+// Palette alignée sur les tokens du site (globals.css) - thème clair "montagne".
 const SNOW = "#F6F8FA";
 const SNOW_ALT = "#EDF1F4";
 const INK = "#1C2024";
@@ -48,7 +48,7 @@ export default function Image() {
                     padding: "60px",
                 }}
             >
-                {/* Symbole « Cime en C » — voir branding/README.md */}
+                {/* Symbole « Cime en C » - voir branding/README.md */}
                 <svg viewBox="0 0 256 256" width="112" height="112" style={{ marginBottom: 26 }}>
                     <path
                         d="M244 128 A116 116 0 1 1 186 27.54 A14 14 0 0 1 172 51.79 A88 88 0 1 0 216 128 A14 14 0 0 1 244 128 Z"
@@ -99,7 +99,7 @@ export default function Image() {
                     <Pill>Salesforce</Pill>
                 </div>
 
-                {/* Crête de montagne — même motif que le hero du site */}
+                {/* Crête de montagne - même motif que le hero du site */}
                 <svg
                     viewBox="0 0 1440 180"
                     width="1200"

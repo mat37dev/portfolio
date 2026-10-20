@@ -24,7 +24,7 @@ const HeroSection = () => {
                     </p>
                     <p className="flex items-center gap-2 text-sm text-muted max-w-[560px] mb-7">
                         <Mountain size={16} className="text-accent flex-none" aria-hidden="true" />
-                        Passionné de ski et de montagne — j&apos;ai d&apos;ailleurs créé SkiMate, une
+                        Passionné de ski et de montagne - j&apos;ai d&apos;ailleurs créé SkiMate, une
                         application pensée pour les amateurs de glisse.
                     </p>
                     <div className="flex flex-wrap gap-2.5 mb-8">
@@ -66,7 +66,7 @@ const HeroSection = () => {
                 </div>
             </div>
 
-            {/* Crête de montagne — signature discrète en bas du hero */}
+            {/* Crête de montagne - signature discrète en bas du hero */}
             <svg
                 viewBox="0 0 1440 180"
                 preserveAspectRatio="none"

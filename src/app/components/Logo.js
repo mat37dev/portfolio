@@ -1,4 +1,4 @@
-// Symbole « Cime en C » — voir branding/README.md.
+// Symbole « Cime en C » - voir branding/README.md.
 // Les couleurs suivent les tokens du thème (--accent / --wood), qui s'éclaircissent déjà en mode sombre.
 // `onDark` fige les teintes claires pour les fonds anthracite permanents (footer).
 const RING = "M244 128 A116 116 0 1 1 186 27.54 A14 14 0 0 1 172 51.79 A88 88 0 1 0 216 128 A14 14 0 0 1 244 128 Z";

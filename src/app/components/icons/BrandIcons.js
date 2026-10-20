@@ -1,7 +1,7 @@
 /**
  * Icônes de marque (GitHub, LinkedIn) en SVG inline.
  *
- * lucide-react a déprécié ses icônes de marque (Github, Linkedin) — retrait
+ * lucide-react a déprécié ses icônes de marque (Github, Linkedin) - retrait
  * prévu en v1.0, la lib recommande d'utiliser des tracés dédiés plutôt que
  * son propre style d'icônes pour les logos. Tracés issus de Simple Icons
  * (simpleicons.org, licence CC0).

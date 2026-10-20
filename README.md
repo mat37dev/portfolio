@@ -1,4 +1,4 @@
-# Portfolio — Mathieu Crosnier
+# Portfolio - Mathieu Crosnier
 
 Portfolio personnel de Mathieu Crosnier, développeur fullstack (Nantes, France).
 Site en production : [mathieucrosnier.fr](https://mathieucrosnier.fr)
