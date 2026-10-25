@@ -3,13 +3,14 @@ import { useState } from "react";
 import Image from "next/image";
 
 import skimateImage from "/public/projectImages/skimate.jpg";
+import resilienceAlphaImage from "/public/projectImages/resilience-alpha.svg";
 import notreCuisineImage from "/public/projectImages/notre-cuisine.svg";
 import kodokaImage from "/public/projectImages/kodoka.png";
 import geek4FunImage from "/public/projectImages/geek4Fun.png";
 import covoiturageImage from "/public/projectImages/covoiturage.png";
 import gameJamImage from "/public/projectImages/gameJam.png";
 
-const FILTERS = ["Tous", "Web", "Mobile", "Jeux Vidéo"];
+const FILTERS = ["Tous", "Web", "Mobile", "Jeux Vidéo", "DevOps"];
 
 const PROJECTS = [
     {
@@ -23,6 +24,18 @@ const PROJECTS = [
         techStack: ["Symfony", "React Native", "React", "API", "SQL", "NoSQL", "MapBox"],
         image: skimateImage,
         imageAlt: "Capture d'écran de SkiMate, application mobile pour les skieurs",
+    },
+    {
+        id: 7,
+        title: "Resilience Alpha",
+        filterCat: "DevOps",
+        date: "19-23 oct. 2026",
+        description:
+            "Plateforme de paiement fictive auto-résiliente : détecte seule une anomalie et rétablit seule son service. Démonstration combinant Docker, Ansible, observabilité, WAF, SIEM et conformité RGPD.",
+        techStack: ["Docker", "Ansible", "PostgreSQL", "Prometheus", "Grafana", "ModSecurity", "Python"],
+        github: "https://github.com/mat37dev/resilience-alpha",
+        image: resilienceAlphaImage,
+        imageAlt: "Logo de Resilience Alpha : bouclier et flèche de reprise automatique",
     },
     {
         id: 6,
