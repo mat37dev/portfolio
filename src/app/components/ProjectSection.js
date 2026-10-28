@@ -3,10 +3,10 @@ import { useState } from "react";
 import Image from "next/image";
 
 import skimateImage from "/public/projectImages/skimate.jpg";
-import resilienceAlphaImage from "/public/projectImages/resilience-alpha.svg";
-import notreCuisineImage from "/public/projectImages/notre-cuisine.svg";
-import kodokaImage from "/public/projectImages/kodoka.png";
-import geek4FunImage from "/public/projectImages/geek4Fun.png";
+import resilienceAlphaImage from "/public/projectImages/resilience-alpha.jpg";
+import notreCuisineImage from "/public/projectImages/notre-cuisine.jpg";
+import kodokaImage from "/public/projectImages/kodoka.jpg";
+import geek4FunImage from "/public/projectImages/geek4fun.jpg";
 import covoiturageImage from "/public/projectImages/covoiturage.png";
 import gameJamImage from "/public/projectImages/gameJam.png";
 
@@ -23,7 +23,7 @@ const PROJECTS = [
             "Application mobile centralisant les données utiles pour les skieurs : conditions météo, cartographie des domaines skiables et informations en temps réel sur les stations françaises.",
         techStack: ["Symfony", "React Native", "React", "API", "SQL", "NoSQL", "MapBox"],
         image: skimateImage,
-        imageAlt: "Capture d'écran de SkiMate, application mobile pour les skieurs",
+        imageAlt: "Couverture de SkiMate : logo pingouin et écrans météo, plan des pistes et webcams",
     },
     {
         id: 7,
@@ -35,7 +35,7 @@ const PROJECTS = [
         techStack: ["Docker", "Ansible", "PostgreSQL", "Prometheus", "Grafana", "ModSecurity", "Python"],
         github: "https://github.com/mat37dev/resilience-alpha",
         image: resilienceAlphaImage,
-        imageAlt: "Logo de Resilience Alpha : bouclier et flèche de reprise automatique",
+        imageAlt: "Couverture de Resilience Alpha : bouclier avec flèche de reprise et validation",
     },
     {
         id: 6,
@@ -47,7 +47,7 @@ const PROJECTS = [
         techStack: ["Next.js", "TypeScript", "Tailwind", "Supabase", "PWA", "Vercel"],
         github: "https://github.com/mat37dev/notre-cuisine",
         image: notreCuisineImage,
-        imageAlt: "Logo de Notre cuisine : un carnet de recettes avec une marmite en creux",
+        imageAlt: "Couverture de Notre cuisine : logo carnet de recettes et écrans mobiles de l'application",
     },
     {
         id: 2,
@@ -59,7 +59,7 @@ const PROJECTS = [
         techStack: ["PHP", "MySQL", "CodeIgniter"],
         github: "https://github.com/mat37dev/crm-kodoka",
         image: kodokaImage,
-        imageAlt: "Capture d'écran du CRM Kodoka",
+        imageAlt: "Couverture du CRM Kōdoka : logo et tableau de bord des revenus et clients",
     },
     {
         id: 3,
@@ -71,7 +71,7 @@ const PROJECTS = [
         techStack: ["PHP", "MySQL", "CodeIgniter"],
         github: "https://github.com/mat37dev/Geek4Fun",
         image: geek4FunImage,
-        imageAlt: "Capture d'écran du site Geek4Fun de gestion de tournois",
+        imageAlt: "Couverture de Geek4Fun : logo manette du festival jeux et numérique",
     },
     {
         id: 4,
@@ -99,17 +99,17 @@ const PROJECTS = [
 ];
 
 const FeaturedCard = ({ project }) => (
-    <article className="col-span-full bg-anthracite rounded-[14px] overflow-hidden grid grid-cols-[repeat(auto-fit,minmax(240px,1fr))]">
-        <div className="relative min-h-[220px] bg-snow-alt p-4">
+    <article className="group col-span-full bg-anthracite rounded-[14px] overflow-hidden grid md:grid-cols-[3fr_2fr]">
+        <div className="relative aspect-video overflow-hidden">
             <Image
                 src={project.image}
                 alt={project.imageAlt}
                 fill
-                sizes="(max-width: 640px) 100vw, 50vw"
-                className="object-contain rounded-lg"
+                sizes="(max-width: 768px) 100vw, 60vw"
+                className="object-cover transition-transform duration-500 group-hover:scale-[1.02]"
             />
         </div>
-        <div className="px-[22px] py-5 pb-[22px]">
+        <div className="px-[22px] py-5 pb-[22px] flex flex-col justify-center">
             <div className="flex items-baseline justify-between gap-2.5 mb-1.5">
                 <h3 className="font-heading text-[22px] font-bold text-white">{project.title}</h3>
                 <span className="text-xs text-[oklch(70%_0.01_235)] whitespace-nowrap">{project.date}</span>
@@ -133,14 +133,14 @@ const FOCUS_RING =
     "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-snow rounded-sm";
 
 const ProjectCard = ({ project }) => (
-    <article className="bg-card border border-line rounded-[14px] overflow-hidden flex flex-col">
-        <div className="relative h-[150px] bg-snow-alt p-3">
+    <article className="group bg-card border border-line rounded-[14px] overflow-hidden flex flex-col">
+        <div className="relative aspect-video overflow-hidden bg-snow-alt border-b border-line">
             <Image
                 src={project.image}
                 alt={project.imageAlt}
                 fill
                 sizes="(max-width: 640px) 100vw, 33vw"
-                className="object-contain rounded-md"
+                className="object-cover transition-transform duration-500 group-hover:scale-[1.03]"
             />
         </div>
         <div className="px-[22px] py-5 pb-[22px] flex flex-col flex-1">
