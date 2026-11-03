@@ -799,3 +799,340 @@ a {
         align-items: center;
     }
 }
+
+/* ===================== Sections ===================== */
+.sec {
+    position: relative;
+    border-top: 1px solid var(--line);
+    padding: 96px 0 88px;
+    background: var(--bg);
+    transition: background 0.4s;
+}
+.sec-tint {
+    background: var(--bg2);
+}
+.eyebrow {
+    font-family: var(--font-mono), ui-monospace, monospace;
+    font-size: 11px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--acc);
+}
+.sec h2 {
+    margin: 12px 0 0;
+    font-size: clamp(34px, 4vw, 48px);
+    line-height: 1.06;
+    max-width: 720px;
+}
+.sec .sub {
+    margin: 16px 0 0;
+    max-width: 620px;
+    font-size: 17px;
+}
+.head {
+    display: flex;
+    justify-content: space-between;
+    align-items: end;
+    gap: 24px;
+}
+.tag {
+    font-family: var(--font-mono), ui-monospace, monospace;
+    font-size: 9.5px;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    color: var(--mute);
+    border: 1px solid var(--line);
+    border-radius: 999px;
+    padding: 2px 8px;
+    transition: all 0.2s;
+}
+.chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    border: 1px solid var(--line);
+    background: var(--card);
+    border-radius: 999px;
+    padding: 4px 11px;
+    font-family: var(--font-mono), ui-monospace, monospace;
+    font-size: 10.5px;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--mute);
+    vertical-align: middle;
+}
+.chip-acc {
+    background: var(--acc-soft);
+    border-color: transparent;
+    color: var(--acc);
+}
+
+/* ===================== Projets ===================== */
+.filters {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+}
+.filters button {
+    font-family: var(--font-mono), ui-monospace, monospace;
+    font-size: 10.5px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    border: 1px solid var(--line);
+    background: var(--card);
+    color: var(--mute);
+    border-radius: 999px;
+    padding: 7px 12px;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+.filters button:hover {
+    color: var(--ink);
+    border-color: var(--line2);
+}
+.filters button[aria-pressed="true"] {
+    background: var(--ink);
+    border-color: var(--ink);
+    color: var(--bg);
+}
+
+.feat {
+    margin-top: 36px;
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-radius: 24px;
+    padding: 34px;
+    display: grid;
+    grid-template-columns: 1.2fr 1fr;
+    gap: 34px;
+    align-items: center;
+    box-shadow: 0 14px 40px var(--shadow2);
+    transition: border-color 0.3s, box-shadow 0.4s, transform 0.4s var(--ease);
+}
+.feat:hover {
+    border-color: var(--line2);
+    box-shadow: 0 24px 60px var(--shadow2);
+    transform: translateY(-3px);
+}
+.feat .num {
+    font-family: var(--font-serif), Georgia, serif;
+    font-size: 28px;
+    color: var(--acc);
+    display: inline-flex;
+    align-items: center;
+    gap: 14px;
+    vertical-align: middle;
+}
+.feat .num::after {
+    content: "";
+    width: 1px;
+    height: 22px;
+    background: var(--line);
+}
+.feat h3 {
+    margin: 16px 0 0;
+    font-size: 36px;
+    line-height: 1.1;
+}
+.feat p {
+    margin: 12px 0 0;
+    font-size: 16px;
+}
+.feat .meta {
+    margin-top: 16px;
+    font-family: var(--font-mono), ui-monospace, monospace;
+    font-size: 11px;
+    color: var(--mute);
+    display: flex;
+    gap: 16px;
+}
+.feat .acts {
+    margin-top: 22px;
+    padding-top: 20px;
+    border-top: 1px solid var(--line);
+    display: flex;
+    align-items: center;
+    gap: 18px;
+    flex-wrap: wrap;
+}
+.feat .acts small {
+    font-family: var(--font-mono), ui-monospace, monospace;
+    font-size: 10.5px;
+    color: var(--mute);
+}
+.pola {
+    margin: 0;
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-radius: 18px;
+    padding: 10px 10px 14px;
+    box-shadow: 0 18px 44px var(--shadow2);
+    transform: rotate(2deg);
+    transition: transform 0.5s var(--ease);
+}
+.feat:hover .pola {
+    transform: rotate(-1deg) scale(1.03);
+}
+.pola .im {
+    overflow: hidden;
+    border-radius: 12px;
+}
+.pola img {
+    width: 100%;
+    height: 280px;
+    object-fit: cover;
+    display: block;
+    transition: transform 0.8s var(--ease);
+}
+.feat:hover .pola img {
+    transform: scale(1.06);
+}
+.pola b {
+    display: block;
+    font-family: var(--font-serif), Georgia, serif;
+    font-weight: 400;
+    font-size: 18px;
+    color: var(--ink);
+    margin: 10px 4px 0;
+}
+.pola small {
+    font-family: var(--font-mono), ui-monospace, monospace;
+    font-size: 10px;
+    color: var(--mute);
+    margin: 0 4px;
+}
+
+.grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 18px;
+    margin-top: 18px;
+}
+.card {
+    position: relative;
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-radius: 18px;
+    padding: 10px;
+    transition: transform 0.45s var(--ease), box-shadow 0.45s, border-color 0.3s;
+    cursor: pointer;
+    display: block;
+    overflow: hidden;
+}
+.card::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    background: radial-gradient(600px circle at var(--mx, 50%) var(--my, 0%), var(--acc-soft), transparent 45%);
+    opacity: 0;
+    transition: opacity 0.4s;
+    pointer-events: none;
+}
+.card:hover {
+    transform: translateY(-8px);
+    box-shadow: 0 26px 54px var(--shadow2);
+    border-color: var(--line2);
+}
+.card:hover::before {
+    opacity: 0.9;
+}
+.card .im {
+    position: relative;
+    overflow: hidden;
+    border-radius: 12px;
+}
+.card img {
+    width: 100%;
+    height: 170px;
+    object-fit: cover;
+    display: block;
+    transition: transform 0.9s var(--ease);
+}
+.card:hover img {
+    transform: scale(1.07);
+}
+.card .im::after {
+    content: "Voir le projet →";
+    position: absolute;
+    left: 10px;
+    bottom: 10px;
+    background: rgba(22, 22, 24, 0.78);
+    color: #fff;
+    font-size: 12px;
+    font-weight: 600;
+    padding: 6px 11px;
+    border-radius: 999px;
+    backdrop-filter: blur(6px);
+    transform: translateY(12px);
+    opacity: 0;
+    transition: all 0.4s var(--ease);
+}
+.card[data-nolink] {
+    cursor: default;
+}
+.card[data-nolink] .im::after {
+    content: "Projet d'école · sans lien public";
+    background: rgba(22, 22, 24, 0.55);
+}
+.card:hover .im::after {
+    opacity: 1;
+    transform: none;
+}
+.card .b {
+    padding: 14px 8px 6px;
+    position: relative;
+}
+.card .b h3 {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    margin: 0;
+    font-size: 21px;
+    transition: color 0.25s;
+}
+.card:hover .b h3 {
+    color: var(--acc);
+}
+.card .b h3 small {
+    font-family: var(--font-mono), ui-monospace, monospace;
+    font-size: 10px;
+    color: var(--mute);
+}
+.card .b p {
+    margin: 6px 0 0;
+    font-size: 14px;
+    line-height: 1.5;
+}
+.card .b .tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 5px;
+    margin-top: 10px;
+}
+.card:hover .tag {
+    border-color: var(--line2);
+    color: var(--ink);
+}
+
+/* Masquage par filtre : la grille garde ses six cartes dans l'ordre */
+.grid[data-filter="Web"] .card:not([data-category="Web"]),
+.grid[data-filter="Mobile"] .card:not([data-category="Mobile"]),
+.grid[data-filter="Jeux vidéo"] .card:not([data-category="Jeux vidéo"]),
+.grid[data-filter="DevOps"] .card:not([data-category="DevOps"]) {
+    display: none;
+}
+
+@media (max-width: 859px) {
+    .head {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+    .feat,
+    .grid {
+        grid-template-columns: 1fr;
+    }
+    .feat {
+        padding: 24px;
+    }
+}
