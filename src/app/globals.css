@@ -392,3 +392,410 @@ a {
         gap: 10px;
     }
 }
+
+/* ===================== Hero ===================== */
+.hero {
+    position: relative;
+    text-align: center;
+    padding: 150px 0 0;
+    min-height: 100vh;
+    overflow: hidden;
+}
+.hero .wrap {
+    z-index: 2;
+}
+.hero-bg {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+}
+.hero-bg .sky {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(180deg, var(--sky1) 0%, var(--sky2) 40%, var(--sky3) 78%);
+    transition: background 0.4s;
+}
+.hero-bg .sun {
+    position: absolute;
+    left: 50%;
+    top: -220px;
+    width: 1100px;
+    height: 760px;
+    transform: translateX(-50%);
+    background: radial-gradient(ellipse at center, var(--sun1), var(--sun2) 40%, transparent 68%);
+}
+.hero-bg .stars {
+    position: absolute;
+    inset: 0;
+    opacity: 0;
+    transition: opacity 0.6s;
+    background-image: radial-gradient(1px 1px at 12% 18%, #fff 60%, transparent),
+        radial-gradient(1.2px 1.2px at 28% 8%, #fff 60%, transparent),
+        radial-gradient(1px 1px at 44% 24%, #fff 60%, transparent),
+        radial-gradient(1.5px 1.5px at 61% 12%, #fff 60%, transparent),
+        radial-gradient(1px 1px at 75% 28%, #fff 60%, transparent),
+        radial-gradient(1.2px 1.2px at 88% 9%, #fff 60%, transparent),
+        radial-gradient(1px 1px at 52% 40%, #fff 60%, transparent),
+        radial-gradient(1px 1px at 18% 42%, #fff 60%, transparent),
+        radial-gradient(1.3px 1.3px at 92% 36%, #fff 60%, transparent),
+        radial-gradient(1px 1px at 35% 33%, #fff 60%, transparent);
+    background-size: 100% 100%;
+}
+.dark .hero-bg .stars,
+[data-bi-theme="dark"] .hero-bg .stars {
+    opacity: 0.7;
+}
+[data-bi-theme="light"] .hero-bg .stars {
+    opacity: 0;
+}
+.hero-bg .topo {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    opacity: 0.6;
+}
+.hero-bg .topo path {
+    fill: none;
+    stroke: var(--topo);
+    stroke-width: 1;
+}
+.hero-bg .topo path.bold {
+    stroke: var(--topo2);
+    stroke-width: 1.3;
+}
+.hero-bg .ridge {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: -2px;
+    width: 100%;
+    height: 52vh;
+    min-height: 360px;
+}
+.hero-bg .snow {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+}
+
+.badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    border: 1px solid var(--line);
+    background: var(--navbg);
+    border-radius: 999px;
+    padding: 7px 14px;
+    font-family: var(--font-mono), ui-monospace, monospace;
+    font-size: 10.5px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--mute);
+    box-shadow: 0 4px 14px var(--shadow2);
+}
+.badge i {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: var(--acc);
+    box-shadow: 0 0 0 4px var(--acc-soft);
+    animation: pulse 2.4s infinite;
+}
+@keyframes pulse {
+    0%,
+    100% {
+        box-shadow: 0 0 0 4px var(--acc-soft);
+    }
+    50% {
+        box-shadow: 0 0 0 7px transparent;
+    }
+}
+.hero h1 {
+    margin: 24px auto 0;
+    font-size: clamp(44px, 6.4vw, 78px);
+    line-height: 1.02;
+    max-width: 900px;
+}
+.hero h1 .ln {
+    display: block;
+    overflow: hidden;
+}
+.hero h1 .ln span {
+    display: block;
+    transform: translateY(105%);
+    animation: rise 1s var(--ease) forwards;
+}
+.hero h1 .ln:nth-child(2) span {
+    animation-delay: 0.12s;
+}
+@keyframes rise {
+    to {
+        transform: none;
+    }
+}
+.lead {
+    margin: 24px auto 0;
+    max-width: 640px;
+    font-size: 19px;
+    color: var(--txt);
+}
+.lead b {
+    color: var(--ink);
+    font-weight: 600;
+}
+.cta {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 22px;
+    margin-top: 32px;
+}
+.cta .more {
+    font-size: 15px;
+    font-weight: 500;
+    color: var(--ink);
+}
+.cta .more .ar-down {
+    transition: transform 0.3s var(--ease);
+}
+.cta .more:hover .ar-down {
+    transform: translateY(3px);
+}
+.checks {
+    display: flex;
+    justify-content: center;
+    gap: 26px;
+    margin-top: 22px;
+    font-family: var(--font-mono), ui-monospace, monospace;
+    font-size: 11px;
+    color: var(--acc);
+}
+
+/* Scène à trois cartes */
+.stage {
+    position: relative;
+    height: 440px;
+    margin: 44px auto 0;
+    max-width: 900px;
+}
+.stage .c {
+    position: absolute;
+    margin: 0;
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-radius: 22px;
+    padding: 12px;
+    box-shadow: 0 24px 60px var(--shadow);
+    transition: transform 0.6s var(--ease), box-shadow 0.4s;
+    will-change: transform;
+    opacity: 0;
+    animation: pop 0.9s var(--ease) forwards;
+    transform: rotate(var(--r)) translate3d(var(--px, 0px), var(--py, 0px), 0);
+}
+.stage .l {
+    animation-delay: 0.55s;
+}
+.stage .m {
+    animation-delay: 0.4s;
+}
+.stage .r {
+    animation-delay: 0.7s;
+}
+@keyframes pop {
+    from {
+        opacity: 0;
+        transform: rotate(var(--r)) translate3d(0, 40px, 0) scale(0.94);
+    }
+    to {
+        opacity: 1;
+        transform: rotate(var(--r)) translate3d(var(--px, 0px), var(--py, 0px), 0);
+    }
+}
+.stage .c img {
+    display: block;
+    border-radius: 14px;
+    object-fit: cover;
+}
+.stage .l {
+    left: 40px;
+    top: 70px;
+    width: 300px;
+    --r: -6deg;
+}
+.stage .l img,
+.stage .r img {
+    width: 100%;
+    height: 180px;
+}
+.stage .m {
+    left: 50%;
+    top: 0;
+    width: 300px;
+    margin-left: -150px;
+    z-index: 2;
+    padding-bottom: 42px;
+    --r: 0deg;
+}
+.stage .m img {
+    width: 100%;
+    height: 300px;
+    object-position: top;
+}
+.stage .m figcaption {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 14px;
+    text-align: center;
+    font-family: var(--font-mono), ui-monospace, monospace;
+    font-size: 11px;
+    color: var(--mute);
+}
+.stage .r {
+    right: 40px;
+    top: 70px;
+    width: 300px;
+    --r: 6deg;
+}
+.stage .c:hover {
+    transform: rotate(0) translateY(-10px) scale(1.04);
+    z-index: 3;
+    box-shadow: 0 34px 70px var(--shadow);
+}
+.stage .tag {
+    position: absolute;
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-radius: 999px;
+    padding: 7px 13px;
+    font-family: var(--font-mono), ui-monospace, monospace;
+    font-size: 11px;
+    color: var(--ink);
+    box-shadow: 0 8px 20px var(--shadow2);
+    z-index: 4;
+    white-space: nowrap;
+    opacity: 0;
+    animation: in 0.8s var(--ease) forwards;
+}
+.stage .tag i {
+    display: inline-block;
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: var(--acc);
+    margin-right: 8px;
+}
+.stage .t1 {
+    left: 50%;
+    top: -16px;
+    margin-left: 100px;
+    animation-delay: 1s;
+}
+.stage .t2 {
+    left: 50%;
+    top: 352px;
+    margin-left: -300px;
+    animation-delay: 1.15s;
+}
+.stage .t3 {
+    right: 0;
+    top: 290px;
+    animation-delay: 1.3s;
+}
+
+/* Entrée en cascade */
+.in {
+    opacity: 0;
+    transform: translateY(14px);
+    animation: in 0.8s var(--ease) forwards;
+}
+.in.d1 {
+    animation-delay: 0.1s;
+}
+.in.d2 {
+    animation-delay: 0.25s;
+}
+.in.d3 {
+    animation-delay: 0.4s;
+}
+.in.d4 {
+    animation-delay: 0.55s;
+}
+@keyframes in {
+    to {
+        opacity: 1;
+        transform: none;
+    }
+}
+
+.snow-toggle {
+    position: fixed;
+    bottom: 24px;
+    left: 24px;
+    z-index: 40;
+}
+.snow-toggle.is-off {
+    color: var(--mute);
+}
+
+@media (max-width: 859px) {
+    .hero {
+        padding-top: 120px;
+        min-height: 0;
+        padding-bottom: 0;
+    }
+    .hero-bg .topo {
+        display: none;
+    }
+    .hero-bg .ridge {
+        height: 360px;
+        min-height: 0;
+    }
+    .stage {
+        height: 380px;
+        margin-top: 36px;
+    }
+    .stage .l,
+    .stage .r {
+        display: none;
+    }
+    .stage .m {
+        width: 230px;
+        margin-left: -115px;
+        padding-bottom: 36px;
+    }
+    .stage .m img {
+        height: 230px;
+    }
+    .stage .t1 {
+        left: auto;
+        right: 0;
+        margin-left: 0;
+        top: -14px;
+    }
+    .stage .t2 {
+        left: 0;
+        margin-left: 0;
+        top: 262px;
+    }
+    .stage .t3 {
+        display: none;
+    }
+    .hero h1 {
+        font-size: 40px;
+    }
+    .lead {
+        font-size: 16px;
+    }
+    .cta {
+        flex-direction: column;
+        gap: 14px;
+    }
+    .checks {
+        flex-direction: column;
+        gap: 6px;
+        align-items: center;
+    }
+}

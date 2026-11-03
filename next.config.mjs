@@ -9,6 +9,8 @@ const securityHeaders = [
 ];
 
 const nextConfig = {
+    // Le badge Next.js de dev (bas-gauche) couvrait le bouton neige.
+    devIndicators: false,
     experimental: {
         optimizePackageImports: ["lucide-react"],
     },
