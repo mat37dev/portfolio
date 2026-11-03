@@ -15,6 +15,8 @@
  * inertie, rotation dans le sens du mouvement.
  */
 
+import { charDelay, typingPlan } from "./typing.js";
+
 const ACC = "oklch(50% 0.1 235)";
 const WOOD = "oklch(50% 0.07 35)";
 const VIOLET = "oklch(52% 0.13 300)";
@@ -402,11 +404,11 @@ export function startBuildIntro({
         c.path = { sx: c.x, sy: c.y, target, t: 0, dur, bend, drag: !!o.drag };
         while (c.path) yield;
     }
+    // Frappe (spec §5.2) : caractère par caractère sur les textes courts,
+    // par rafales de 2 à 4 caractères au-delà de 80 caractères. Délais en ms
+    // dans typing.js, en secondes ici.
+    const step = (ch) => charDelay(ch, RNG) / 1000;
     function* typeNodes(c, el, nodes, finals, o = {}) {
-        const N = finals.reduce((a, s) => a + s.length, 0);
-        const k = clamp(70 / Math.max(1, N), 0.06, 1);
-        const step = (ch) =>
-            rand(0.012, 0.04) * k + (ch === " " ? rand(0, 0.03) : 0) + (RNG() < 0.025 ? rand(0.08, 0.2) : 0);
         for (let i = 0; i < nodes.length; i++) {
             const node = nodes[i];
             const full = finals[i];
@@ -422,7 +424,11 @@ export function startBuildIntro({
                 c.say("corrigé 😅", 1.6);
             } else {
                 const lead = full.match(/^\s*/)[0];
-                for (let j = lead.length + 1; j <= full.length; j++) { node.data = full.slice(0, j); yield* wait(step(full[j - 1])); }
+                const body = full.slice(lead.length);
+                for (const st of typingPlan(body, RNG)) {
+                    yield* wait(st.delay / 1000);
+                    node.data = lead + body.slice(0, st.upTo);
+                }
             }
         }
         c.caret = null;
