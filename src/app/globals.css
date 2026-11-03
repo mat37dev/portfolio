@@ -2,101 +2,140 @@
 @tailwind components;
 @tailwind utilities;
 
+/*
+ * Jetons jour / nuit (spec §4.2).
+ * Le thème nuit s'active par `html.dark` (bouton ThemeToggle, script anti-flash)
+ * ou par `html[data-bi-theme="dark"]` (posé par le moteur d'intro) ;
+ * `html[data-bi-theme="light"]` re-force le jour quoi qu'il arrive.
+ */
+:root {
+    --bg: #ffffff;
+    --bg2: #fbfcfe;
+    --card: #ffffff;
+    --ink: #161618;
+    --txt: #4b5563;
+    --mute: #6b7280;
+    --line: #e7ebf0;
+    --line2: #cfd6df;
+    --acc: #2f7cf6;
+    --acc-soft: #e6f0ff;
+    --glow: rgba(47, 124, 246, 0.35);
+    --shadow: rgba(22, 40, 70, 0.14);
+    --shadow2: rgba(22, 22, 24, 0.08);
+    --sky1: #e4eefa;
+    --sky2: #f3f7fd;
+    --sky3: #ffffff;
+    --sun1: rgba(255, 255, 255, 0.95);
+    --sun2: rgba(214, 230, 250, 0.55);
+    --r1a: #c9dbef;
+    --r1b: #f4f8fd;
+    --r2a: #b3c9e4;
+    --r2b: #f7fafd;
+    --r3a: #9bb6d8;
+    --r3b: #ffffff;
+    --r4: #ffffff;
+    --topo: #c9d7e8;
+    --topo2: #b3c4da;
+    --alt: #9fb0c6;
+    --flake: rgba(255, 255, 255, 0.98);
+    --flakeglow: rgba(120, 165, 225, 1);
+    --navbg: rgba(255, 255, 255, 0.82);
+    --inv: 0;
+    --ease: cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+:root.dark,
+:root[data-bi-theme="dark"] {
+    --bg: #0e131a;
+    --bg2: #111822;
+    --card: #151c26;
+    --ink: #f2f5f8;
+    --txt: #b6c0cb;
+    --mute: #8793a1;
+    --line: #243040;
+    --line2: #334257;
+    --acc: #6f97ff;
+    --acc-soft: #1a2740;
+    --glow: rgba(111, 151, 255, 0.35);
+    --shadow: rgba(0, 0, 0, 0.5);
+    --shadow2: rgba(0, 0, 0, 0.35);
+    --sky1: #0b1a2e;
+    --sky2: #0d1521;
+    --sky3: #0e131a;
+    --sun1: rgba(170, 200, 255, 0.22);
+    --sun2: rgba(90, 130, 200, 0.1);
+    --r1a: #1b2a3f;
+    --r1b: #0f1826;
+    --r2a: #152233;
+    --r2b: #0f1621;
+    --r3a: #111b29;
+    --r3b: #0e131a;
+    --r4: #0e131a;
+    --topo: #1f2c3e;
+    --topo2: #2a3a50;
+    --alt: #4a5a70;
+    --flake: rgba(255, 255, 255, 0.95);
+    --flakeglow: rgba(180, 205, 255, 0.9);
+    --navbg: rgba(14, 19, 26, 0.8);
+    --inv: 1;
+}
+
+:root[data-bi-theme="light"] {
+    --bg: #ffffff;
+    --bg2: #fbfcfe;
+    --card: #ffffff;
+    --ink: #161618;
+    --txt: #4b5563;
+    --mute: #6b7280;
+    --line: #e7ebf0;
+    --line2: #cfd6df;
+    --acc: #2f7cf6;
+    --acc-soft: #e6f0ff;
+    --glow: rgba(47, 124, 246, 0.35);
+    --shadow: rgba(22, 40, 70, 0.14);
+    --shadow2: rgba(22, 22, 24, 0.08);
+    --sky1: #e4eefa;
+    --sky2: #f3f7fd;
+    --sky3: #ffffff;
+    --sun1: rgba(255, 255, 255, 0.95);
+    --sun2: rgba(214, 230, 250, 0.55);
+    --r1a: #c9dbef;
+    --r1b: #f4f8fd;
+    --r2a: #b3c9e4;
+    --r2b: #f7fafd;
+    --r3a: #9bb6d8;
+    --r3b: #ffffff;
+    --r4: #ffffff;
+    --topo: #c9d7e8;
+    --topo2: #b3c4da;
+    --alt: #9fb0c6;
+    --flake: rgba(255, 255, 255, 0.98);
+    --flakeglow: rgba(120, 165, 225, 1);
+    --navbg: rgba(255, 255, 255, 0.82);
+    --inv: 0;
+}
+
 html {
     scroll-behavior: smooth;
 }
 
-/*
- * Design tokens - refonte "montagne" (handoff Claude Design)
- * Thème clair par défaut, variante sombre via la classe .dark sur <html>
- * (posée par un script bloquant dans layout.js pour éviter le flash).
- */
-:root {
-    --snow: oklch(98% 0.004 235);
-    --snow-alt: oklch(99% 0.002 235);
-    --line: oklch(90% 0.008 235);
-    --line-soft: oklch(91% 0.006 235);
-    --ink: oklch(20% 0.014 235);
-    --body: oklch(38% 0.012 235);
-    --muted: oklch(52% 0.01 235);
-    --accent: oklch(50% 0.1 235);
-    --accent-dark: oklch(42% 0.1 235);
-    --accent-soft: oklch(92% 0.03 235);
-    --wood: oklch(50% 0.07 35);
-    --card: oklch(100% 0 0);
-    --header-bg: oklch(98% 0.004 235 / 0.92);
-    /* Texte fixe pour les éléments à fond anthracite permanent (CTA, contact, footer) -
-       ne doit PAS suivre --snow, qui elle s'inverse en thème sombre. */
-    --on-anthracite: oklch(98% 0.004 235);
-    /* Texte atténué sur fond anthracite permanent (footer) - --muted est calibré
-       pour un fond clair et devient illisible (contraste 3.3) sur l'anthracite en
-       thème clair. Cette valeur reprend le --muted du thème sombre (contraste 5.6). */
-    --muted-on-anthracite: oklch(65% 0.01 235);
-    /* Badges pleins avec texte blanc (icônes de catégorie Compétences) - figés sur les
-       teintes claires, sinon --accent/--wood s'éclaircissent en sombre et le texte blanc
-       perd tout contraste dessus. */
-    --chip-1: oklch(50% 0.1 235);
-    --chip-2: oklch(42% 0.1 235);
-    --chip-3: oklch(50% 0.07 35);
-    --anthracite: oklch(20% 0.014 235);
-    --anthracite-2: oklch(24% 0.012 235);
-    --anthracite-3: oklch(26% 0.014 235);
-    --anthracite-line: oklch(35% 0.012 235);
-    --ongoing: oklch(58% 0.12 150);
-    --ongoing-bg: oklch(90% 0.05 150);
-    --ongoing-text: oklch(35% 0.1 150);
-    --flake: oklch(78% 0.05 235);
-}
-
-:root.dark {
-    --snow: oklch(20% 0.014 235);
-    --snow-alt: oklch(23% 0.013 235);
-    --line: oklch(32% 0.014 235);
-    --line-soft: oklch(30% 0.013 235);
-    --ink: oklch(96% 0.004 235);
-    --body: oklch(82% 0.008 235);
-    --muted: oklch(65% 0.01 235);
-    --accent: oklch(68% 0.09 235);
-    --accent-dark: oklch(76% 0.08 235);
-    --accent-soft: oklch(32% 0.05 235);
-    --wood: oklch(62% 0.07 35);
-    --card: oklch(24% 0.013 235);
-    --header-bg: oklch(20% 0.014 235 / 0.85);
-    --flake: oklch(85% 0.04 235);
-}
-
 body {
-    color: var(--body);
-    background: var(--snow);
+    margin: 0;
+    background: var(--bg);
+    color: var(--txt);
+    font-family: var(--font-sans), system-ui, sans-serif;
+    font-size: 16px;
+    line-height: 1.6;
+    transition: background 0.4s, color 0.4s;
 }
 
-/* Ancres : compenser le header sticky */
+/* Ancres : compenser la nav flottante */
 section[id] {
-    scroll-margin-top: 88px;
-}
-
-/* Neige ambiante - les flocons traversent tout le viewport (unités vh) */
-@keyframes flakeFall {
-    0% {
-        transform: translate3d(0, -12vh, 0);
-    }
-    100% {
-        transform: translate3d(20px, 112vh, 0);
-    }
-}
-
-.snowflake {
-    position: absolute;
-    border-radius: 50%;
-    background: var(--flake);
-    box-shadow: 0 0 5px oklch(78% 0.05 235 / 0.7);
-    opacity: 0.9;
-    will-change: transform;
-    animation: flakeFall linear infinite;
+    scroll-margin-top: 90px;
 }
 
 @media (prefers-reduced-motion: reduce) {
-    .snowflake {
-        display: none;
+    html {
+        scroll-behavior: auto;
     }
 }

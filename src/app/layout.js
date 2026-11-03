@@ -1,4 +1,4 @@
-import { Manrope, IBM_Plex_Sans } from "next/font/google";
+import { DM_Serif_Display, Inter, JetBrains_Mono } from "next/font/google";
 import "./globals.css";
 import Navbar from "@/app/components/Header";
 import Footer from "@/app/components/Footer";
@@ -18,18 +18,25 @@ const themeInitScript = `
 })();
 `;
 
-const manrope = Manrope({
-    variable: "--font-manrope",
+const serif = DM_Serif_Display({
+    variable: "--font-serif",
     subsets: ["latin"],
     display: "swap",
-    weight: ["500", "600", "700", "800"],
+    weight: "400",
 });
 
-const plexSans = IBM_Plex_Sans({
-    variable: "--font-plex",
+const sans = Inter({
+    variable: "--font-sans",
     subsets: ["latin"],
     display: "swap",
-    weight: ["400", "500", "600"],
+    weight: ["400", "500", "600", "700"],
+});
+
+const mono = JetBrains_Mono({
+    variable: "--font-mono",
+    subsets: ["latin"],
+    display: "swap",
+    weight: ["400", "500"],
 });
 
 export const metadata = {
@@ -85,7 +92,7 @@ export default function RootLayout({ children }) {
                     dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
                 />
             </head>
-            <body className={`${manrope.variable} ${plexSans.variable} antialiased bg-snow text-body font-sans leading-relaxed transition-colors duration-300`}>
+            <body className={`${serif.variable} ${sans.variable} ${mono.variable} antialiased font-sans`}>
                 <ScrollProgress />
                 <SnowEffect />
                 <div className="max-w-[1360px] mx-auto relative">
