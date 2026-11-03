@@ -85,6 +85,7 @@ const SHAPES = (c) => ({
     bucket: `<path d="M-1 -1l6-6 8 8-6 6z" fill="${c}" stroke="#fff" stroke-width="1.3" stroke-linejoin="round"/><path d="M-1 -1l-4 4" stroke="#fff" stroke-width="3" stroke-linecap="round"/><path d="M-1 -1l-4 4" stroke="${c}" stroke-width="1.5" stroke-linecap="round"/><path d="M12 6c2.5 3 2.5 5.5 0 7.5c-2.5-2-2.5-4.5 0-7.5z" fill="${c}" stroke="#fff" stroke-width=".8"/>`,
     comment: `<path d="M0 0l2-6h11a3 3 0 0 1 3 3v6a3 3 0 0 1-3 3H6z" fill="${c}" stroke="#fff" stroke-width="1.3" stroke-linejoin="round"/><circle cx="7" cy="1.5" r="1" fill="#fff"/><circle cx="10.5" cy="1.5" r="1" fill="#fff"/><circle cx="14" cy="1.5" r="1" fill="#fff"/>`,
     hand: `<path d="M0 0l2 10 3-2 3 7 3-1-3-7 4-.5z" fill="${c}" stroke="#fff" stroke-width="1.3" stroke-linejoin="round"/>`,
+    rotate: `<path d="M-8 -2a8 8 0 1 1 4 7" fill="none" stroke="#fff" stroke-width="4.5" stroke-linecap="round"/><path d="M-8 -2a8 8 0 1 1 4 7" fill="none" stroke="${c}" stroke-width="1.8" stroke-linecap="round"/><path d="M-11 -5l3 3 3-3" fill="none" stroke="#fff" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/><path d="M-11 -5l3 3 3-3" fill="none" stroke="${c}" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>`,
 });
 
 class Cursor {
@@ -115,7 +116,7 @@ class Cursor {
             x: 0, y: 0, vx: 0, vy: 0, angle: 0, press: 0, shape: "arrow",
             path: null, gen: null, task: null, drag: null, sel: null, pen: null,
             chip: null, prog: null, pop: null, key: null, flash: null, gdrag: null,
-            caret: null, msgT: 0,
+            caret: null, msgT: 0, rot: null, hold: false,
         });
         this.el.classList.remove("bi-talk");
     }
@@ -172,9 +173,12 @@ export function startBuildIntro({
     hud.innerHTML =
         `<span class="bi-pill" data-r="status">3 curseurs</span>` +
         `<button type="button" class="bi-pill bi-btn bi-golive" data-r="golive">🚀 Mettre en ligne</button>` +
+        `<span class="bi-pill bi-deploy" data-r="deploy"><i></i><span data-r="dtxt">Build…</span></span>` +
         `<button type="button" class="bi-pill bi-btn" data-r="skip">Passer l'intro<span class="bi-hint"><kbd>clic</kbd><kbd>Espace</kbd><kbd>Échap</kbd></span></button>`;
     const status = hud.querySelector('[data-r="status"]');
     const golive = hud.querySelector('[data-r="golive"]');
+    const deploy = hud.querySelector('[data-r="deploy"]');
+    const deployTxt = hud.querySelector('[data-r="dtxt"]');
     const skipBtn = hud.querySelector('[data-r="skip"]');
     const replayBtn = document.createElement("button");
     replayBtn.type = "button";
@@ -317,6 +321,11 @@ export function startBuildIntro({
         let n = 0;
         while (n < t) n += yield;
     }
+    // Attente en temps réel, indépendante du tempo (barre de déploiement).
+    function* realWait(t) {
+        const until = performance.now() + t * 1000;
+        while (performance.now() < until) yield;
+    }
     // Déplacement (spec §5.3) : arc à faible courbure, arrivée freinée, puis
     // micro-correction de 2–3 px en 150 ms vers la cible exacte (sauf drag).
     function* moveTo(c, target, o = {}) {
@@ -432,8 +441,57 @@ export function startBuildIntro({
             yield* wait(0.12);
         },
         *title(c, t) { yield* jobs.type(c, t); },
-        *rotate(c, t) { yield* wait(0.3); saveStyle(t.el); t.el.style.setProperty("--r", `${t.angle}deg`); },
-        *toggle(c, t) { yield* wait(0.3); if (t.hero) delTok(t.hero, "nosnow"); },
+        // Rotation par poignée : le curseur attrape un point au-dessus de la carte
+        // et décrit un arc ; la carte suit (--r), un badge affiche l'angle.
+        *rotate(c, t) {
+            const el = t.el;
+            c.shape = "rotate";
+            const center = () => ptW(el, 0.5, 0.5);
+            const radius = () => rectW(el).h / 2 + 28;
+            const handleAt = (deg) => {
+                const o = center();
+                const a = (deg * Math.PI) / 180;
+                return { x: o.x + Math.sin(a) * radius(), y: o.y - Math.cos(a) * radius() };
+            };
+            saveStyle(el);
+            const from = parseFloat(el.style.getPropertyValue("--r")) || 0;
+            yield* moveTo(c, () => handleAt(from));
+            yield* click(c);
+            c.rot = { el, angle: from };
+            yield* wait(0.1);
+            el.style.transition = "none";
+            c.hold = true;
+            let k = 0;
+            while (k < 1) {
+                k = Math.min(1, k + (yield) / 0.7);
+                const a = from + (t.angle - from) * easeInOut(k);
+                el.style.setProperty("--r", `${a.toFixed(2)}deg`);
+                c.rot.angle = a;
+                const p = handleAt(a);
+                c.x = p.x;
+                c.y = p.y;
+            }
+            el.style.setProperty("--r", `${t.angle}deg`);
+            c.hold = false;
+            c.press = 1;
+            yield* wait(0.25);
+            c.rot = null;
+            el.style.transition = "";
+            c.shape = "arrow";
+            yield* wait(0.1);
+        },
+        // Interrupteur neige : clic animé sur le vrai bouton, sans déclencher React.
+        *toggle(c, t) {
+            const el = t.el;
+            yield* moveTo(c, () => ptW(el, 0.5, 0.5));
+            yield* click(c);
+            addTok(el, "pressed");
+            yield* wait(0.15);
+            delTok(el, "pressed");
+            if (t.hero) delTok(t.hero, "nosnow");
+            c.say("et la neige ❄️", 1.8);
+            yield* wait(0.3);
+        },
         *dup(c, t) { yield* dupJob(c, t, false); },
         *dupoops(c, t) { yield* dupJob(c, t, true); },
         *edit(c, t) {
@@ -475,7 +533,7 @@ export function startBuildIntro({
         *paint(c, t) {
             const sec = t.el;
             c.shape = "bucket";
-            if (!said.paint) { said.paint = true; c.say("un peu de contraste 🪣", 2); }
+            if (!said.paint) { said.paint = true; c.say("le ciel d'abord 🪣", 2); }
             yield* moveTo(c, () => inView(ptW(sec, 0.12, 0.2)));
             yield* click(c);
             const r = rectW(sec);
@@ -615,6 +673,16 @@ export function startBuildIntro({
             golive.classList.remove("bi-pressed");
             golive.textContent = "✓ En ligne";
             tasks.filter((t) => t.final).forEach((t) => { t.state = "done"; log(`task:${t.kind}:`); });
+            deploy.style.display = "inline-flex";
+            deploy.classList.add("bi-building");
+            deploy.classList.remove("bi-deployed");
+            deployTxt.textContent = "Build…";
+            yield* realWait(1.2);
+            deploy.classList.remove("bi-building");
+            deploy.classList.add("bi-deployed");
+            deployTxt.textContent = "Déployé ✓";
+            log("deployed");
+            yield* realWait(0.8);
             live = true;
             guides = [];
             comments = [];
@@ -657,6 +725,9 @@ export function startBuildIntro({
             c.x = x;
             c.y = y;
             if (p.t >= 1) { c.path = null; c.vx *= 0.1; c.vy *= 0.1; }
+        } else if (c.hold) {
+            c.vx = 0;
+            c.vy = 0;
         } else {
             const h = home(c);
             const R = IDLE.radius * (1 + 0.18 * Math.sin(time * 0.55));
@@ -824,6 +895,12 @@ export function startBuildIntro({
                     `</g>`;
             }
             if (c.key) s += keycap(c.x + 16, c.y - 32, c.key, c.color);
+            if (c.rot) {
+                const r = rectW(c.rot.el);
+                s += lineS(r.x + r.w / 2, r.y + r.h / 2, c.x, c.y, c.color, 1.2) +
+                    `<circle cx="${c.x}" cy="${c.y}" r="5" fill="#fff" stroke="${c.color}" stroke-width="1.5"/>` +
+                    badge(c.x + 12, c.y - 26, `${Math.round(c.rot.angle)}°`, c.color);
+            }
         }
         for (const pin of comments) {
             pin.k = Math.min(1, pin.k + dt * 4);
@@ -1008,6 +1085,7 @@ export function startBuildIntro({
         rul.classList.remove("bi-fadeout", "bi-in");
         golive.style.display = "none";
         golive.textContent = "🚀 Mettre en ligne";
+        deploy.style.display = "none";
         skipBtn.style.display = "";
         mount();
         requestAnimationFrame(() => rul.classList.add("bi-in"));
