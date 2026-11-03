@@ -1412,6 +1412,9 @@ export function startBuildIntro({
     function destroy() {
         destroyed = true;
         cancelAnimationFrame(raf);
+        cancelAnimationFrame(skierRaf);
+        skierRaf = 0;
+        for (const el of document.querySelectorAll(".bi-skier, .bi-skier-trail")) el.remove();
         if (running) { running = false; listen(false); }
         restoreDom();
         unmountOverlay();
@@ -1443,5 +1446,72 @@ export function startBuildIntro({
         document.body.appendChild(replayBtn);
     }
 
-    return { play, skip: () => finish(true), destroy };
+    // ---------- skieur (déclencheur caché « ski ») ----------
+    // Descend la crête avant du hero de gauche à droite en 3 s, trace pointillée,
+    // puis disparaît. Indépendant de la boucle de l'intro ; relançable.
+    let skierRaf = 0;
+    function runSkier() {
+        if (skierRaf || destroyed) return;
+        const poly = document.querySelector('[data-intro="ridge-3"]');
+        const ridgeSvg = poly && poly.closest("svg");
+        if (!poly || !ridgeSvg || !isVisible(ridgeSvg)) return;
+        const r = rectW(ridgeSvg);
+        const pts = poly.getAttribute("points").trim().split(/\s+/).map((p) => p.split(",").map(Number))
+            .filter(([, y]) => y < 400)
+            .map(([x, y]) => ({ x: r.x + (x / 1440) * r.w, y: r.y + (y / 400) * r.h - 6 }));
+        if (pts.length < 2) return;
+        const seg = [];
+        let total = 0;
+        for (let i = 1; i < pts.length; i++) { const d = Math.hypot(pts[i].x - pts[i - 1].x, pts[i].y - pts[i - 1].y); seg.push(d); total += d; }
+        const at = (k) => {
+            let d = k * total;
+            for (let i = 0; i < seg.length; i++) {
+                if (d <= seg[i] || i === seg.length - 1) {
+                    const u = seg[i] ? Math.min(1, d / seg[i]) : 1;
+                    const a = pts[i];
+                    const b = pts[i + 1];
+                    return { x: a.x + (b.x - a.x) * u, y: a.y + (b.y - a.y) * u, ang: Math.atan2(b.y - a.y, b.x - a.x) };
+                }
+                d -= seg[i];
+            }
+            return { ...pts[pts.length - 1], ang: 0 };
+        };
+        const mounted = world.isConnected;
+        if (!mounted) { world.style.height = `${document.documentElement.scrollHeight}px`; document.body.appendChild(world); }
+        const layer = document.createElementNS(SVGNS, "svg");
+        layer.setAttribute("class", "bi-skier-trail");
+        const trail = document.createElementNS(SVGNS, "polyline");
+        trail.setAttribute("fill", "none");
+        trail.setAttribute("stroke", ACC);
+        trail.setAttribute("stroke-width", "1.5");
+        trail.setAttribute("stroke-dasharray", "3 5");
+        layer.appendChild(trail);
+        const skier = document.createElement("div");
+        skier.className = "bi-skier";
+        skier.innerHTML = `<svg width="30" height="30" viewBox="-15 -15 30 30"><g stroke="#fff" stroke-width="4" stroke-linecap="round" fill="none"><path d="M-9 8l18-6"/><path d="M-2 -3l4 5 3 5M-2 -3l-5 2M-2 -3l6-2"/></g><g stroke="${ACC}" stroke-width="1.8" stroke-linecap="round" fill="none"><path d="M-9 8l18-6"/><path d="M-2 -3l4 5 3 5M-2 -3l-5 2M-2 -3l6-2"/></g><circle cx="-1" cy="-9" r="3" fill="${ACC}" stroke="#fff" stroke-width="1.2"/></svg>`;
+        world.append(layer, skier);
+        const t0 = performance.now();
+        const DUR = 3000;
+        const done = () => {
+            cancelAnimationFrame(skierRaf);
+            skierRaf = 0;
+            skier.remove();
+            layer.remove();
+            if (!mounted && !running) world.remove();
+        };
+        const step = (now) => {
+            const k = Math.min(1, (now - t0) / DUR);
+            const p = at(k);
+            skier.style.transform = `translate(${p.x.toFixed(1)}px,${p.y.toFixed(1)}px) rotate(${(p.ang * 0.6).toFixed(3)}rad)`;
+            skier.style.opacity = k > 0.92 ? String((1 - k) / 0.08) : "1";
+            const tp = [];
+            for (let i = 0; i <= 40; i++) { const q = at((k * i) / 40); tp.push(`${q.x.toFixed(1)},${(q.y + 10).toFixed(1)}`); }
+            trail.setAttribute("points", tp.join(" "));
+            if (k < 1) skierRaf = requestAnimationFrame(step);
+            else setTimeout(done, 400);
+        };
+        skierRaf = requestAnimationFrame(step);
+    }
+
+    return { play, skip: () => finish(true), destroy, runSkier };
 }

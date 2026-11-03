@@ -4,6 +4,7 @@ import { startBuildIntro } from "./engine";
 import { shouldAutoplay } from "./gating";
 import { readParams } from "./params";
 import { createRng } from "./rng";
+import { installSecrets, logBanner } from "./secrets";
 import "./intro.css";
 
 const sessionSeen = () => {
@@ -40,7 +41,12 @@ export default function BuildIntro() {
                 } catch {}
             },
         });
-        return () => intro.destroy();
+        logBanner();
+        const uninstall = installSecrets({ onSki: () => intro.runSkier() });
+        return () => {
+            uninstall();
+            intro.destroy();
+        };
     }, []);
     return null;
 }
