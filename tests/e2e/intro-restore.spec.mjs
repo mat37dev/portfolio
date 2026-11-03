@@ -20,15 +20,18 @@ const snapshot = (page) =>
       .replace(/ style="--px:[^"]*"/g, ''),
   );
 
-test('intro complète : DOM identique', async ({ page }) => {
-  await page.goto('/?intro=0');
-  const ref = await snapshot(page);
-  await page.goto('/?intro=fast&seed=2');
-  await expect(page.locator('.bi-replay')).toBeVisible({ timeout: 60000 });
-  expect(await snapshot(page)).toBe(ref);
-  await expect(page.locator('html')).toHaveClass(/bi-done/);
-  await expect(page.locator('html')).not.toHaveClass(/bi-live/);
-});
+for (const egg of ['none', 'copine', 'theme', 'prod']) {
+  test(`intro complète (egg=${egg}) : DOM identique`, async ({ page }) => {
+    await page.goto('/?intro=0');
+    const ref = await snapshot(page);
+    await page.goto(`/?intro=fast&seed=2&egg=${egg}`);
+    await expect(page.locator('.bi-replay')).toBeVisible({ timeout: 60000 });
+    expect(await snapshot(page)).toBe(ref);
+    await expect(page.locator('html')).toHaveClass(/bi-done/);
+    await expect(page.locator('html')).not.toHaveClass(/bi-live/);
+    await expect(page.locator('html')).not.toHaveAttribute('data-bi-theme', /.*/);
+  });
+}
 
 for (const ms of [2000, 6000]) {
   test(`skip à ${ms} ms : DOM identique et bi-skipped`, async ({ page }) => {

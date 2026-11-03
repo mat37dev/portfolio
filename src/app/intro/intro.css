@@ -150,6 +150,8 @@ html.bi-live .stage .c {
     position: absolute;
     left: 0;
     top: 0;
+    width: 1px;
+    height: 1px;
     opacity: 0;
     transition: opacity 0.4s;
     will-change: transform;
@@ -171,7 +173,7 @@ html.bi-live .stage .c {
     left: 12px;
     top: 13px;
     white-space: nowrap;
-    font-size: 12px;
+    font-size: calc(12px * var(--scale, 1));
     font-weight: 600;
     color: #fff;
     padding: 2px 8px;

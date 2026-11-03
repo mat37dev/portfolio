@@ -53,7 +53,11 @@ export function buildPlan(root, helpers, options = {}) {
             const sh = T({ kind: "shrink", el: h1, deps: [cm] });
             T({ kind: "resolve", el: h1, comment: cm, deps: [sh] });
         }
-        type(g("lead", hero));
+        const tl = type(g("lead", hero));
+        if (tl && options.egg === "console") {
+            const e1 = T({ kind: "egg-console", el: tl.el, deps: [tl] });
+            T({ kind: "egg-console-fix", el: tl.el, deps: [e1] });
+        }
 
         const ctaContact = g("cta-contact", hero);
         const b0 = box(ctaContact);
@@ -68,9 +72,10 @@ export function buildPlan(root, helpers, options = {}) {
             if (b1) T({ kind: "resolve", el: ctaCv, comment: cm, deps: [b1] });
         }
         type(g("cta-projects", hero));
-        dupGroup(qa(":scope > span", g("checks", hero)), { edit: true });
+        dupGroup(qa(":scope > span", g("checks", hero)));
 
         // Scène : trois cartes posées, images déposées, cartes latérales tournées.
+        const heroTail = [];
         const stage = g("stage", hero);
         if (stage) {
             const cards = [
@@ -83,15 +88,18 @@ export function buildPlan(root, helpers, options = {}) {
                 if (!c.el || !isVisible(c.el)) continue;
                 const b = box(c.el);
                 const im = image(q("img", c.el), [b]);
+                if (c.angle === 0 && options.egg === "copine") T({ kind: "egg-copine", el: c.el, deps: [im || b] });
                 if (c.angle > 0 && has("tilted-card")) {
                     const r1 = T({ kind: "rotate", el: c.el, angle: 18, mistake: "tilted-card", deps: [im || b] });
                     T({ kind: "rotate", el: c.el, angle: c.angle, fixOf: "tilted-card", deps: [r1] });
                 } else if (c.angle) T({ kind: "rotate", el: c.el, angle: c.angle, deps: [im || b] });
             }
-            dupGroup([g("tag-1", stage), g("tag-2", stage), g("tag-3", stage)], { edit: true });
+            heroTail.push(...dupGroup([g("tag-1", stage), g("tag-2", stage), g("tag-3", stage)]));
         }
         const snowBtn = g("snow-toggle");
-        if (snowEnabled && snowBtn && isVisible(snowBtn)) T({ kind: "toggle", el: snowBtn, hero, deps: [] });
+        if (snowEnabled && snowBtn && isVisible(snowBtn)) heroTail.push(T({ kind: "toggle", el: snowBtn, hero, deps: [] }));
+        const themeBtn = g("theme-toggle");
+        if (options.egg === "theme" && themeBtn && isVisible(themeBtn)) T({ kind: "egg-theme", el: themeBtn, deps: heroTail.filter(Boolean) });
     }
 
     // ---------- projets ----------
@@ -100,7 +108,7 @@ export function buildPlan(root, helpers, options = {}) {
         type(g("projets-eyebrow", proj));
         const t0 = title(g("projets-h2", proj));
         type(g("projets-sub", proj), { deps: [t0] });
-        dupGroup(qa("button", g("filters", proj)), { edit: true, deps: [t0] });
+        dupGroup(qa("button", g("filters", proj)), { deps: [t0] });
         const feat = g("featured", proj);
         if (feat) {
             const fb = box(feat, [t0]);
@@ -115,11 +123,13 @@ export function buildPlan(root, helpers, options = {}) {
         const ts = dupGroup(cards, { edit: "h3" });
         cards.forEach((card, i) => {
             const img = q("img", card);
+            let it;
             if (i === 1 && has("wrong-image") && cards[0]) {
                 const other = q("img", cards[0]);
-                const it = image(img, [ts[i]], { wrong: other });
-                if (it) T({ kind: "fix-image", el: img, file: it.file, deps: [it] });
-            } else image(img, [ts[i]]);
+                it = image(img, [ts[i]], { wrong: other });
+                if (it) it = T({ kind: "fix-image", el: img, file: it.file, deps: [it] });
+            } else it = image(img, [ts[i]]);
+            if (options.egg === "prod" && card.dataset.category === "DevOps") T({ kind: "egg-prod", el: card, deps: [it || ts[i]] });
         });
     }
 
@@ -130,7 +140,7 @@ export function buildPlan(root, helpers, options = {}) {
         const t0 = title(g("parcours-h2", parcours), [], { caps: has("caps") });
         type(g("parcours-sub", parcours), { deps: [t0] });
         dupGroup(ga("cell", parcours), { edit: "h3", deps: [t0], oops: has("misaligned") ? 2 : undefined });
-        dupGroup(ga("edu", parcours), { edit: "b", deps: [t0] });
+        dupGroup(ga("edu", parcours), { deps: [t0] });
     }
 
     // ---------- compétences ----------
@@ -153,7 +163,7 @@ export function buildPlan(root, helpers, options = {}) {
         const form = g("contact-form", contact);
         const fb = box(form, [t0]);
         qa("input, button", form).forEach((el) => box(el, [fb]));
-        dupGroup(qa(":scope > span", g("contact-checks", contact)), { edit: true, deps: [t0] });
+        dupGroup(qa(":scope > span", g("contact-checks", contact)), { deps: [t0] });
         type(q(".alt2", contact), { deps: [t0] });
     }
 
@@ -161,7 +171,9 @@ export function buildPlan(root, helpers, options = {}) {
     const footer = g("footer");
     if (footer) {
         const fb = box(footer);
-        type(q(".footer-brand", footer), { deps: [fb] });
+        const ft = type(q(".footer-brand", footer), { deps: [fb] });
+        const cv = g("cta-cv");
+        if (options.egg === "recruiter" && cv) T({ kind: "egg-recruiter", el: cv, deps: [ft || fb] });
     }
 
     // ---------- mise en ligne ----------

@@ -20,6 +20,7 @@ import { bendFor, settleOffset, preClickPause, dragSpeed, approachEase, IDLE } f
 import { buildPlan as buildPlanSections } from "./plan.js";
 import { pickMistakes } from "./mistakes.js";
 import { line, lines } from "./dialogue.js";
+import { pickEgg } from "./eggs.js";
 
 const ACC = "#2f7cf6";
 const WOOD = "oklch(50% 0.07 35)";
@@ -88,11 +89,13 @@ const SHAPES = (c) => ({
     comment: `<path d="M0 0l2-6h11a3 3 0 0 1 3 3v6a3 3 0 0 1-3 3H6z" fill="${c}" stroke="#fff" stroke-width="1.3" stroke-linejoin="round"/><circle cx="7" cy="1.5" r="1" fill="#fff"/><circle cx="10.5" cy="1.5" r="1" fill="#fff"/><circle cx="14" cy="1.5" r="1" fill="#fff"/>`,
     hand: `<path d="M0 0l2 10 3-2 3 7 3-1-3-7 4-.5z" fill="${c}" stroke="#fff" stroke-width="1.3" stroke-linejoin="round"/>`,
     rotate: `<path d="M-8 -2a8 8 0 1 1 4 7" fill="none" stroke="#fff" stroke-width="4.5" stroke-linecap="round"/><path d="M-8 -2a8 8 0 1 1 4 7" fill="none" stroke="${c}" stroke-width="1.8" stroke-linecap="round"/><path d="M-11 -5l3 3 3-3" fill="none" stroke="#fff" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/><path d="M-11 -5l3 3 3-3" fill="none" stroke="${c}" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>`,
+    robot: `<rect x="-9" y="-9" width="18" height="16" rx="4" fill="${c}" stroke="#fff" stroke-width="1.4"/><circle cx="-4" cy="-2" r="2" fill="#fff"/><circle cx="4" cy="-2" r="2" fill="#fff"/><path d="M-4 4h8" stroke="#fff" stroke-width="1.6" stroke-linecap="round"/><path d="M0 -9v-4" stroke="${c}" stroke-width="2"/><circle cx="0" cy="-14" r="1.8" fill="${c}" stroke="#fff" stroke-width="1"/>`,
+    tie: `<path d="M0 0L13 7.5L7.5 9L4.3 15.5Z" fill="${c}" stroke="#fff" stroke-width="1.4" stroke-linejoin="round"/><path d="M12 10l3-2 3 2-2 4 2 6-3 2-3-2 2-6z" fill="#c2410c" stroke="#fff" stroke-width="1"/>`,
 });
 
 class Cursor {
-    constructor(layer, name, color, skills, short) {
-        Object.assign(this, { name, color, skills, short });
+    constructor(layer, name, color, skills, short, { scale = 1 } = {}) {
+        Object.assign(this, { name, color, skills, short, scale });
         const fast = RNG() < 0.25;
         this.speed = fast ? rand(1000, 1500) : rand(300, 750);
         this.force = fast ? rand(3500, 6000) : rand(700, 1800);
@@ -101,6 +104,8 @@ class Cursor {
         const sh = SHAPES(color);
         this.el = document.createElement("div");
         this.el.className = "bi-cur";
+        this.el.dataset.name = name;
+        this.el.style.setProperty("--scale", String(scale));
         this.el.innerHTML =
             `<svg width="28" height="28" viewBox="-14 -14 28 28">${Object.keys(sh)
                 .map((k) => `<g data-s="${k}">${sh[k]}</g>`)
@@ -129,7 +134,7 @@ class Cursor {
     }
     render(dt) {
         this.el.style.transform = `translate(${this.x.toFixed(1)}px,${this.y.toFixed(1)}px)`;
-        this.svg.style.transform = `rotate(${this.angle}rad) scale(${1 - this.press * 0.12})`;
+        this.svg.style.transform = `rotate(${this.angle}rad) scale(${(1 - this.press * 0.12) * this.scale})`;
         if (this._shape !== this.shape) {
             for (const g of this.groups) g.style.display = g.dataset.s === this.shape ? "" : "none";
             this._shape = this.shape;
@@ -187,9 +192,9 @@ export function startBuildIntro({
     replayBtn.className = "bi-pill bi-btn bi-replay";
     replayBtn.textContent = "↻ Rejouer l'intro";
 
-    const M = new Cursor(world, "Mathieu Crosnier", ACC, ["box", "dup", "fix", "resolve"], "M");
-    const D = new Cursor(world, "Design", WOOD, ["guide", "paint", "line", "image", "color", "comment", "title", "rotate", "toggle", "shrink"], "D");
-    const S = new Cursor(world, "Stagiaire", VIOLET, ["type", "edit", "dupoops", "fix-image"], "S");
+    const M = new Cursor(world, "Mathieu Crosnier", ACC, ["box", "dup", "fix", "resolve", "egg-copine", "egg-prod", "egg-console-fix", "egg-recruiter"], "M");
+    const D = new Cursor(world, "Design", WOOD, ["guide", "paint", "line", "image", "color", "comment", "title", "rotate", "toggle", "shrink", "egg-theme"], "D");
+    const S = new Cursor(world, "Stagiaire", VIOLET, ["type", "edit", "dupoops", "fix-image", "egg-console"], "S");
     const cursors = [M, D, S];
 
     // ---------- état restaurable ----------
@@ -230,6 +235,9 @@ export function startBuildIntro({
     let comments = [];
     let oops = new Map();
     let wrongs = new Map(); // img -> src de la mauvaise couverture (overlay)
+    let toast = null; // panne en prod : { el, text, state }
+    let chips = []; // console.log posés dans l'overlay
+    let eggId = "none";
     let said = {};
 
     function buildPlan() {
@@ -289,6 +297,7 @@ export function startBuildIntro({
         buildPlanSections(document, { T, box, type, title, image, dupGroup, q, qa, rectW, isVisible, textNodesOf }, {
             snowEnabled: document.documentElement.dataset.snow !== "off",
             mistakes: pickMistakes(RNG, mistakes),
+            egg: eggId,
             line: (key) => line(RNG, key),
         });
 
@@ -331,7 +340,10 @@ export function startBuildIntro({
         tasks.find((t) => t.state === "wait" && !t.final && c.skills.includes(t.kind) && t.deps.every((d) => d.state === "done") && unlocked(t));
     const doneRatio = () => (tasks.length ? tasks.filter((t) => t.state === "done").length / tasks.length : 0);
     const built = () => tasks.every((t) => t.final || t.state === "done");
-    const tempo = () => (1.35 + 1.35 * doneRatio()) * tempoScale;
+    // Tempo global : accélère au fil de l'avancement (spec §5.3) ; le facteur de
+    // base est calibré pour un passage complet de 35–50 s sur desktop.
+    const TEMPO_BASE = 3.2;
+    const tempo = () => TEMPO_BASE * (1 + doneRatio()) * tempoScale;
 
     // ---------- primitives (générateurs, yield renvoie un dt déjà accéléré) ----------
     function* wait(t) {
@@ -493,6 +505,151 @@ export function startBuildIntro({
         *["fix-image"](c, t) {
             c.say(line(RNG, "fix"), 1.5);
             yield* jobs.image(c, { ...t, wrong: null, fixing: true });
+        },
+        // ---- easter eggs ----
+        *["egg-copine"](c, t) {
+            const el = t.el;
+            log("egg:copine");
+            const g = guest("copine", "#ff5c8a", "c", { scale: 0.85 });
+            g.x = -40;
+            g.y = edgeY(el);
+            yield* moveTo(g, () => ptW(el, 0.5, 0.4));
+            yield* click(g);
+            g.shape = "hand";
+            saveStyle(el);
+            el.style.transition = "none";
+            g.hold = true;
+            let k = 0;
+            while (k < 1) {
+                k = Math.min(1, k + (yield) / 0.6);
+                const dx = -30 * easeOut(k);
+                el.style.setProperty("--px", `${dx.toFixed(1)}px`);
+                el.style.setProperty("--r", "0deg");
+                const p = ptW(el, 0.5, 0.4);
+                g.x = p.x;
+                g.y = p.y;
+            }
+            g.hold = false;
+            g.shape = "arrow";
+            g.press = 1;
+            yield* wait(0.3);
+            g.say("😍", 3);
+            yield* wait(1.4);
+            c.say("…", 1.2);
+            yield* wait(1.4);
+            c.say("bon.", 1.4);
+            yield* moveTo(g, () => ({ x: -60, y: g.y }), { speed: 0.9 });
+            dropGuest(g);
+            yield* moveTo(c, () => ptW(el, 0.5, 0.4));
+            yield* click(c);
+            c.shape = "hand";
+            c.hold = true;
+            k = 0;
+            while (k < 1) {
+                k = Math.min(1, k + (yield) / 0.5);
+                el.style.setProperty("--px", `${(-30 * (1 - easeOut(k))).toFixed(1)}px`);
+                const p = ptW(el, 0.5, 0.4);
+                c.x = p.x;
+                c.y = p.y;
+            }
+            el.style.setProperty("--px", "0px");
+            el.style.transition = "";
+            c.hold = false;
+            c.shape = "arrow";
+            c.press = 1;
+            yield* wait(0.2);
+        },
+        *["egg-prod"](c, t) {
+            const el = t.el;
+            log("egg:prod");
+            toast = { el, text: "500 — service indisponible", state: "down" };
+            yield* wait(0.8);
+            S.say("ah.", 1.6);
+            const g = guest("Resilience Alpha", GREEN, "R");
+            g.shape = "robot";
+            g.x = W() + 40;
+            g.y = edgeY(el);
+            yield* moveTo(g, () => { const r = rectW(el); return { x: r.x + r.w - 100, y: r.y + 24 }; });
+            yield* click(g);
+            toast.state = "fixing";
+            let k = 0;
+            while (k < 1) {
+                k = Math.min(1, k + (yield) / 1.8);
+                toast.text = `rétablissement… ${(k * 1.8).toFixed(1)} s`;
+            }
+            toast.state = "up";
+            toast.text = "rétabli en 1,8 s ✓";
+            D.say("c'est réparé ?", 1.8);
+            yield* wait(0.6);
+            c.say("automatique 😎", 2);
+            yield* wait(1.2);
+            toast = null;
+            yield* moveTo(g, () => ({ x: W() + 60, y: g.y }), { speed: 0.9 });
+            dropGuest(g);
+        },
+        *["egg-console"](c, t) {
+            const el = t.el;
+            log("egg:console");
+            yield* moveTo(c, () => ptW(el, 0.5, 1.2));
+            yield* click(c);
+            const p = ptW(el, 0.5, 1.15);
+            chips.push({ x: p.x - 80, y: p.y, text: "console.log('coucou')", sel: false });
+            c.say("pour tester 🙈", 1.6);
+            yield* wait(0.5);
+        },
+        *["egg-console-fix"](c, t) {
+            const chip = chips[chips.length - 1];
+            if (!chip) return;
+            yield* moveTo(c, () => ({ x: chip.x + 70, y: chip.y + 12 }));
+            yield* click(c);
+            chip.sel = true;
+            yield* wait(0.4);
+            c.key = "Suppr";
+            yield* wait(0.3);
+            chips = chips.filter((x) => x !== chip);
+            c.key = null;
+            c.say("on nettoie avant la prod 🙄", 2.2);
+            yield* wait(0.5);
+        },
+        *["egg-theme"](c, t) {
+            const btn = t.el;
+            log("egg:theme");
+            yield* moveTo(c, () => ptW(btn, 0.5, 0.5));
+            yield* click(c);
+            addTok(btn, "pressed");
+            yield* wait(0.15);
+            delTok(btn, "pressed");
+            const dark = root.classList.contains("dark");
+            root.dataset.biTheme = dark ? "light" : "dark";
+            yield* wait(0.6);
+            c.say("oups", 1.4);
+            yield* wait(1.5);
+            yield* click(c);
+            addTok(btn, "pressed");
+            yield* wait(0.15);
+            delTok(btn, "pressed");
+            root.removeAttribute("data-bi-theme");
+            yield* wait(0.3);
+        },
+        *["egg-recruiter"](c, t) {
+            const el = t.el;
+            log("egg:recruiter");
+            const g = guest("Recruteur", "#3b4453", "R");
+            g.shape = "tie";
+            g.x = W() + 40;
+            g.y = edgeY(el);
+            yield* moveTo(g, () => ptW(el, 0.5, 0.5));
+            yield* click(g);
+            addTok(el, "pressed");
+            g.dl = { el, k: 0 };
+            let k = 0;
+            while (k < 1) { k = Math.min(1, k + (yield) / 0.8); g.dl.k = k; }
+            delTok(el, "pressed");
+            g.dl = null;
+            g.say("merci 👍", 2);
+            yield* wait(1.5);
+            yield* moveTo(g, () => ({ x: W() + 60, y: g.y }), { speed: 0.9 });
+            dropGuest(g);
         },
         // Rotation par poignée : le curseur attrape un point au-dessus de la carte
         // et décrit un arc ; la carte suit (--r), un badge affiche l'angle.
@@ -737,6 +894,22 @@ export function startBuildIntro({
         yield* wait(0.05);
     }
 
+    // Curseurs invités (easter eggs) : ajoutés à l'overlay le temps d'une scène.
+    function guest(name, color, short, o = {}) {
+        const g = new Cursor(world, name, color, [], short, o);
+        g.render(0);
+        g.el.classList.add("bi-show");
+        cursors.push(g);
+        return g;
+    }
+    function dropGuest(g) {
+        const i = cursors.indexOf(g);
+        if (i > 2) cursors.splice(i, 1);
+        g.el.remove();
+    }
+    const dropGuests = () => { while (cursors.length > 3) dropGuest(cursors[cursors.length - 1]); };
+    const edgeY = (el) => clamp(ptW(el, 0.5, 0.5).y, ST() + 100, ST() + H() - 80);
+
     let live = false;
     let destroyed = false;
     function* finalJob(c, i) {
@@ -922,6 +1095,16 @@ export function startBuildIntro({
             s += lineS(g.x, 0, g.x, PH, RED, g.flash > 0 ? 2.2 : 1);
             if (g.flash > 0) s += `<line x1="${g.x}" y1="0" x2="${g.x}" y2="${PH}" stroke="${RED}" stroke-width="8" opacity="${(g.flash * 0.25).toFixed(2)}"/>`;
         }
+        if (toast) {
+            const r = rectW(toast.el);
+            const w = toast.text.length * 6.6 + 24;
+            const col = toast.state === "up" ? GREEN : RED;
+            s += `<g transform="translate(${r.x + r.w - w - 10},${r.y + 10})"><rect width="${w}" height="28" rx="8" fill="${col}"/><circle cx="12" cy="14" r="3.5" fill="#fff"/><text x="22" y="18" font-size="11.5" fill="#fff" font-weight="600" font-family="system-ui,sans-serif">${esc(toast.text)}</text></g>`;
+        }
+        for (const ch of chips) {
+            const w = ch.text.length * 6.9 + 22;
+            s += `<g transform="translate(${ch.x},${ch.y})"><rect width="${w}" height="24" rx="6" fill="#1e1e1e" stroke="${ch.sel ? RED : "#555"}" stroke-width="${ch.sel ? 2 : 1}"/><text x="11" y="16" font-size="11.5" fill="#9cdcfe" font-family="ui-monospace,monospace">${esc(ch.text)}</text></g>`;
+        }
         for (const [img, src] of wrongs) {
             const r = rectW(img);
             s += `<image href="${esc(src)}" x="${r.x}" y="${r.y}" width="${r.w}" height="${r.h}" preserveAspectRatio="xMidYMid slice"/>`;
@@ -980,6 +1163,11 @@ export function startBuildIntro({
                     `</g>`;
             }
             if (c.key) s += keycap(c.x + 16, c.y - 32, c.key, c.color);
+            if (c.dl) {
+                const r = rectW(c.dl.el);
+                const k = c.dl.k;
+                s += `<g transform="translate(${r.x + r.w / 2},${r.y - 18 + k * 14})" opacity="${(1 - k * 0.6).toFixed(2)}"><path d="M0 -8v12M-5 0l5 5 5-5" stroke="${c.color}" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></g>`;
+            }
             if (c.rot) {
                 const r = rectW(c.rot.el);
                 s += lineS(r.x + r.w / 2, r.y + r.h / 2, c.x, c.y, c.color, 1.2) +
@@ -1066,13 +1254,19 @@ export function startBuildIntro({
         while (scriptI < script.length && elapsed >= script[scriptI][0]) { script[scriptI][1].say(script[scriptI][2]); scriptI++; }
         if (phase === "build") {
             tour(dt);
+            // En mode rapide (tempoScale > 1) chaque générateur avance plusieurs
+            // fois par image : sinon chaque `yield` coûte au moins une image.
+            const sub = Math.max(1, Math.round(tempoScale));
             for (const c of cursors) {
-                if (!c.gen) {
-                    const t = pick(c);
-                    if (t) { t.state = "run"; c.task = t; c.gen = jobs[t.kind](c, t); }
-                }
-                if (c.gen) {
-                    const r = c.gen.next(dt * tempo());
+                for (let k = 0; k < sub; k++) {
+                    if (!c.gen) {
+                        const t = pick(c);
+                        if (!t) break;
+                        t.state = "run";
+                        c.task = t;
+                        c.gen = jobs[t.kind](c, t);
+                    }
+                    const r = c.gen.next((dt * tempo()) / sub);
                     if (r.done) { c.task.state = "done"; log(`task:${c.task.kind}:${(c.task.el && c.task.el.dataset && c.task.el.dataset.intro) || ""}`); c.task = null; c.gen = null; }
                 }
             }
@@ -1147,6 +1341,10 @@ export function startBuildIntro({
         }
         if (destroyed || running) return;
         restoreDom();
+        dropGuests();
+        eggId = pickEgg(RNG, egg);
+        toast = null;
+        chips = [];
         tasks = buildPlan();
         guides = [];
         comments = [];
@@ -1195,6 +1393,9 @@ export function startBuildIntro({
         comments = [];
         oops = new Map();
         wrongs = new Map();
+        toast = null;
+        chips = [];
+        dropGuests();
         for (const c of cursors) { c.reset(); c.el.classList.remove("bi-show"); }
         wov.innerHTML = "";
         lastOv = "";
@@ -1215,6 +1416,7 @@ export function startBuildIntro({
         restoreDom();
         unmountOverlay();
         replayBtn.remove();
+        dropGuests();
         cursors.forEach((c) => c.el.remove());
         root.classList.remove("bi-pending", "bi-live");
         if (debug && window.__intro && window.__intro.destroy === destroy) delete window.__intro;
@@ -1230,7 +1432,7 @@ export function startBuildIntro({
             timeline,
             elapsed: () => elapsed,
             seed,
-            egg,
+            egg: () => eggId,
             mistakes,
             destroy,
         };
