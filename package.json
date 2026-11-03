@@ -6,7 +6,10 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "test": "npm run test:unit && npm run test:e2e",
+    "test:unit": "node --test tests/unit/",
+    "test:e2e": "playwright test"
   },
   "dependencies": {
     "@vercel/analytics": "^2.0.1",
@@ -16,8 +19,9 @@
     "react-dom": "^19.0.0"
   },
   "devDependencies": {
-    "@next/bundle-analyzer": "^15.1.11",
     "@eslint/eslintrc": "^3",
+    "@next/bundle-analyzer": "^15.1.11",
+    "@playwright/test": "^1.64.1",
     "eslint": "^9",
     "eslint-config-next": "^15.1.11",
     "postcss": "^8",
