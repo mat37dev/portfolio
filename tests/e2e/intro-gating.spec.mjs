@@ -13,9 +13,10 @@ test('intro=0 : pas de HUD, page visible', async ({ page }) => {
 
 test('intro=fast : HUD présent, puis rejouer disponible', async ({ page }, info) => {
   test.skip(info.project.name !== 'desktop');
+  test.setTimeout(90000);
   await page.goto('/?intro=fast&seed=1');
   await expect(page.locator('.bi-hud')).toBeVisible();
-  await expect(page.locator('.bi-replay')).toBeVisible({ timeout: 30000 });
+  await expect(page.locator('.bi-replay')).toBeVisible({ timeout: 60000 });
   expect(await page.evaluate(() => sessionStorage.getItem('introSeen'))).toBe('1');
 });
 

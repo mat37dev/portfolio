@@ -17,6 +17,7 @@
 
 import { charDelay, typingPlan } from "./typing.js";
 import { bendFor, settleOffset, preClickPause, dragSpeed, approachEase, IDLE } from "./motion.js";
+import { buildPlan as buildPlanSections } from "./plan.js";
 
 const ACC = "oklch(50% 0.1 235)";
 const WOOD = "oklch(50% 0.07 35)";
@@ -154,7 +155,8 @@ export function startBuildIntro({
     const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     RNG = rng;
     const events = [];
-    const log = (e) => { if (debug) events.push(e); };
+    const timeline = [];
+    const log = (e) => { if (debug) { events.push(e); timeline.push([Number(elapsed.toFixed(2)), e]); } };
 
     // ---------- overlay ----------
     const world = document.createElement("div");
@@ -179,8 +181,8 @@ export function startBuildIntro({
     replayBtn.className = "bi-pill bi-btn bi-replay";
     replayBtn.textContent = "↻ Rejouer l'intro";
 
-    const M = new Cursor(world, "Mathieu Crosnier", ACC, ["box", "dup", "line", "fix", "resolve"], "M");
-    const D = new Cursor(world, "Design", WOOD, ["guide", "paint", "image", "color", "comment", "title"], "D");
+    const M = new Cursor(world, "Mathieu Crosnier", ACC, ["box", "dup", "fix", "resolve"], "M");
+    const D = new Cursor(world, "Design", WOOD, ["guide", "paint", "line", "image", "color", "comment", "title", "rotate", "toggle"], "D");
     const S = new Cursor(world, "Stagiaire", VIOLET, ["type", "edit", "dupoops"], "S");
     const cursors = [M, D, S];
 
@@ -263,99 +265,11 @@ export function startBuildIntro({
             return out;
         };
 
-        // En-tête
-        const header = q("body header");
-        box(header);
-
-        // Hero
-        const hero = q("#hero");
-        const h1 = q("h1", hero);
-        if (hero && h1) {
-            const heroGrid = q(":scope > div", hero);
-            T({ kind: "guide", el: hero, x: () => rectW(h1).x });
-            if (heroGrid) T({ kind: "guide", el: hero, x: () => { const r = rectW(heroGrid); return r.x + r.w; } });
-            type(h1.previousElementSibling, { typo: "Développeur Fullstak" });
-            type(h1, { grow: true });
-            type(h1.nextElementSibling);
-            type(h1.nextElementSibling && h1.nextElementSibling.nextElementSibling);
-            dupGroup(qa(":scope > span", q("h1 ~ div:nth-of-type(1)", hero)), { edit: true });
-            const btns = qa(":scope > a", q("h1 ~ div:nth-of-type(2)", hero));
-            const b0 = box(btns[0]);
-            if (b0) T({ kind: "color", el: btns[0], deps: [b0] });
-            if (btns[1]) {
-                const cm = T({ kind: "comment", el: btns[1], text: "Et le CV ? 📄", deps: b0 ? [b0] : [] });
-                const b1 = box(btns[1], [cm]);
-                if (b1) T({ kind: "resolve", el: btns[1], comment: cm, deps: [b1] });
-            }
-            const avatar = q("img", hero);
-            const ab = box(avatar);
-            image(avatar, [ab]);
-            const ridge = q(":scope > svg", hero);
-            const poly = ridge && q("polygon", ridge);
-            if (ridge && poly && isVisible(ridge)) {
-                const raw = poly.getAttribute("points").trim().split(/\s+/).map((p) => p.split(",").map(Number));
-                const pts = raw.filter(([, y]) => y < 180);
-                T({
-                    kind: "line",
-                    el: ridge,
-                    pts: () => {
-                        const r = rectW(ridge);
-                        return pts.map(([x, y]) => ({ x: r.x + (x / 1440) * r.w, y: r.y + (y / 180) * r.h }));
-                    },
-                });
-            }
-        }
-
-        // Parcours
-        const parcours = q("#parcours");
-        if (parcours) {
-            const t0 = title(q("h2", parcours));
-            qa("h3", parcours).forEach((h3) => {
-                const th = title(h3, [t0]);
-                const list = h3.nextElementSibling;
-                dupGroup(qa(":scope > div > div", list), { edit: "h4", deps: [th || t0] });
-            });
-        }
-
-        // Compétences
-        const comp = q("#competences");
-        if (comp) {
-            const t0 = title(q("h2", comp));
-            dupGroup(qa(".grid > div > div", comp), { edit: "h3", oops: 3, deps: [t0] });
-        }
-
-        // Projets
-        const proj = q("#projets");
-        if (proj) {
-            const h2 = q("h2", proj);
-            const t0 = title(h2);
-            type(h2 && h2.nextElementSibling, { deps: [t0] });
-            dupGroup(qa(":scope > button", q("h2 ~ div:nth-of-type(1)", proj)), { edit: true, deps: [t0] });
-            const arts = qa(".grid > article", proj);
-            if (arts.length) {
-                const fb = box(arts[0], [t0]);
-                image(q("img", arts[0]), [fb]);
-                const rest = arts.slice(1);
-                const ts = dupGroup(rest, { edit: "h3" });
-                rest.forEach((a, i) => image(q("img", a), [ts[i]]));
-            }
-        }
-
-        // Contact (fond anthracite peint au pot de peinture)
-        const contact = q("#contact");
-        if (contact) {
-            T({ kind: "paint", el: contact });
-            title(q("h2", contact));
-            qa("form > *", contact).forEach((el) => box(el));
-            qa(":scope > div:last-child > *", q(":scope > .grid", contact)).forEach((el) => type(el));
-        }
-
-        // Pied de page
-        const footer = q("body footer");
-        if (footer) {
-            box(footer);
-            type(q("p", footer));
-        }
+        // Sections et gestes : voir plan.js (lit les attributs data-intro).
+        buildPlanSections(document, { T, box, type, title, image, dupGroup, q, qa, rectW, isVisible, textNodesOf }, {
+            snowEnabled: document.documentElement.dataset.snow !== "off",
+            mistakes,
+        });
 
         // Dépendance implicite : un élément attend que son conteneur soit construit
         for (const t of L) {
@@ -381,15 +295,21 @@ export function startBuildIntro({
                 saveStyle(t.el);
                 t.el.style.setProperty("--bi-r", "0px");
             }
+            if (t.kind === "rotate") {
+                saveStyle(t.el);
+                t.el.style.setProperty("--r", "0deg");
+            }
+            if (t.kind === "toggle" && t.hero) addTok(t.hero, "nosnow");
         }
     }
 
     // Débloqué quand l'élément est à l'écran (ou qu'on est déjà tout en bas de la page).
     const atBottom = () => ST() + H() >= document.documentElement.scrollHeight - 12;
-    const unlocked = (t) => rectW(t.el).y < ST() + H() - 40 || atBottom();
+    const unlocked = (t) => !t.el || rectW(t.el).y < ST() + H() - 40 || atBottom();
     const pick = (c) =>
-        tasks.find((t) => t.state === "wait" && c.skills.includes(t.kind) && t.deps.every((d) => d.state === "done") && unlocked(t));
+        tasks.find((t) => t.state === "wait" && !t.final && c.skills.includes(t.kind) && t.deps.every((d) => d.state === "done") && unlocked(t));
     const doneRatio = () => (tasks.length ? tasks.filter((t) => t.state === "done").length / tasks.length : 0);
+    const built = () => tasks.every((t) => t.final || t.state === "done");
     const tempo = () => (1.35 + 1.35 * doneRatio()) * tempoScale;
 
     // ---------- primitives (générateurs, yield renvoie un dt déjà accéléré) ----------
@@ -512,6 +432,8 @@ export function startBuildIntro({
             yield* wait(0.12);
         },
         *title(c, t) { yield* jobs.type(c, t); },
+        *rotate(c, t) { yield* wait(0.3); saveStyle(t.el); t.el.style.setProperty("--r", `${t.angle}deg`); },
+        *toggle(c, t) { yield* wait(0.3); if (t.hero) delTok(t.hero, "nosnow"); },
         *dup(c, t) { yield* dupJob(c, t, false); },
         *dupoops(c, t) { yield* dupJob(c, t, true); },
         *edit(c, t) {
@@ -692,6 +614,7 @@ export function startBuildIntro({
             yield* wait(0.15);
             golive.classList.remove("bi-pressed");
             golive.textContent = "✓ En ligne";
+            tasks.filter((t) => t.final).forEach((t) => { t.state = "done"; log(`task:${t.kind}:`); });
             live = true;
             guides = [];
             comments = [];
@@ -942,8 +865,8 @@ export function startBuildIntro({
     let expectedScroll = 0;
     function tour(dt) {
         let y = Infinity;
-        for (const t of tasks) if (t.state === "run") y = Math.min(y, rectW(t.el).y);
-        const first = tasks.find((t) => t.state === "wait");
+        for (const t of tasks) if (t.state === "run" && t.el) y = Math.min(y, rectW(t.el).y);
+        const first = tasks.find((t) => t.state === "wait" && t.el && !t.final);
         if (first) y = Math.min(y, rectW(first.el).y);
         if (y === Infinity) return;
         const maxS = document.documentElement.scrollHeight - H();
@@ -951,7 +874,7 @@ export function startBuildIntro({
         const delta = desired - ST();
         if (Math.abs(delta) < 0.5) return;
         // Pas d'au moins 1 px : sinon l'arrondi du navigateur bloque la fin du trajet.
-        const stepPx = Math.sign(delta) * Math.max(1, Math.abs(delta) * Math.min(1, dt * 2.5));
+        const stepPx = Math.sign(delta) * Math.max(1, Math.abs(delta) * Math.min(1, dt * 2.5 * tempoScale));
         const next = Math.abs(stepPx) > Math.abs(delta) ? desired : ST() + stepPx;
         window.scrollTo({ top: next, behavior: "instant" });
         expectedScroll = ST();
@@ -991,10 +914,10 @@ export function startBuildIntro({
                 }
                 if (c.gen) {
                     const r = c.gen.next(dt * tempo());
-                    if (r.done) { c.task.state = "done"; c.task = null; c.gen = null; }
+                    if (r.done) { c.task.state = "done"; log(`task:${c.task.kind}:${(c.task.el && c.task.el.dataset && c.task.el.dataset.intro) || ""}`); c.task = null; c.gen = null; }
                 }
             }
-            if (tasks.every((t) => t.state === "done")) {
+            if (built()) {
                 phase = "final";
                 finals = cursors.map((c, i) => finalJob(c, i));
             }
@@ -1002,7 +925,7 @@ export function startBuildIntro({
             let left = 0;
             finals.forEach((g, i) => {
                 if (!g) return;
-                const r = g.next(dt);
+                const r = g.next(dt * tempoScale);
                 if (r.done) finals[i] = null;
                 else left++;
             });
@@ -1136,10 +1059,11 @@ export function startBuildIntro({
     raf = requestAnimationFrame((t) => { last = t; frame(t); });
     if (debug) {
         window.__intro = {
-            plan: () => tasks.map((t) => ({ kind: t.kind, intro: (t.el && t.el.dataset && t.el.dataset.intro) || null })),
+            plan: () => tasks.map((t) => ({ kind: t.kind, intro: (t.el && t.el.dataset && t.el.dataset.intro) || null, state: t.state })),
             play,
             skip: () => finish(true),
             events,
+            timeline,
             elapsed: () => elapsed,
             seed,
             egg,
