@@ -1,9 +1,9 @@
 import { DM_Serif_Display, Inter, JetBrains_Mono } from "next/font/google";
 import "./globals.css";
-import Navbar from "@/app/components/Header";
+import Header from "@/app/components/Header";
+import { PROFILE } from "@/app/data/profile";
 import Footer from "@/app/components/Footer";
 import ScrollToTop from "@/app/components/ScrollToTop";
-import SnowEffect from "@/app/components/SnowEffect";
 import ScrollProgress from "@/app/components/ScrollProgress";
 import { Analytics } from "@vercel/analytics/react";
 
@@ -60,7 +60,7 @@ export const metadata = {
 };
 
 export const viewport = {
-    themeColor: "#f6f8fa",
+    themeColor: "#ffffff",
 };
 
 const jsonLd = {
@@ -73,10 +73,7 @@ const jsonLd = {
     alumniOf: { "@type": "EducationalOrganization", name: "EPSI Nantes" },
     worksFor: { "@type": "Organization", name: "Cloudity" },
     knowsAbout: ["Next.js", "React", "JavaScript", "Salesforce", "Apex", "PHP", "Symfony", "React Native"],
-    sameAs: [
-        "https://github.com/mat37dev",
-        "https://www.linkedin.com/in/mathieu-crosnier-b78a16238/",
-    ],
+    sameAs: [PROFILE.links.github, PROFILE.links.linkedin, PROFILE.links.malt],
 };
 
 export default function RootLayout({ children }) {
@@ -94,12 +91,9 @@ export default function RootLayout({ children }) {
             </head>
             <body className={`${serif.variable} ${sans.variable} ${mono.variable} antialiased font-sans`}>
                 <ScrollProgress />
-                <SnowEffect />
-                <div className="max-w-[1360px] mx-auto relative">
-                    <Navbar />
-                    {children}
-                    <Footer />
-                </div>
+                <Header />
+                {children}
+                <Footer />
                 <ScrollToTop />
                 <Analytics />
             </body>
