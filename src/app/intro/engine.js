@@ -16,6 +16,7 @@
  */
 
 import { charDelay, typingPlan } from "./typing.js";
+import { bendFor, settleOffset, preClickPause, dragSpeed, approachEase, IDLE } from "./motion.js";
 
 const ACC = "oklch(50% 0.1 235)";
 const WOOD = "oklch(50% 0.07 35)";
@@ -396,13 +397,27 @@ export function startBuildIntro({
         let n = 0;
         while (n < t) n += yield;
     }
+    // Déplacement (spec §5.3) : arc à faible courbure, arrivée freinée, puis
+    // micro-correction de 2–3 px en 150 ms vers la cible exacte (sauf drag).
     function* moveTo(c, target, o = {}) {
         const end = target();
         const dist = Math.hypot(end.x - c.x, end.y - c.y);
         const dur = clamp(0.12 + Math.sqrt(dist) * 0.021, 0.14, 0.9) / (o.speed || 1);
-        const bend = o.bend !== undefined ? o.bend : (RNG() < 0.5 ? -1 : 1) * rand(0.04, 0.14) * Math.min(dist, 600);
-        c.path = { sx: c.x, sy: c.y, target, t: 0, dur, bend, drag: !!o.drag };
+        const bend = o.bend !== undefined ? o.bend : o.drag ? 0 : bendFor(dist, RNG);
+        const settle = !o.drag && o.settle !== false && dist > 24;
+        const off = settle ? settleOffset(RNG) : null;
+        const first = settle ? () => { const p = target(); return { x: p.x + off.dx, y: p.y + off.dy }; } : target;
+        c.path = { sx: c.x, sy: c.y, target: first, t: 0, dur, bend, drag: !!o.drag };
         while (c.path) yield;
+        if (settle) {
+            c.path = { sx: c.x, sy: c.y, target, t: 0, dur: 0.15, bend: 0, drag: false, settle: true };
+            while (c.path) yield;
+        }
+    }
+    // Clic : courte pause après l'arrivée, puis enfoncement.
+    function* click(c) {
+        yield* wait(preClickPause(RNG));
+        c.press = 1;
     }
     // Frappe (spec §5.2) : caractère par caractère sur les textes courts,
     // par rafales de 2 à 4 caractères au-delà de 80 caractères. Délais en ms
@@ -442,11 +457,11 @@ export function startBuildIntro({
             c.shape = "ew";
             const y0 = ST() + clamp(H() * 0.35, 140, 320) + rand(-20, 20);
             yield* moveTo(c, () => ({ x: 8, y: y0 }));
-            c.press = 1;
+            yield* click(c);
             yield* wait(0.1);
             c.gdrag = true;
             const x = t.x();
-            yield* moveTo(c, () => ({ x, y: y0 + rand(-14, 14) }), { drag: true, bend: 0, speed: 0.8 });
+            yield* moveTo(c, () => ({ x, y: y0 + rand(-14, 14) }), { drag: true, bend: 0, speed: dragSpeed(RNG) });
             c.gdrag = null;
             guides.push({ x, flash: 1 });
             c.press = 1;
@@ -457,11 +472,11 @@ export function startBuildIntro({
             const el = t.el;
             c.shape = "cross";
             yield* moveTo(c, () => ptW(el, 0, 0));
-            c.press = 1;
+            yield* click(c);
             snapGuide(ptW(el, 0, 0).x);
             yield* wait(0.08);
             c.drag = { kind: "box", el };
-            yield* moveTo(c, () => ptW(el, 1, 1), { drag: true, bend: 0, speed: 0.9 });
+            yield* moveTo(c, () => ptW(el, 1, 1), { drag: true, bend: 0, speed: dragSpeed(RNG) });
             c.drag = null;
             c.press = 1;
             addTok(el, "ph");
@@ -477,7 +492,7 @@ export function startBuildIntro({
             const finals = nodes.map((n) => { saveText(n); return texts.get(n); });
             c.shape = "ibeam";
             yield* moveTo(c, () => ptW(el, 0, 0.5));
-            c.press = 1;
+            yield* click(c);
             snapGuide(ptW(el, 0, 0.5).x);
             yield* wait(0.1);
             saveStyle(el);
@@ -506,7 +521,7 @@ export function startBuildIntro({
             const full = texts.get(node);
             c.shape = "ibeam";
             yield* moveTo(c, () => ptW(el, 0.3, 0.5));
-            c.press = 1;
+            yield* click(c);
             yield* wait(0.09);
             c.press = 1;
             addTok(el, "sel");
@@ -523,7 +538,7 @@ export function startBuildIntro({
             const pts = t.pts();
             c.pen = [];
             for (const p of pts) {
-                yield* moveTo(c, () => p, { bend: rand(-3, 3), speed: 1.2 });
+                yield* moveTo(c, () => p, { bend: rand(-3, 3), speed: 1.2, settle: false });
                 c.press = 1;
                 c.pen.push(p);
                 yield* wait(rand(0.04, 0.12));
@@ -540,7 +555,7 @@ export function startBuildIntro({
             c.shape = "bucket";
             if (!said.paint) { said.paint = true; c.say("un peu de contraste 🪣", 2); }
             yield* moveTo(c, () => inView(ptW(sec, 0.12, 0.2)));
-            c.press = 1;
+            yield* click(c);
             const r = rectW(sec);
             const px = c.x - r.x;
             const py = c.y - r.y;
@@ -559,11 +574,11 @@ export function startBuildIntro({
         *image(c, t) {
             const el = t.el;
             yield* moveTo(c, () => ({ x: W() - 40, y: clamp(ptW(el, 0.5, 0.5).y, ST() + 90, ST() + H() - 60) }), { speed: 1.1 });
-            c.press = 1;
+            yield* click(c);
             c.shape = "hand";
             c.chip = t.file;
             yield* wait(0.15);
-            yield* moveTo(c, () => ptW(el, 0.5, 0.5), { drag: true, speed: 0.85 });
+            yield* moveTo(c, () => ptW(el, 0.5, 0.5), { drag: true, speed: dragSpeed(RNG) });
             c.chip = null;
             c.shape = "arrow";
             c.press = 1;
@@ -577,13 +592,13 @@ export function startBuildIntro({
         *color(c, t) {
             const el = t.el;
             yield* moveTo(c, () => ptW(el, 0.85, 0.5));
-            c.press = 1;
+            yield* click(c);
             yield* wait(0.12);
             const o = ptW(el, 1, 0);
             c.pop = { x: o.x + 14, y: o.y - 6, pick: 4 };
             yield* wait(0.35);
             yield* moveTo(c, () => ({ x: c.pop.x + 10 + 4 * 18 + 6, y: c.pop.y + 14 }), { speed: 0.9 });
-            c.press = 1;
+            yield* click(c);
             yield* wait(0.15);
             delTok(el, "nocolor");
             c.pop = null;
@@ -594,7 +609,7 @@ export function startBuildIntro({
             c.shape = "comment";
             const at = () => ptW(el, 0.5, 0.5);
             yield* moveTo(c, at);
-            c.press = 1;
+            yield* click(c);
             const p = at();
             t.pin = { x: p.x, y: p.y, text: t.text, state: "open", who: c, k: 0 };
             comments.push(t.pin);
@@ -605,7 +620,7 @@ export function startBuildIntro({
             const pin = t.comment.pin;
             if (!pin) return;
             yield* moveTo(c, () => ({ x: pin.x, y: pin.y }));
-            c.press = 1;
+            yield* click(c);
             pin.state = "done";
             yield* wait(0.55);
             comments = comments.filter((x) => x !== pin);
@@ -617,7 +632,7 @@ export function startBuildIntro({
             if (!o) return;
             c.say("je réaligne", 1.8);
             yield* moveTo(c, () => ptW(el, 0.5, 0.5));
-            c.press = 1;
+            yield* click(c);
             c.sel = el;
             yield* wait(0.25);
             while (o.x > 0) { o.x = Math.max(0, o.x - 6.5); el.style.transform = `translate(${o.x}px,${o.y}px)`; c.key = "←"; yield* wait(0.075); }
@@ -637,13 +652,13 @@ export function startBuildIntro({
         const el = t.el;
         c.shape = "arrow";
         yield* moveTo(c, () => ptW(s, 0.5, 0.5));
-        c.press = 1;
+        yield* click(c);
         c.sel = s;
         yield* wait(rand(0.15, 0.3));
         c.shape = "dup";
         c.drag = { kind: "dup", el, src: s, group: t.group };
         const off = bad ? { x: 28, y: 14 } : { x: 0, y: 0 };
-        yield* moveTo(c, () => { const p = ptW(el, 0.5, 0.5); return { x: p.x + off.x, y: p.y + off.y }; }, { drag: true, bend: 0, speed: 0.7 });
+        yield* moveTo(c, () => { const p = ptW(el, 0.5, 0.5); return { x: p.x + off.x, y: p.y + off.y }; }, { drag: true, bend: 0, speed: dragSpeed(RNG) });
         c.drag = null;
         c.sel = null;
         (t.copy || []).forEach(({ node, from }) => { saveText(node); node.data = from; });
@@ -672,8 +687,7 @@ export function startBuildIntro({
         yield* wait(2.4 - i * 0.5);
         if (i === 0) {
             yield* moveTo(c, () => { const r = golive.getBoundingClientRect(); return { x: r.left + r.width / 2, y: ST() + r.top + r.height / 2 }; });
-            yield* wait(0.25);
-            c.press = 1;
+            yield* click(c);
             golive.classList.add("bi-pressed");
             yield* wait(0.15);
             golive.classList.remove("bi-pressed");
@@ -695,21 +709,19 @@ export function startBuildIntro({
     // ---------- physique ----------
     let time = 0;
     let mouse = null;
+    // Au repos, le curseur se pose près de sa prochaine tâche (40 px au-dessus)
+    // ou reste où il est s'il n'en a plus.
     const home = (c) => {
-        const nxt = tasks.find((t) => t.state === "wait" && c.skills.includes(t.kind));
-        let p;
-        if (nxt) p = ptW(nxt.el, 0.5, 0.5);
-        else {
-            const o = cursors.find((x) => x !== c && x.gen);
-            p = o ? { x: o.x, y: o.y } : { x: W() / 2, y: ST() + H() / 2 };
-        }
-        return { x: clamp(p.x, 60, W() - 140), y: clamp(p.y, ST() + 100, ST() + H() - 80) };
+        const nxt = tasks.find((t) => t.state === "wait" && c.skills.includes(t.kind) && t.el);
+        if (!nxt) return { x: c.x, y: c.y };
+        const p = ptW(nxt.el, 0.5, 0.5);
+        return { x: clamp(p.x, 60, W() - 140), y: clamp(p.y - 40, ST() + 100, ST() + H() - 80) };
     };
     function physics(c, dt) {
         if (c.path) {
             const p = c.path;
             p.t = Math.min(1, p.t + (dt * tempo()) / p.dur);
-            const e = p.drag || p.t < 0.15 ? easeInOut(p.t) : easeOut(p.t);
+            const e = p.drag ? easeInOut(p.t) : p.settle ? easeOut(p.t) : approachEase(p.t);
             const end = p.target();
             const dx = end.x - p.sx;
             const dy = end.y - p.sy;
@@ -724,7 +736,7 @@ export function startBuildIntro({
             if (p.t >= 1) { c.path = null; c.vx *= 0.1; c.vy *= 0.1; }
         } else {
             const h = home(c);
-            const R = 60 * (1 + 0.18 * Math.sin(time * 0.55));
+            const R = IDLE.radius * (1 + 0.18 * Math.sin(time * 0.55));
             const swirl = Math.tanh(3 * Math.cos(time * 0.11));
             const dx = c.x - h.x;
             const dy = c.y - h.y;
@@ -732,11 +744,11 @@ export function startBuildIntro({
             const nx = dx / d;
             const ny = dy / d;
             const ang = Math.atan2(dy, dx);
-            const rr = R * (1 + 0.3 * Math.sin(3 * ang + 0.7 * time)) + (c.orbit - 120) * 0.3;
-            const tang = 150 * (0.7 + c.spin * 0.2) * swirl;
+            const rr = R * (1 + 0.3 * Math.sin(3 * ang + 0.7 * time)) + (c.orbit - 120) * 0.1;
+            const tang = IDLE.tangent * (0.7 + c.spin * 0.2) * swirl;
             const rad = clamp((rr - d) * 4, -900, 600);
-            let wx = tang * -ny + rad * nx;
-            let wy = tang * nx + rad * ny;
+            let wx = tang * -ny + rad * nx + Math.sin(time * 0.9 + c.orbit) * IDLE.drift;
+            let wy = tang * nx + rad * ny + Math.cos(time * 0.7 + c.orbit) * IDLE.drift;
             for (const o of cursors) {
                 if (o === c) continue;
                 const ox = c.x - o.x;
