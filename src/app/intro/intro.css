@@ -63,6 +63,11 @@ html.bi-live .stage .c {
     transform: scale(0.92) !important;
     transition: transform 0.15s !important;
 }
+[data-bi~="wrongcolor"] {
+    background: #2f9e62 !important;
+    border-color: #2f9e62 !important;
+    box-shadow: none !important;
+}
 [data-bi~="sel"] {
     background: oklch(82% 0.07 235 / 0.75) !important;
     border-radius: 3px;

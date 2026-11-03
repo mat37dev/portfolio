@@ -18,8 +18,10 @@
 import { charDelay, typingPlan } from "./typing.js";
 import { bendFor, settleOffset, preClickPause, dragSpeed, approachEase, IDLE } from "./motion.js";
 import { buildPlan as buildPlanSections } from "./plan.js";
+import { pickMistakes } from "./mistakes.js";
+import { line, lines } from "./dialogue.js";
 
-const ACC = "oklch(50% 0.1 235)";
+const ACC = "#2f7cf6";
 const WOOD = "oklch(50% 0.07 35)";
 const VIOLET = "oklch(52% 0.13 300)";
 const RED = "#e5484d";
@@ -186,8 +188,8 @@ export function startBuildIntro({
     replayBtn.textContent = "↻ Rejouer l'intro";
 
     const M = new Cursor(world, "Mathieu Crosnier", ACC, ["box", "dup", "fix", "resolve"], "M");
-    const D = new Cursor(world, "Design", WOOD, ["guide", "paint", "line", "image", "color", "comment", "title", "rotate", "toggle"], "D");
-    const S = new Cursor(world, "Stagiaire", VIOLET, ["type", "edit", "dupoops"], "S");
+    const D = new Cursor(world, "Design", WOOD, ["guide", "paint", "line", "image", "color", "comment", "title", "rotate", "toggle", "shrink"], "D");
+    const S = new Cursor(world, "Stagiaire", VIOLET, ["type", "edit", "dupoops", "fix-image"], "S");
     const cursors = [M, D, S];
 
     // ---------- état restaurable ----------
@@ -227,6 +229,7 @@ export function startBuildIntro({
     let guides = [];
     let comments = [];
     let oops = new Map();
+    let wrongs = new Map(); // img -> src de la mauvaise couverture (overlay)
     let said = {};
 
     function buildPlan() {
@@ -242,10 +245,22 @@ export function startBuildIntro({
         };
         const box = (el, deps = []) => (isVisible(el) ? T({ kind: "box", el, deps }) : null);
         const type = (el, o = {}) =>
-            isVisible(el) && textNodesOf(el).length ? T({ kind: "type", el, deps: o.deps || [], typo: o.typo, grow: o.grow }) : null;
+            isVisible(el) && textNodesOf(el).length
+                ? T({ kind: "type", el, deps: o.deps || [], typo: o.typo, grow: o.grow, big: o.big, caps: o.caps })
+                : null;
         // Titres de section : tapés par "Design" pour soulager le Stagiaire.
-        const title = (el, deps = []) => (isVisible(el) && textNodesOf(el).length ? T({ kind: "title", el, deps }) : null);
-        const image = (img, deps = []) => (isVisible(img) ? T({ kind: "image", el: img, file: fileNameOf(img), deps: deps.filter(Boolean) }) : null);
+        const title = (el, deps = [], o = {}) =>
+            isVisible(el) && textNodesOf(el).length ? T({ kind: "title", el, deps, caps: o.caps }) : null;
+        const image = (img, deps = [], o = {}) =>
+            isVisible(img)
+                ? T({
+                      kind: "image",
+                      el: img,
+                      file: fileNameOf(img),
+                      wrong: o.wrong ? { file: fileNameOf(o.wrong), src: o.wrong.currentSrc || o.wrong.src } : null,
+                      deps: deps.filter(Boolean),
+                  })
+                : null;
         const dupGroup = (els, o = {}) => {
             els = els.filter(isVisible);
             if (!els.length) return [];
@@ -273,7 +288,8 @@ export function startBuildIntro({
         // Sections et gestes : voir plan.js (lit les attributs data-intro).
         buildPlanSections(document, { T, box, type, title, image, dupGroup, q, qa, rectW, isVisible, textNodesOf }, {
             snowEnabled: document.documentElement.dataset.snow !== "off",
-            mistakes,
+            mistakes: pickMistakes(RNG, mistakes),
+            line: (key) => line(RNG, key),
         });
 
         // Dépendance implicite : un élément attend que son conteneur soit construit
@@ -361,12 +377,12 @@ export function startBuildIntro({
             if (o.typo && i === 0) {
                 for (let j = 1; j <= o.typo.length; j++) { node.data = o.typo.slice(0, j); yield* wait(step(o.typo[j - 1])); }
                 yield* wait(0.35);
-                if (!said.typo) { said.typo = true; D.say("typo 👀", 1.8); }
+                if (!said.typo) { said.typo = true; D.say(line(RNG, "typo"), 1.8); }
                 yield* wait(0.5);
                 node.data = o.typo.slice(0, -1);
                 yield* wait(0.14);
                 for (let j = o.typo.length; j <= full.length; j++) { node.data = full.slice(0, j); yield* wait(step(full[j - 1])); }
-                c.say("corrigé 😅", 1.6);
+                c.say(line(RNG, "typoFixed"), 1.6);
             } else {
                 const lead = full.match(/^\s*/)[0];
                 const body = full.slice(lead.length);
@@ -430,18 +446,54 @@ export function startBuildIntro({
             nodes.forEach((n) => (n.data = ""));
             if (t.grow) { el.style.transformOrigin = "left center"; el.style.transform = "scale(.55)"; }
             delTok(el, "hide");
+            if (t.caps) {
+                // Erreur « majuscules » : tout en capitales, sélection, suppression, nouvelle frappe.
+                yield* typeNodes(c, el, nodes, finals.map((s) => s.toUpperCase()), {});
+                yield* wait(0.4);
+                log("mistake:caps");
+                D.say(line(RNG, "caps"), 1.8);
+                yield* wait(0.6);
+                addTok(el, "sel");
+                yield* wait(0.3);
+                delTok(el, "sel");
+                nodes.forEach((n) => (n.data = ""));
+                yield* wait(0.15);
+            }
             yield* typeNodes(c, el, nodes, finals, { typo: t.typo });
             if (t.grow) {
-                for (const s of [0.68, 0.8, 0.9, 1]) { el.style.transform = `scale(${s})`; c.key = "⌘ +"; yield* wait(0.07); }
+                const steps = t.big ? [0.68, 0.85, 1, 1.12] : [0.68, 0.8, 0.9, 1];
+                for (const s of steps) { el.style.transform = `scale(${s})`; c.key = "⌘ +"; yield* wait(0.07); }
                 c.key = null;
-                el.style.transform = "";
-                el.style.transformOrigin = "";
+                if (t.big) {
+                    // Erreur « titre trop gros » : on laisse le titre à 112 %, Design le réduira.
+                    log("mistake:title-too-big");
+                } else {
+                    el.style.transform = "";
+                    el.style.transformOrigin = "";
+                }
             }
             el.style.minHeight = "";
             c.shape = "arrow";
             yield* wait(0.12);
         },
         *title(c, t) { yield* jobs.type(c, t); },
+        *shrink(c, t) {
+            const el = t.el;
+            yield* moveTo(c, () => ptW(el, 0.5, 0.5));
+            yield* click(c);
+            c.sel = el;
+            for (const s of [1.06, 1]) { el.style.transform = `scale(${s})`; c.key = "⌘ −"; yield* wait(0.18); }
+            c.key = null;
+            el.style.transform = "";
+            el.style.transformOrigin = "";
+            c.sel = null;
+            c.say(line(RNG, "fix"), 1.5);
+            yield* wait(0.2);
+        },
+        *["fix-image"](c, t) {
+            c.say(line(RNG, "fix"), 1.5);
+            yield* jobs.image(c, { ...t, wrong: null, fixing: true });
+        },
         // Rotation par poignée : le curseur attrape un point au-dessus de la carte
         // et décrit un arc ; la carte suit (--r), un badge affiche l'angle.
         *rotate(c, t) {
@@ -479,6 +531,13 @@ export function startBuildIntro({
             c.rot = null;
             el.style.transition = "";
             c.shape = "arrow";
+            if (t.mistake === "tilted-card") {
+                log("mistake:tilted-card");
+                yield* wait(0.3);
+                M.say(line(RNG, "tilted"), 2);
+                yield* wait(0.5);
+            }
+            if (t.fixOf) c.say(line(RNG, "fix"), 1.5);
             yield* wait(0.1);
         },
         // Interrupteur neige : clic animé sur le vrai bouton, sans déclencher React.
@@ -490,7 +549,7 @@ export function startBuildIntro({
             yield* wait(0.15);
             delTok(el, "pressed");
             if (t.hero) delTok(t.hero, "nosnow");
-            c.say("et la neige ❄️", 1.8);
+            c.say("et les flocons ❄️", 1.8);
             yield* wait(0.3);
         },
         *dup(c, t) { yield* dupJob(c, t, false); },
@@ -534,7 +593,7 @@ export function startBuildIntro({
         *paint(c, t) {
             const sec = t.el;
             c.shape = "bucket";
-            if (!said.paint) { said.paint = true; c.say("le ciel d'abord 🪣", 2); }
+            if (!said.paint) { said.paint = true; c.say(line(RNG, "paint"), 2); }
             yield* moveTo(c, () => inView(ptW(sec, 0.12, 0.2)));
             yield* click(c);
             const r = rectW(sec);
@@ -557,7 +616,7 @@ export function startBuildIntro({
             yield* moveTo(c, () => ({ x: W() - 40, y: clamp(ptW(el, 0.5, 0.5).y, ST() + 90, ST() + H() - 60) }), { speed: 1.1 });
             yield* click(c);
             c.shape = "hand";
-            c.chip = t.file;
+            c.chip = t.wrong ? t.wrong.file : t.file;
             yield* wait(0.15);
             yield* moveTo(c, () => ptW(el, 0.5, 0.5), { drag: true, speed: dragSpeed(RNG) });
             c.chip = null;
@@ -567,6 +626,16 @@ export function startBuildIntro({
             let k = 0;
             while (k < 1) { k = Math.min(1, k + (yield) / 0.45); c.prog.k = k; }
             c.prog = null;
+            if (t.wrong) {
+                // Erreur « mauvaise image » : la fausse couverture s'affiche (overlay), Design réagit.
+                wrongs.set(el, t.wrong.src);
+                log("mistake:wrong-image");
+                yield* wait(0.5);
+                D.say(line(RNG, "wrongImage"), 2);
+                yield* wait(0.6);
+                return;
+            }
+            wrongs.delete(el);
             delTok(el, "noimg");
             yield* wait(0.15);
         },
@@ -576,12 +645,23 @@ export function startBuildIntro({
             yield* click(c);
             yield* wait(0.12);
             const o = ptW(el, 1, 0);
-            c.pop = { x: o.x + 14, y: o.y - 6, pick: 4 };
+            const pick = t.pick ?? 3;
+            c.pop = { x: o.x + 14, y: o.y - 6, pick };
             yield* wait(0.35);
-            yield* moveTo(c, () => ({ x: c.pop.x + 10 + 4 * 18 + 6, y: c.pop.y + 14 }), { speed: 0.9 });
+            yield* moveTo(c, () => ({ x: c.pop.x + 10 + pick * 18 + 6, y: c.pop.y + 14 }), { speed: 0.9 });
             yield* click(c);
             yield* wait(0.15);
             delTok(el, "nocolor");
+            if (t.mistake === "wrong-color") {
+                addTok(el, "wrongcolor");
+                log("mistake:wrong-color");
+                c.pop = null;
+                yield* wait(0.5);
+                M.say(line(RNG, "color"), 2);
+                yield* wait(0.6);
+                return;
+            }
+            if (t.fixOf) { delTok(el, "wrongcolor"); c.say(line(RNG, "fix"), 1.5); }
             c.pop = null;
             yield* wait(0.25);
         },
@@ -611,7 +691,7 @@ export function startBuildIntro({
             const el = t.el;
             const o = oops.get(el);
             if (!o) return;
-            c.say("je réaligne", 1.8);
+            c.say(line(RNG, "fix"), 1.8);
             yield* moveTo(c, () => ptW(el, 0.5, 0.5));
             yield* click(c);
             c.sel = el;
@@ -650,7 +730,7 @@ export function startBuildIntro({
         }
         addTok(el, "settle");
         delTok(el, "hide");
-        if (bad) c.say("oups 😬", 1.8);
+        if (bad) { log("mistake:misaligned"); c.say(line(RNG, "oops"), 1.8); }
         yield* wait(0.2);
         delTok(el, "settle");
         c.shape = "arrow";
@@ -664,7 +744,7 @@ export function startBuildIntro({
         golive.style.display = "inline-block";
         yield* moveTo(c, () => ({ x: W() / 2 + spots[i].x, y: ST() + H() / 2 + spots[i].y }));
         yield* wait(0.5 + i * 0.6);
-        c.say(["Site prêt ✓", "on publie ? 🚀", "go go go 🎉"][i], 2.6);
+        c.say(doneLines[i], 2.6);
         yield* wait(2.4 - i * 0.5);
         if (i === 0) {
             yield* moveTo(c, () => { const r = golive.getBoundingClientRect(); return { x: r.left + r.width / 2, y: ST() + r.top + r.height / 2 }; });
@@ -796,7 +876,7 @@ export function startBuildIntro({
     const keycap = (x, y, txt, col) =>
         `<g transform="translate(${x},${y})"><rect width="30" height="24" rx="4" fill="#fff" stroke="${col}" stroke-width="1.2"/><rect x="2" y="2" width="26" height="18" rx="3" fill="#f3f4f6"/><text x="15" y="15" font-size="11" fill="${col}" text-anchor="middle" font-family="system-ui,sans-serif" font-weight="700">${esc(txt)}</text></g>`;
     const lineS = (a, b, c2, d, col, sw = 1.2) => `<line x1="${a}" y1="${b}" x2="${c2}" y2="${d}" stroke="${col}" stroke-width="${sw}"/>`;
-    const SW = ["#cfd4da", WOOD, GREEN, ACC, "oklch(20% 0.014 235)"];
+    const SW = ["#cfd4da", "#f59e0b", GREEN, ACC, "#161618"];
 
     function measures(x, y, w, h, el, group) {
         let s = "";
@@ -841,6 +921,10 @@ export function startBuildIntro({
             g.flash = Math.max(0, g.flash - dt * 2.5);
             s += lineS(g.x, 0, g.x, PH, RED, g.flash > 0 ? 2.2 : 1);
             if (g.flash > 0) s += `<line x1="${g.x}" y1="0" x2="${g.x}" y2="${PH}" stroke="${RED}" stroke-width="8" opacity="${(g.flash * 0.25).toFixed(2)}"/>`;
+        }
+        for (const [img, src] of wrongs) {
+            const r = rectW(img);
+            s += `<image href="${esc(src)}" x="${r.x}" y="${r.y}" width="${r.w}" height="${r.h}" preserveAspectRatio="xMidYMid slice"/>`;
         }
         for (const [el, o] of oops) {
             const r = rectW(el);
@@ -966,11 +1050,8 @@ export function startBuildIntro({
     let finals = null;
     let raf = 0;
     let scriptI = 0;
-    const script = [
-        [0.4, M, "On construit le portfolio ?"],
-        [1.4, D, "je pose les repères 📐"],
-        [2.3, S, "je prends les textes ✍️"],
-    ];
+    let script = [];
+    let doneLines = [];
 
     function frame(now) {
         raf = requestAnimationFrame(frame);
@@ -1071,6 +1152,9 @@ export function startBuildIntro({
         comments = [];
         oops = new Map();
         said = {};
+        wrongs = new Map();
+        script = [[0.4, M, line(RNG, "open")], [1.4, D, line(RNG, "guides")], [2.3, S, line(RNG, "typing")]];
+        doneLines = lines(RNG, "done", 3);
         scriptI = 0;
         elapsed = 0;
         time = 0;
@@ -1110,6 +1194,7 @@ export function startBuildIntro({
         guides = [];
         comments = [];
         oops = new Map();
+        wrongs = new Map();
         for (const c of cursors) { c.reset(); c.el.classList.remove("bi-show"); }
         wov.innerHTML = "";
         lastOv = "";

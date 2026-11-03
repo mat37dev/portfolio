@@ -6,6 +6,8 @@
 export function buildPlan(root, helpers, options = {}) {
     const { T, box, type, title, image, dupGroup, q, qa, rectW, isVisible } = helpers;
     const snowEnabled = options.snowEnabled !== false;
+    const mistakes = new Set(options.mistakes || []);
+    const has = (id) => mistakes.has(id);
     const g = (name, r = root) => q(`[data-intro="${name}"]`, r);
     const ga = (name, r = root) => qa(`[data-intro="${name}"]`, r);
 
@@ -45,12 +47,20 @@ export function buildPlan(root, helpers, options = {}) {
         const badge = g("badge", hero);
         const bb = box(badge, nav ? [nav] : []);
         type(badge, { deps: [bb] });
-        type(h1, { grow: true, typo: "Développeur fullstak", deps: [bb] });
+        const th1 = type(h1, { grow: true, big: has("title-too-big"), typo: "Développeur fullstak", deps: [bb] });
+        if (th1 && has("title-too-big")) {
+            const cm = T({ kind: "comment", el: h1, text: options.line("titleBig"), deps: [th1] });
+            const sh = T({ kind: "shrink", el: h1, deps: [cm] });
+            T({ kind: "resolve", el: h1, comment: cm, deps: [sh] });
+        }
         type(g("lead", hero));
 
         const ctaContact = g("cta-contact", hero);
         const b0 = box(ctaContact);
-        if (b0) T({ kind: "color", el: ctaContact, deps: [b0] });
+        if (b0 && has("wrong-color")) {
+            const c1 = T({ kind: "color", el: ctaContact, pick: 2, mistake: "wrong-color", deps: [b0] });
+            T({ kind: "color", el: ctaContact, pick: 3, fixOf: "wrong-color", deps: [c1] });
+        } else if (b0) T({ kind: "color", el: ctaContact, pick: 3, deps: [b0] });
         const ctaCv = g("cta-cv", hero);
         if (ctaCv) {
             const cm = T({ kind: "comment", el: ctaCv, text: "Et le CV ? 📄", deps: b0 ? [b0] : [] });
@@ -73,7 +83,10 @@ export function buildPlan(root, helpers, options = {}) {
                 if (!c.el || !isVisible(c.el)) continue;
                 const b = box(c.el);
                 const im = image(q("img", c.el), [b]);
-                if (c.angle) T({ kind: "rotate", el: c.el, angle: c.angle, deps: [im || b] });
+                if (c.angle > 0 && has("tilted-card")) {
+                    const r1 = T({ kind: "rotate", el: c.el, angle: 18, mistake: "tilted-card", deps: [im || b] });
+                    T({ kind: "rotate", el: c.el, angle: c.angle, fixOf: "tilted-card", deps: [r1] });
+                } else if (c.angle) T({ kind: "rotate", el: c.el, angle: c.angle, deps: [im || b] });
             }
             dupGroup([g("tag-1", stage), g("tag-2", stage), g("tag-3", stage)], { edit: true });
         }
@@ -100,16 +113,23 @@ export function buildPlan(root, helpers, options = {}) {
         }
         const cards = ga("card", g("grid", proj));
         const ts = dupGroup(cards, { edit: "h3" });
-        cards.forEach((card, i) => image(q("img", card), [ts[i]]));
+        cards.forEach((card, i) => {
+            const img = q("img", card);
+            if (i === 1 && has("wrong-image") && cards[0]) {
+                const other = q("img", cards[0]);
+                const it = image(img, [ts[i]], { wrong: other });
+                if (it) T({ kind: "fix-image", el: img, file: it.file, deps: [it] });
+            } else image(img, [ts[i]]);
+        });
     }
 
     // ---------- parcours ----------
     const parcours = g("parcours");
     if (parcours) {
         type(g("parcours-eyebrow", parcours));
-        const t0 = title(g("parcours-h2", parcours));
+        const t0 = title(g("parcours-h2", parcours), [], { caps: has("caps") });
         type(g("parcours-sub", parcours), { deps: [t0] });
-        dupGroup(ga("cell", parcours), { edit: "h3", deps: [t0] });
+        dupGroup(ga("cell", parcours), { edit: "h3", deps: [t0], oops: has("misaligned") ? 2 : undefined });
         dupGroup(ga("edu", parcours), { edit: "b", deps: [t0] });
     }
 
