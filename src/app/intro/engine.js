@@ -216,6 +216,7 @@ export function startBuildIntro({
             else el.setAttribute("style", s);
         }
         for (const el of tokEls) el.removeAttribute("data-bi");
+        root.removeAttribute("data-bi-theme");
         texts = new Map();
         styles = new Map();
         tokEls = new Set();
