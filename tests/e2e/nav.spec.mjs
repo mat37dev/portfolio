@@ -3,7 +3,7 @@ import { test, expect } from '@playwright/test';
 test('nav : liens, Malt, compactage au scroll', async ({ page }, info) => {
   await page.goto('/');
   const header = page.locator('header[data-intro="nav"]');
-  await expect(header.getByRole('link', { name: 'Me contacter' })).toHaveAttribute('href', '#contact');
+  await expect(header.getByRole('link', { name: 'Me contacter' })).toHaveAttribute('href', '/#contact');
   if (info.project.name === 'desktop') {
     await expect(header.getByRole('link', { name: 'Compétences' })).toBeVisible();
   } else {

@@ -1,6 +1,7 @@
 "use client";
 import { useEffect, useRef } from "react";
 import Image from "next/image";
+import Link from "next/link";
 import ThemeToggle from "@/app/components/ThemeToggle";
 import { PROFILE } from "@/app/data/profile";
 
@@ -62,21 +63,21 @@ export default function Header() {
     return (
         <header ref={headerRef} data-intro="nav" className="nav">
             <div className="nav-bar">
-                <a href="#top" className="brand focus-ring" aria-label="Retour en haut">
+                <Link href="/#top" className="brand focus-ring" aria-label="Retour en haut">
                     <Image src="/profile.jpg" alt="" width={34} height={34} priority />
                     <span>
                         <b>{PROFILE.name}</b>
                         <small>{PROFILE.role}</small>
                     </span>
-                </a>
+                </Link>
 
                 <nav aria-label="Sections">
                     <ul>
                         {NAV_LINKS.map((link) => (
                             <li key={link.id}>
-                                <a href={`#${link.id}`} data-section={link.id} className="focus-ring">
+                                <Link href={`/#${link.id}`} data-section={link.id} className="focus-ring">
                                     {link.label}
-                                </a>
+                                </Link>
                             </li>
                         ))}
                     </ul>
@@ -84,9 +85,9 @@ export default function Header() {
 
                 <div className="nav-actions">
                     <ThemeToggle />
-                    <a href="#contact" className="pill pill-acc focus-ring">
+                    <Link href="/#contact" className="pill pill-acc focus-ring">
                         Me contacter
-                    </a>
+                    </Link>
                 </div>
             </div>
         </header>

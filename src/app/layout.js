@@ -18,6 +18,12 @@ const themeInitScript = `
 })();
 `;
 
+// Sans JavaScript, rien ne poserait `html.entrance` ni `is-visible` :
+// on force l'affichage de tout ce que les animations masquent.
+const noscriptCss =
+    ".in,.rv,.rv .tile,.stage .c,.stage .tag,.hero h1 .ln span{animation:none!important;opacity:1!important;transform:none!important}" +
+    ".stage .c{transform:rotate(var(--r))!important}";
+
 const serif = DM_Serif_Display({
     variable: "--font-serif",
     subsets: ["latin"],
@@ -84,6 +90,9 @@ export default function RootLayout({ children }) {
                 <link rel="icon" type="image/svg+xml" href="/icon.svg" />
                 <link rel="shortcut icon" href="/favicon.ico" />
                 <script dangerouslySetInnerHTML={{ __html: themeInitScript }} />
+                <noscript>
+                    <style>{noscriptCss}</style>
+                </noscript>
                 <script
                     type="application/ld+json"
                     dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}

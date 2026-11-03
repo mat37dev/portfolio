@@ -25,6 +25,7 @@ export default function HeroBackground() {
         let flakes = [];
         let raf = 0;
         let running = false;
+        let inView = true;
 
         const resize = () => {
             canvas.width = canvas.clientWidth;
@@ -40,6 +41,7 @@ export default function HeroBackground() {
         };
 
         const shouldDraw = () =>
+            inView &&
             document.documentElement.dataset.snow !== "off" &&
             !(hero.getAttribute("data-bi") || "").split(/\s+/).includes("nosnow") &&
             !reduce.matches &&
@@ -93,6 +95,12 @@ export default function HeroBackground() {
             resize();
             sync();
         };
+        // Hors écran, la boucle s'arrête (pas de dessin inutile pendant la visite).
+        const io = new IntersectionObserver(([entry]) => {
+            inView = entry.isIntersecting;
+            sync();
+        });
+        io.observe(hero);
         const mo = new MutationObserver(sync);
         mo.observe(hero, { attributes: true, attributeFilter: ["data-bi"] });
         mo.observe(document.documentElement, { attributes: true, attributeFilter: ["data-snow"] });
@@ -103,6 +111,7 @@ export default function HeroBackground() {
 
         return () => {
             cancelAnimationFrame(raf);
+            io.disconnect();
             mo.disconnect();
             window.removeEventListener("resize", onResize);
             window.removeEventListener("snow:change", sync);

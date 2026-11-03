@@ -13,8 +13,8 @@ export default function SkillSection() {
                         Une stack web et mobile, plus Salesforce.
                     </h2>
                 </div>
-                {SKILL_GROUPS.map((group) => (
-                    <div key={group.name} className="grp rv" data-intro="grp">
+                {SKILL_GROUPS.map((group, i) => (
+                    <div key={group.name} className={`grp rv${i === 0 ? " grp-first" : ""}`} data-intro="grp">
                         <h4>{group.name}</h4>
                         <div className="tiles">
                             {group.skills.map((s) => (

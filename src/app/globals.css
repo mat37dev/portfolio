@@ -40,6 +40,7 @@
     --flake: rgba(255, 255, 255, 0.98);
     --flakeglow: rgba(120, 165, 225, 1);
     --navbg: rgba(255, 255, 255, 0.82);
+    --on-acc: #ffffff;
     --inv: 0;
     --ease: cubic-bezier(0.2, 0.8, 0.2, 1);
 }
@@ -77,6 +78,7 @@
     --flake: rgba(255, 255, 255, 0.95);
     --flakeglow: rgba(180, 205, 255, 0.9);
     --navbg: rgba(14, 19, 26, 0.8);
+    --on-acc: #0e131a;
     --inv: 1;
 }
 
@@ -112,6 +114,7 @@
     --flake: rgba(255, 255, 255, 0.98);
     --flakeglow: rgba(120, 165, 225, 1);
     --navbg: rgba(255, 255, 255, 0.82);
+    --on-acc: #ffffff;
     --inv: 0;
 }
 
@@ -184,7 +187,7 @@ a {
 }
 .pill-acc {
     background: var(--acc);
-    color: #fff;
+    color: var(--on-acc);
     box-shadow: 0 8px 28px var(--glow);
 }
 .pill-acc:hover {
@@ -381,6 +384,13 @@ a {
 }
 
 @media (max-width: 859px) {
+    .icon-btn {
+        width: 44px;
+        height: 44px;
+    }
+    .pill {
+        min-height: 44px;
+    }
     .nav ul {
         display: none;
     }
@@ -401,6 +411,11 @@ a {
     .footer .wrap {
         flex-direction: column;
         gap: 10px;
+    }
+    .footer nav a {
+        display: inline-flex;
+        align-items: center;
+        min-height: 44px;
     }
 }
 
@@ -670,6 +685,10 @@ a {
     width: 300px;
     --r: 6deg;
 }
+.stage .c.is-live {
+    animation: none;
+    opacity: 1;
+}
 .stage .c:hover {
     transform: rotate(0) translateY(-10px) scale(1.04);
     z-index: 3;
@@ -803,6 +822,11 @@ a {
     .cta {
         flex-direction: column;
         gap: 14px;
+    }
+    .cta .more {
+        display: inline-flex;
+        align-items: center;
+        min-height: 44px;
     }
     .checks {
         flex-direction: column;
@@ -1139,6 +1163,10 @@ a {
         flex-direction: column;
         align-items: flex-start;
     }
+    .filters button {
+        min-height: 44px;
+        padding: 10px 14px;
+    }
     .feat,
     .grid {
         grid-template-columns: 1fr;
@@ -1300,7 +1328,7 @@ a {
     border-top: 1px solid var(--line);
     align-items: start;
 }
-.grp:first-of-type {
+.grp-first {
     border-top: 0;
     margin-top: 28px;
 }
@@ -1472,6 +1500,15 @@ a {
 .card.rv.is-visible {
     transition: transform 0.45s var(--ease), box-shadow 0.45s, border-color 0.3s;
 }
+.card.rv.is-visible:hover {
+    transform: translateY(-8px);
+}
+.feat.rv.is-visible {
+    transition: border-color 0.3s, box-shadow 0.4s, transform 0.4s var(--ease);
+}
+.feat.rv.is-visible:hover {
+    transform: translateY(-3px);
+}
 .rv .tile {
     opacity: 0;
     transform: translateY(10px);
@@ -1511,6 +1548,20 @@ html:not(.entrance) .stage .c,
 html:not(.entrance) .stage .tag,
 html:not(.entrance) .hero h1 .ln span {
     animation-play-state: paused;
+}
+
+/* Après une intro complète, le moteur pose `html.bi-done` : le hero est
+   affiché au repos, sans rejouer la séquence d'entrée (spec §4.6). */
+html.bi-done .in,
+html.bi-done .stage .tag,
+html.bi-done .hero h1 .ln span {
+    animation: none;
+    opacity: 1;
+    transform: none;
+}
+html.bi-done .stage .c {
+    animation: none;
+    opacity: 1;
 }
 
 /* ===================== Mouvement réduit ===================== */

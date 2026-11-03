@@ -15,8 +15,14 @@ export default function HeroStage() {
 
     useEffect(() => {
         const stage = ref.current;
-        if (!stage || window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+        if (!stage) return;
         const cards = Array.from(stage.querySelectorAll(".c"));
+        // Une fois l'animation d'entrée jouée, on la retire : son `fill: forwards`
+        // l'emporterait sinon sur le transform du survol.
+        const onEnd = (e) => e.target.classList.add("is-live");
+        for (const el of cards) el.addEventListener("animationend", onEnd);
+        const offEnd = () => cards.forEach((el) => el.removeEventListener("animationend", onEnd));
+        if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return offEnd;
         const onMove = (e) => {
             const x = e.clientX / window.innerWidth - 0.5;
             const y = e.clientY / window.innerHeight - 0.5;
@@ -27,7 +33,10 @@ export default function HeroStage() {
             }
         };
         window.addEventListener("mousemove", onMove, { passive: true });
-        return () => window.removeEventListener("mousemove", onMove);
+        return () => {
+            window.removeEventListener("mousemove", onMove);
+            offEnd();
+        };
     }, []);
 
     const [tag1, tag2, tag3] = PROFILE.stageTags;
