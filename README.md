@@ -29,6 +29,14 @@ Ouvrir [http://localhost:3000](http://localhost:3000).
 | `npm run build` | Build de production |
 | `npm run start` | Démarre le build de production (après `npm run build`) |
 | `npm run lint` | Vérifie le code avec ESLint |
+| `npm test` | Tests unitaires puis tests de mise en page |
+| `npm run test:unit` | Tests unitaires des modules de données (`node --test`) |
+| `npm run test:e2e` | Tests Playwright (fenêtres 1280×800 et 390×844, serveur `next dev` sur le port 3100) |
+
+## Tests
+
+- **Unitaires** (`tests/unit/`) : modules purs de `src/app/data/` et table des logos, avec `node --test`.
+- **Mise en page** (`tests/e2e/`) : Playwright lance `next dev -p 3100` (ou réutilise un serveur déjà sur ce port) et vérifie les copies, les jetons jour/nuit, la nav, le hero (neige, scène), les projets (filtres), le parcours, les compétences, le contact (Formspree simulé) et le mouvement réduit. Premier lancement : `npx playwright install chromium`.
 
 ## Structure du projet
 

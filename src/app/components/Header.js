@@ -38,11 +38,12 @@ export default function Header() {
         const links = Array.from(header.querySelectorAll("a[data-section]"));
         const observer = new IntersectionObserver(
             (entries) => {
+                // La bande d'observation (5 % du viewport) ne contient qu'une section
+                // à la fois : chaque lien suit l'état de sa propre section, ce qui
+                // retire aussi l'actif quand on revient sur le hero.
                 for (const entry of entries) {
-                    if (!entry.isIntersecting) continue;
-                    for (const link of links) {
-                        link.classList.toggle("is-active", link.dataset.section === entry.target.id);
-                    }
+                    const link = links.find((l) => l.dataset.section === entry.target.id);
+                    if (link) link.classList.toggle("is-active", entry.isIntersecting);
                 }
             },
             { rootMargin: "-40% 0px -55% 0px" }
@@ -62,7 +63,7 @@ export default function Header() {
         <header ref={headerRef} data-intro="nav" className="nav">
             <div className="nav-bar">
                 <a href="#top" className="brand focus-ring" aria-label="Retour en haut">
-                    <Image src="/avatar.png" alt="" width={34} height={34} priority />
+                    <Image src="/profile.jpg" alt="" width={34} height={34} priority />
                     <span>
                         <b>{PROFILE.name}</b>
                         <small>{PROFILE.role}</small>

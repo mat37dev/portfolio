@@ -387,6 +387,17 @@ a {
     .nav-bar {
         padding-left: 12px;
     }
+    .brand small {
+        display: none;
+    }
+    .brand b {
+        font-size: 16px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+    .brand > span {
+        min-width: 0;
+    }
     .footer .wrap {
         flex-direction: column;
         gap: 10px;
