@@ -1,5 +1,5 @@
 /*
- * Moteur de l'intro "le site se construit" (route /beta).
+ * Moteur de l'intro "le site se construit" (page d'accueil).
  *
  * Principe : le vrai site est rendu normalement par React. Le moteur masque
  * ses éléments, puis trois curseurs les "construisent" un par un (tracé à la
@@ -22,7 +22,9 @@ const RED = "#e5484d";
 const GREEN = "oklch(58% 0.12 150)";
 const SVGNS = "http://www.w3.org/2000/svg";
 
-const rand = (a, b) => a + Math.random() * (b - a);
+// Source aléatoire : remplacée par le générateur seedable reçu en option.
+let RNG = Math.random;
+const rand = (a, b) => a + RNG() * (b - a);
 const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
 const easeOut = (t) => 1 - Math.pow(1 - t, 3);
 const easeInOut = (t) => (t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2);
@@ -84,7 +86,7 @@ const SHAPES = (c) => ({
 class Cursor {
     constructor(layer, name, color, skills, short) {
         Object.assign(this, { name, color, skills, short });
-        const fast = Math.random() < 0.25;
+        const fast = RNG() < 0.25;
         this.speed = fast ? rand(1000, 1500) : rand(300, 750);
         this.force = fast ? rand(3500, 6000) : rand(700, 1800);
         this.spin = fast ? rand(2.2, 3.4) : rand(0.8, 1.8);
@@ -135,9 +137,21 @@ class Cursor {
 /* ------------------------------------------------------------------ */
 /* Moteur                                                              */
 /* ------------------------------------------------------------------ */
-export function startBuildIntro({ autoplay = true } = {}) {
+export function startBuildIntro({
+    autoplay = true,
+    tempoScale = 1,
+    rng = Math.random,
+    seed = null,
+    egg = null,
+    mistakes = null,
+    debug = false,
+    onFinish = null,
+} = {}) {
     const root = document.documentElement;
     const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    RNG = rng;
+    const events = [];
+    const log = (e) => { if (debug) events.push(e); };
 
     // ---------- overlay ----------
     const world = document.createElement("div");
@@ -151,7 +165,7 @@ export function startBuildIntro({ autoplay = true } = {}) {
     const hud = document.createElement("div");
     hud.className = "bi-hud";
     hud.innerHTML =
-        `<span class="bi-pill" data-r="status">Bêta · 3 curseurs</span>` +
+        `<span class="bi-pill" data-r="status">3 curseurs</span>` +
         `<button type="button" class="bi-pill bi-btn bi-golive" data-r="golive">🚀 Mettre en ligne</button>` +
         `<button type="button" class="bi-pill bi-btn" data-r="skip">Passer l'intro<span class="bi-hint"><kbd>clic</kbd><kbd>Espace</kbd><kbd>Échap</kbd></span></button>`;
     const status = hud.querySelector('[data-r="status"]');
@@ -160,7 +174,7 @@ export function startBuildIntro({ autoplay = true } = {}) {
     const replayBtn = document.createElement("button");
     replayBtn.type = "button";
     replayBtn.className = "bi-pill bi-btn bi-replay";
-    replayBtn.innerHTML = "<b>BÊTA</b>↻ Rejouer l'intro";
+    replayBtn.textContent = "↻ Rejouer l'intro";
 
     const M = new Cursor(world, "Mathieu Crosnier", ACC, ["box", "dup", "line", "fix", "resolve"], "M");
     const D = new Cursor(world, "Design", WOOD, ["guide", "paint", "image", "color", "comment", "title"], "D");
@@ -373,7 +387,7 @@ export function startBuildIntro({ autoplay = true } = {}) {
     const pick = (c) =>
         tasks.find((t) => t.state === "wait" && c.skills.includes(t.kind) && t.deps.every((d) => d.state === "done") && unlocked(t));
     const doneRatio = () => (tasks.length ? tasks.filter((t) => t.state === "done").length / tasks.length : 0);
-    const tempo = () => 1.35 + 1.35 * doneRatio();
+    const tempo = () => (1.35 + 1.35 * doneRatio()) * tempoScale;
 
     // ---------- primitives (générateurs, yield renvoie un dt déjà accéléré) ----------
     function* wait(t) {
@@ -384,7 +398,7 @@ export function startBuildIntro({ autoplay = true } = {}) {
         const end = target();
         const dist = Math.hypot(end.x - c.x, end.y - c.y);
         const dur = clamp(0.12 + Math.sqrt(dist) * 0.021, 0.14, 0.9) / (o.speed || 1);
-        const bend = o.bend !== undefined ? o.bend : (Math.random() < 0.5 ? -1 : 1) * rand(0.04, 0.14) * Math.min(dist, 600);
+        const bend = o.bend !== undefined ? o.bend : (RNG() < 0.5 ? -1 : 1) * rand(0.04, 0.14) * Math.min(dist, 600);
         c.path = { sx: c.x, sy: c.y, target, t: 0, dur, bend, drag: !!o.drag };
         while (c.path) yield;
     }
@@ -392,7 +406,7 @@ export function startBuildIntro({ autoplay = true } = {}) {
         const N = finals.reduce((a, s) => a + s.length, 0);
         const k = clamp(70 / Math.max(1, N), 0.06, 1);
         const step = (ch) =>
-            rand(0.012, 0.04) * k + (ch === " " ? rand(0, 0.03) : 0) + (Math.random() < 0.025 ? rand(0.08, 0.2) : 0);
+            rand(0.012, 0.04) * k + (ch === " " ? rand(0, 0.03) : 0) + (RNG() < 0.025 ? rand(0.08, 0.2) : 0);
         for (let i = 0; i < nodes.length; i++) {
             const node = nodes[i];
             const full = finals[i];
@@ -948,7 +962,7 @@ export function startBuildIntro({ autoplay = true } = {}) {
         if (phase === "build" && Math.abs(ST() - expectedScroll) > 40) { finish(true); return; }
         time += dt;
         elapsed += dt;
-        status.textContent = `Bêta · 3 curseurs · ${elapsed.toFixed(1)} s`;
+        status.textContent = `3 curseurs · ${elapsed.toFixed(1)} s`;
         while (scriptI < script.length && elapsed >= script[scriptI][0]) { script[scriptI][1].say(script[scriptI][2]); scriptI++; }
         if (phase === "build") {
             tour(dt);
@@ -1047,7 +1061,8 @@ export function startBuildIntro({ autoplay = true } = {}) {
         lastRul = "";
         world._h = 0;
         applyInitialState();
-        root.classList.remove("bi-pending");
+        root.classList.remove("bi-pending", "bi-skipped", "bi-done");
+        root.classList.add("bi-live");
         grid.classList.remove("bi-fadeout");
         rul.classList.remove("bi-fadeout", "bi-in");
         golive.style.display = "none";
@@ -1079,9 +1094,13 @@ export function startBuildIntro({ autoplay = true } = {}) {
         wov.innerHTML = "";
         lastOv = "";
         unmountOverlay();
+        root.classList.remove("bi-live");
+        root.classList.add(wasSkipped ? "bi-skipped" : "bi-done");
         replayBtn.title = wasSkipped ? `Intro passée à ${elapsed.toFixed(1)} s` : `Construit par 3 curseurs en ${elapsed.toFixed(1)} s`;
         document.body.appendChild(replayBtn);
         if (!wasSkipped) window.scrollTo({ top: 0, behavior: "smooth" });
+        log(wasSkipped ? "finish:skip" : "finish:done");
+        if (onFinish) onFinish(wasSkipped);
     }
 
     function destroy() {
@@ -1092,10 +1111,24 @@ export function startBuildIntro({ autoplay = true } = {}) {
         unmountOverlay();
         replayBtn.remove();
         cursors.forEach((c) => c.el.remove());
-        root.classList.remove("bi-pending");
+        root.classList.remove("bi-pending", "bi-live");
+        if (debug && window.__intro && window.__intro.destroy === destroy) delete window.__intro;
     }
 
     raf = requestAnimationFrame((t) => { last = t; frame(t); });
+    if (debug) {
+        window.__intro = {
+            plan: () => tasks.map((t) => ({ kind: t.kind, intro: (t.el && t.el.dataset && t.el.dataset.intro) || null })),
+            play,
+            skip: () => finish(true),
+            events,
+            elapsed: () => elapsed,
+            seed,
+            egg,
+            mistakes,
+            destroy,
+        };
+    }
     if (autoplay && !reduced) play();
     else {
         root.classList.remove("bi-pending");

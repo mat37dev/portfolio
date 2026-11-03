@@ -1,15 +1,14 @@
 /*
- * Intro "le site se construit" - uniquement chargée par la route /beta.
- * Tous les sélecteurs sont préfixés (html.bi-*, [data-bi], .bi-*) : aucun
- * effet sur la page d'accueil.
+ * Intro "le site se construit" (page d'accueil).
+ * Tous les sélecteurs sont préfixés (html.bi-*, [data-bi], .bi-*).
  */
 
 /* Avant l'hydratation : on masque le site pour éviter qu'il apparaisse puis
    disparaisse. Filet de sécurité : tout redevient visible après 5 s si le JS
    ne démarre pas. */
-html.bi-pending body > div > header,
+html.bi-pending body > header,
 html.bi-pending main,
-html.bi-pending body > div > footer {
+html.bi-pending body > footer {
     visibility: hidden;
     animation: biFailsafe 0s linear 5s forwards;
 }
@@ -19,12 +18,29 @@ html.bi-pending body > div > footer {
     }
 }
 
+/* Pendant l'intro (html.bi-live) : la séquence d'entrée CSS et la révélation
+   au défilement sont neutralisées, c'est le moteur qui dévoile les éléments. */
+html.bi-live .in,
+html.bi-live .stage .tag,
+html.bi-live .hero h1 .ln span,
+html.bi-live .rv,
+html.bi-live .rv .tile {
+    animation: none !important;
+    opacity: 1 !important;
+    transform: none !important;
+    transition: none !important;
+}
+html.bi-live .stage .c {
+    animation: none !important;
+    opacity: 1 !important;
+}
+
 /* États posés par le moteur sur les vrais éléments du site */
 [data-bi~="hide"] {
     visibility: hidden !important;
 }
 [data-bi~="ph"] {
-    background: color-mix(in oklab, var(--line) 70%, var(--snow)) !important;
+    background: color-mix(in oklab, var(--line) 70%, var(--bg)) !important;
     border-color: transparent !important;
     box-shadow: none !important;
     color: transparent !important;
@@ -34,7 +50,7 @@ html.bi-pending body > div > footer {
 }
 [data-bi~="noimg"] {
     object-position: -99999px 0 !important;
-    background: color-mix(in oklab, var(--line) 80%, var(--snow))
+    background: color-mix(in oklab, var(--line) 80%, var(--bg))
         url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%239aa3ad' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'><rect x='3' y='4' width='18' height='16' rx='2'/><circle cx='9' cy='10' r='2'/><path d='M21 16l-5-5-9 9'/></svg>")
         center / 32px no-repeat !important;
 }
@@ -70,7 +86,7 @@ html.bi-pending body > div > footer {
     background: radial-gradient(
         circle at var(--bi-px, 10%) var(--bi-py, 20%),
         transparent var(--bi-r, 0px),
-        var(--snow) calc(var(--bi-r, 0px) + 1px)
+        var(--bg) calc(var(--bi-r, 0px) + 1px)
     );
 }
 [data-bi~="paint"] > * {
@@ -128,7 +144,7 @@ html.bi-pending body > div > footer {
     opacity: 0;
     transition: opacity 0.4s;
     will-change: transform;
-    font-family: var(--font-plex), system-ui, sans-serif;
+    font-family: var(--font-sans), system-ui, sans-serif;
 }
 .bi-cur.bi-show {
     opacity: 1;
@@ -186,7 +202,7 @@ html.bi-pending body > div > footer {
     align-items: flex-end;
     gap: 10px;
     pointer-events: none;
-    font-family: var(--font-plex), system-ui, sans-serif;
+    font-family: var(--font-sans), system-ui, sans-serif;
 }
 .bi-pill {
     font-size: 12px;
@@ -213,7 +229,7 @@ html.bi-pending body > div > footer {
 }
 .bi-golive {
     display: none;
-    background: var(--ongoing);
+    background: #2f9e62;
     border-color: transparent;
     font-weight: 600;
     transition: transform 0.15s;
@@ -227,9 +243,10 @@ html.bi-pending body > div > footer {
     transform: translateX(-50%);
     bottom: 16px;
     z-index: 60;
-    background: var(--accent);
+    background: var(--acc);
+    color: var(--on-acc);
     border-color: transparent;
-    font-family: var(--font-plex), system-ui, sans-serif;
+    font-family: var(--font-sans), system-ui, sans-serif;
 }
 .bi-replay b {
     font-weight: 700;
