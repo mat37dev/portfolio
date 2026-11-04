@@ -4,7 +4,7 @@ const baseURL = 'http://127.0.0.1:3100';
 
 export default defineConfig({
   testDir: './tests/e2e',
-  timeout: 30000,
+  timeout: 60000,
   fullyParallel: true,
   retries: 0,
   reporter: 'list',

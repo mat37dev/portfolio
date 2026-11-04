@@ -7,6 +7,8 @@ test.beforeEach(({}, info) => {
 
 test('rotation, interrupteur et déploiement sont joués puis restaurés', async ({ page }) => {
   await page.goto('/?intro=0');
+  // Référence prise une fois l'animation d'entrée terminée (classe is-live).
+  await expect(page.locator('[data-intro="card-right"]')).toHaveClass(/is-live/, { timeout: 10000 });
   const before = await page.locator('[data-intro="card-right"]').evaluate((e) => getComputedStyle(e).transform);
   await page.goto('/?intro=fast&intro=debug&seed=1');
   await expect(page.locator('.bi-replay')).toBeVisible({ timeout: 60000 });

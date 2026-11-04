@@ -23,7 +23,7 @@ import { line, lines } from "./dialogue.js";
 import { pickEgg } from "./eggs.js";
 
 const ACC = "#2f7cf6";
-const WOOD = "oklch(50% 0.07 35)";
+const WOOD = "oklch(45% 0.12 240)"; // Design : bleu glacier foncé
 const VIOLET = "oklch(52% 0.13 300)";
 const RED = "#e5484d";
 const GREEN = "oklch(58% 0.12 150)";
@@ -342,7 +342,7 @@ export function startBuildIntro({
     const built = () => tasks.every((t) => t.final || t.state === "done");
     // Tempo global : accélère au fil de l'avancement (spec §5.3) ; le facteur de
     // base est calibré pour un passage complet de 35–50 s sur desktop.
-    const TEMPO_BASE = 3.2;
+    const TEMPO_BASE = 3.4;
     const tempo = () => TEMPO_BASE * (1 + doneRatio()) * tempoScale;
 
     // ---------- primitives (générateurs, yield renvoie un dt déjà accéléré) ----------
@@ -1241,11 +1241,12 @@ export function startBuildIntro({
     let script = [];
     let doneLines = [];
 
+    let paused = false; // onglet caché : la boucle ne compte plus le temps
     function frame(now) {
         raf = requestAnimationFrame(frame);
         const dt = Math.min(0.05, (now - last) / 1000 || 0.016);
         last = now;
-        if (!running) return;
+        if (!running || paused) return;
         // L'utilisateur a fait défiler la page lui-même (barre de défilement...) : on arrête.
         if (phase === "build" && Math.abs(ST() - expectedScroll) > 40) { finish(true); return; }
         time += dt;
@@ -1303,6 +1304,10 @@ export function startBuildIntro({
     };
     const onWheel = () => { if (running) finish(true); };
     const onResize = () => { if (running) finish(true); };
+    const onVisibility = () => {
+        paused = !!document.hidden;
+        if (!paused) last = performance.now();
+    };
     const onMove = (e) => { mouse = { x: e.pageX, y: e.pageY }; };
     const onLeave = () => { mouse = null; };
 
@@ -1314,6 +1319,7 @@ export function startBuildIntro({
         window[m]("wheel", onWheel, { passive: true });
         window[m]("resize", onResize);
         window[m]("mousemove", onMove, { passive: true });
+        document[m]("visibilitychange", onVisibility);
         document.documentElement[m]("mouseleave", onLeave);
     }
     skipBtn.addEventListener("click", (e) => { e.stopPropagation(); finish(true); });

@@ -53,7 +53,7 @@ export function buildPlan(root, helpers, options = {}) {
             const sh = T({ kind: "shrink", el: h1, deps: [cm] });
             T({ kind: "resolve", el: h1, comment: cm, deps: [sh] });
         }
-        const tl = type(g("lead", hero));
+        const tl = type(g("lead", hero), { deps: [th1] });
         if (tl && options.egg === "console") {
             const e1 = T({ kind: "egg-console", el: tl.el, deps: [tl] });
             T({ kind: "egg-console-fix", el: tl.el, deps: [e1] });

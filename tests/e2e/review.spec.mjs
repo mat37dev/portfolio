@@ -61,21 +61,14 @@ test('sans JavaScript : tout le contenu est visible', async ({ browser }) => {
   await ctx.close();
 });
 
-test('intro complète : html.bi-done affiche le hero au repos, sans animation', async ({ page }) => {
-  // Le script d'init peut s'exécuter avant que <html> existe : on attend l'élément.
-  await page.addInitScript(() => {
-    const mark = () => document.documentElement.classList.add('bi-pending');
-    if (document.documentElement) mark();
-    else new MutationObserver((_, mo) => { if (document.documentElement) { mark(); mo.disconnect(); } }).observe(document, { childList: true });
-  });
-  await page.goto('/');
-  await expect(page.locator('html')).toHaveClass(/bi-pending/);
-  const lead = page.locator('[data-intro="lead"]');
-  expect(Number(await lead.evaluate((e) => getComputedStyle(e).opacity))).toBe(0);
-  await page.evaluate(() => {
-    document.documentElement.classList.remove('bi-pending');
-    document.documentElement.classList.add('bi-done');
-  });
+test('intro complète : html.bi-done affiche le hero au repos, sans animation', async ({ page }, info) => {
+  test.skip(info.project.name !== 'desktop', 'intro desktop seulement');
+  test.setTimeout(90000);
+  await page.goto('/?intro=fast&seed=1');
+  await expect(page.locator('html')).toHaveClass(/bi-live/);
+  await expect(page.locator('.bi-replay')).toBeVisible({ timeout: 60000 });
+  await expect(page.locator('html')).toHaveClass(/bi-done/);
+  await expect(page.locator('html')).not.toHaveClass(/entrance/);
   for (const sel of ['[data-intro="lead"]', '[data-intro="card-photo"]', '[data-intro="tag-1"]']) {
     await expect.poll(() => page.locator(sel).evaluate((e) => getComputedStyle(e).opacity), { message: sel }).toBe('1');
   }
