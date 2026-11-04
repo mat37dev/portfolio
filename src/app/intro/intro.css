@@ -17,6 +17,21 @@ html.bi-pending body > footer {
         visibility: visible;
     }
 }
+/* Même filet pour les éléments du hero dont la séquence d'entrée est en
+   pause tant que bi-pending est posé : visibles après 5 s quoi qu'il arrive. */
+html.bi-pending:not(.bi-live) .in,
+html.bi-pending:not(.bi-live) .stage .c,
+html.bi-pending:not(.bi-live) .stage .tag,
+html.bi-pending:not(.bi-live) .hero h1 .ln span {
+    animation: biFailsafeShow 0s linear 5s forwards !important;
+    animation-play-state: running !important;
+}
+@keyframes biFailsafeShow {
+    to {
+        opacity: 1;
+        transform: none;
+    }
+}
 
 /* Pendant l'intro (html.bi-live) : la séquence d'entrée CSS et la révélation
    au défilement sont neutralisées, c'est le moteur qui dévoile les éléments. */
@@ -332,6 +347,13 @@ html.bi-live .stage .c {
 @keyframes biBuild {
     to {
         left: 100%;
+    }
+}
+
+/* L'intro ne se joue ni sous 860 px ni avec le mouvement réduit : pas de bouton. */
+@media (max-width: 859px), (prefers-reduced-motion: reduce) {
+    .bi-replay {
+        display: none !important;
     }
 }
 

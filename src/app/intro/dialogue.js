@@ -4,6 +4,7 @@ import { pick } from "./rng.js";
 export const LINES = {
     open: ["On construit le portfolio ?", "Allez, on monte la page.", "Prêts ? On pose les bases.", "Bon, on s'y met ?"],
     guides: ["je pose les repères 📐", "les colonnes d'abord 📐", "deux repères et c'est parti", "on aligne tout ça 📐"],
+    qa: ["je vérifie derrière vous 🔍", "je teste au fur et à mesure 🔍", "je m'occupe des doublons 🔍", "QA en place 🔍"],
     typing: ["je prends les textes ✍️", "les textes, c'est pour moi ✍️", "je tape, vous posez ✍️", "je m'occupe des mots ✍️"],
     typo: ["typo 👀", "il manque une lettre 👀", "relis-toi 👀", "coquille 👀"],
     typoFixed: ["corrigé 😅", "voilà 😅", "c'est réglé 😅", "pardon 😅"],

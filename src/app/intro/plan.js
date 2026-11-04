@@ -72,7 +72,7 @@ export function buildPlan(root, helpers, options = {}) {
             if (b1) T({ kind: "resolve", el: ctaCv, comment: cm, deps: [b1] });
         }
         type(g("cta-projects", hero));
-        dupGroup(qa(":scope > span", g("checks", hero)));
+        dupGroup(qa(":scope > span", g("checks", hero)), { many: true });
 
         // Scène : trois cartes posées, images déposées, cartes latérales tournées.
         const heroTail = [];
@@ -108,7 +108,7 @@ export function buildPlan(root, helpers, options = {}) {
         type(g("projets-eyebrow", proj));
         const t0 = title(g("projets-h2", proj));
         type(g("projets-sub", proj), { deps: [t0] });
-        dupGroup(qa("button", g("filters", proj)), { deps: [t0] });
+        dupGroup(qa("button", g("filters", proj)), { many: true, deps: [t0] });
         const feat = g("featured", proj);
         if (feat) {
             const fb = box(feat, [t0]);
@@ -151,7 +151,7 @@ export function buildPlan(root, helpers, options = {}) {
         const groups = ga("grp", comp);
         const gts = dupGroup(groups, { edit: "h4", deps: [t0] });
         // Pilules dupliquées sans réédition du nom : chaque pilule garde son texte.
-        groups.forEach((grp, i) => dupGroup(ga("tile", grp), { deps: [gts[i]] }));
+        groups.forEach((grp, i) => dupGroup(ga("tile", grp), { many: true, deps: [gts[i]] }));
     }
 
     // ---------- contact ----------
@@ -163,7 +163,7 @@ export function buildPlan(root, helpers, options = {}) {
         const form = g("contact-form", contact);
         const fb = box(form, [t0]);
         qa("input, button", form).forEach((el) => box(el, [fb]));
-        dupGroup(qa(":scope > span", g("contact-checks", contact)), { deps: [t0] });
+        dupGroup(qa(":scope > span", g("contact-checks", contact)), { many: true, deps: [t0] });
         type(q(".alt2", contact), { deps: [t0] });
     }
 

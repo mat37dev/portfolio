@@ -11,6 +11,9 @@ const securityHeaders = [
 const nextConfig = {
     // Le badge Next.js de dev (bas-gauche) couvrait le bouton neige.
     devIndicators: false,
+    // Dossier de build séparé pour les tests et le serveur de dev (NEXT_DIST_DIR),
+    // afin de ne pas écraser le build de production servi en parallèle.
+    distDir: process.env.NEXT_DIST_DIR || ".next",
     experimental: {
         optimizePackageImports: ["lucide-react"],
     },

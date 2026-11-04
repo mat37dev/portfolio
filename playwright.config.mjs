@@ -17,6 +17,7 @@ export default defineConfig({
     command: 'npm run dev -- -p 3100',
     url: baseURL,
     reuseExistingServer: true,
+    env: { NEXT_DIST_DIR: '.next-test' },
     timeout: 120000,
   },
   projects: [

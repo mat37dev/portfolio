@@ -169,16 +169,19 @@ export function startBuildIntro({
     // ---------- overlay ----------
     const world = document.createElement("div");
     world.className = "bi-world";
+    world.setAttribute("aria-hidden", "true");
     const wov = document.createElementNS(SVGNS, "svg");
     world.appendChild(wov);
     const grid = document.createElement("div");
     grid.className = "bi-grid";
+    grid.setAttribute("aria-hidden", "true");
     const rul = document.createElementNS(SVGNS, "svg");
     rul.setAttribute("class", "bi-rulers");
+    rul.setAttribute("aria-hidden", "true");
     const hud = document.createElement("div");
     hud.className = "bi-hud";
     hud.innerHTML =
-        `<span class="bi-pill" data-r="status">3 curseurs</span>` +
+        `<span class="bi-pill" data-r="status">4 curseurs</span>` +
         `<button type="button" class="bi-pill bi-btn bi-golive" data-r="golive">🚀 Mettre en ligne</button>` +
         `<span class="bi-pill bi-deploy" data-r="deploy"><i></i><span data-r="dtxt">Build…</span></span>` +
         `<button type="button" class="bi-pill bi-btn" data-r="skip">Passer l'intro<span class="bi-hint"><kbd>clic</kbd><kbd>Espace</kbd><kbd>Échap</kbd></span></button>`;
@@ -195,7 +198,10 @@ export function startBuildIntro({
     const M = new Cursor(world, "Mathieu Crosnier", ACC, ["box", "dup", "fix", "resolve", "egg-copine", "egg-prod", "egg-console-fix", "egg-recruiter"], "M");
     const D = new Cursor(world, "Design", WOOD, ["guide", "paint", "line", "image", "color", "comment", "title", "rotate", "toggle", "shrink", "egg-theme"], "D");
     const S = new Cursor(world, "Stagiaire", VIOLET, ["type", "edit", "dupoops", "fix-image", "egg-console"], "S");
-    const cursors = [M, D, S];
+    // QA : vérifie derrière les autres, partage les duplications, images et corrections.
+    const Q = new Cursor(world, "QA", "#e0791a", ["dup", "dupmany", "image", "fix", "resolve", "edit"], "Q");
+    const cursors = [M, D, S, Q];
+    const BASE_CURSORS = cursors.length;
 
     // ---------- état restaurable ----------
     let texts = new Map(); // Text -> data d'origine
@@ -274,6 +280,10 @@ export function startBuildIntro({
             if (!els.length) return [];
             const first = box(els[0], o.deps || []);
             const out = [first];
+            if (o.many && els.length > 1) {
+                out.push(T({ kind: "dupmany", el: els[1], els: els.slice(1), src: els[0], deps: [first, ...(o.deps || [])] }));
+                return out;
+            }
             els.slice(1).forEach((el, i) => {
                 const kind = o.oops === i + 1 ? "dupoops" : "dup";
                 const t = T({ kind, el, src: els[0], group: els, deps: [first, ...(o.deps || [])] });
@@ -320,6 +330,7 @@ export function startBuildIntro({
             if (["box", "type", "title", "dup", "dupoops", "line"].includes(t.kind)) addTok(t.el, "hide");
             if (t.kind === "image") addTok(t.el, "noimg");
             if (t.kind === "color") addTok(t.el, "nocolor");
+            if (t.kind === "dupmany") for (const el of t.els) addTok(el, "hide");
             if (t.kind === "paint") {
                 addTok(t.el, "paint");
                 saveStyle(t.el);
@@ -342,8 +353,8 @@ export function startBuildIntro({
     const built = () => tasks.every((t) => t.final || t.state === "done");
     // Tempo global : accélère au fil de l'avancement (spec §5.3) ; le facteur de
     // base est calibré pour un passage complet de 35–50 s sur desktop.
-    const TEMPO_BASE = 3.4;
-    const tempo = () => TEMPO_BASE * (1 + doneRatio()) * tempoScale;
+    const TEMPO_BASE = 1.6;
+    const tempo = () => TEMPO_BASE * (1 + 0.5 * doneRatio()) * tempoScale;
 
     // ---------- primitives (générateurs, yield renvoie un dt déjà accéléré) ----------
     function* wait(t) {
@@ -710,6 +721,30 @@ export function startBuildIntro({
             yield* wait(0.3);
         },
         *dup(c, t) { yield* dupJob(c, t, false); },
+        // Duplication en rafale (⌘ D) : la sélection est copiée et chaque copie
+        // se pose à sa place, le curseur glisse de l'une à l'autre.
+        *dupmany(c, t) {
+            const s = t.src;
+            c.shape = "arrow";
+            yield* moveTo(c, () => ptW(s, 0.5, 0.5));
+            yield* click(c);
+            c.sel = s;
+            yield* wait(rand(0.2, 0.3));
+            c.shape = "dup";
+            for (const el of t.els) {
+                c.key = "⌘ D";
+                c.press = 1;
+                addTok(el, "settle");
+                delTok(el, "hide");
+                yield* moveTo(c, () => ptW(el, 0.5, 0.5), { speed: 1.6, bend: 0, settle: false });
+                delTok(el, "settle");
+                yield* wait(0.05);
+            }
+            c.key = null;
+            c.sel = null;
+            c.shape = "arrow";
+            yield* wait(0.15);
+        },
         *dupoops(c, t) { yield* dupJob(c, t, true); },
         *edit(c, t) {
             const el = t.el;
@@ -904,16 +939,16 @@ export function startBuildIntro({
     }
     function dropGuest(g) {
         const i = cursors.indexOf(g);
-        if (i > 2) cursors.splice(i, 1);
+        if (i >= BASE_CURSORS) cursors.splice(i, 1);
         g.el.remove();
     }
-    const dropGuests = () => { while (cursors.length > 3) dropGuest(cursors[cursors.length - 1]); };
+    const dropGuests = () => { while (cursors.length > BASE_CURSORS) dropGuest(cursors[cursors.length - 1]); };
     const edgeY = (el) => clamp(ptW(el, 0.5, 0.5).y, ST() + 100, ST() + H() - 80);
 
     let live = false;
     let destroyed = false;
     function* finalJob(c, i) {
-        const spots = [{ x: -80, y: 0 }, { x: 80, y: -30 }, { x: 10, y: 60 }];
+        const spots = [{ x: -80, y: 0 }, { x: 80, y: -30 }, { x: 10, y: 60 }, { x: -10, y: -80 }];
         golive.style.display = "inline-block";
         yield* moveTo(c, () => ({ x: W() / 2 + spots[i].x, y: ST() + H() / 2 + spots[i].y }));
         yield* wait(0.5 + i * 0.6);
@@ -947,7 +982,7 @@ export function startBuildIntro({
             while (!live) yield;
             yield* wait(0.4 + i * 0.3);
         }
-        const exits = [{ x: -80, y: ST() + 120 }, { x: W() + 80, y: ST() + 160 }, { x: W() / 2 + 60, y: ST() + H() + 80 }];
+        const exits = [{ x: -80, y: ST() + 120 }, { x: W() + 80, y: ST() + 160 }, { x: W() / 2 + 60, y: ST() + H() + 80 }, { x: W() / 2 - 80, y: ST() - 80 }];
         yield* moveTo(c, () => exits[i], { speed: 0.7 });
     }
 
@@ -1242,6 +1277,7 @@ export function startBuildIntro({
     let doneLines = [];
 
     let paused = false; // onglet caché : la boucle ne compte plus le temps
+    let turn = 0;
     function frame(now) {
         raf = requestAnimationFrame(frame);
         const dt = Math.min(0.05, (now - last) / 1000 || 0.016);
@@ -1251,24 +1287,29 @@ export function startBuildIntro({
         if (phase === "build" && Math.abs(ST() - expectedScroll) > 40) { finish(true); return; }
         time += dt;
         elapsed += dt;
-        status.textContent = `3 curseurs · ${elapsed.toFixed(1)} s`;
+        status.textContent = `4 curseurs · ${elapsed.toFixed(1)} s`;
         while (scriptI < script.length && elapsed >= script[scriptI][0]) { script[scriptI][1].say(script[scriptI][2]); scriptI++; }
         if (phase === "build") {
             tour(dt);
             // En mode rapide (tempoScale > 1) chaque générateur avance plusieurs
             // fois par image : sinon chaque `yield` coûte au moins une image.
             const sub = Math.max(1, Math.round(tempoScale));
-            for (const c of cursors) {
+            // L'ordre de service tourne à chaque image : aucun curseur n'est
+            // prioritaire sur les tâches partagées (duplications, images…).
+            turn = (turn + 1) % cursors.length;
+            const order = cursors.slice(turn).concat(cursors.slice(0, turn));
+            for (const c of order) {
                 for (let k = 0; k < sub; k++) {
                     if (!c.gen) {
                         const t = pick(c);
                         if (!t) break;
                         t.state = "run";
+                        t.by = c.short;
                         c.task = t;
                         c.gen = jobs[t.kind](c, t);
                     }
                     const r = c.gen.next((dt * tempo()) / sub);
-                    if (r.done) { c.task.state = "done"; log(`task:${c.task.kind}:${(c.task.el && c.task.el.dataset && c.task.el.dataset.intro) || ""}`); c.task = null; c.gen = null; }
+                    if (r.done) { c.task.state = "done"; c.task.at = elapsed; log(`task:${c.task.kind}:${(c.task.el && c.task.el.dataset && c.task.el.dataset.intro) || ""}`); c.task = null; c.gen = null; }
                 }
             }
             if (built()) {
@@ -1337,8 +1378,33 @@ export function startBuildIntro({
         hud.remove();
     }
 
+    const canPlay = () =>
+        window.innerWidth >= 860 && !window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+    // Si l'intro ne peut pas démarrer (ou plante), on rend la page et on
+    // déclenche la séquence d'entrée CSS : rien ne doit rester masqué.
+    function release() {
+        restoreDom();
+        dropGuests();
+        unmountOverlay();
+        root.classList.remove("bi-pending", "bi-live");
+        root.classList.add("bi-skipped");
+    }
+
     async function play() {
         if (running) return;
+        if (!canPlay()) { release(); return; }
+        try {
+            await start();
+        } catch (err) {
+            running = false;
+            listen(false);
+            release();
+            if (debug) console.error("[intro]", err);
+        }
+    }
+
+    async function start() {
         window.scrollTo({ top: 0, behavior: "instant" });
         expectedScroll = 0;
         root.classList.add("bi-pending");
@@ -1357,8 +1423,8 @@ export function startBuildIntro({
         oops = new Map();
         said = {};
         wrongs = new Map();
-        script = [[0.4, M, line(RNG, "open")], [1.4, D, line(RNG, "guides")], [2.3, S, line(RNG, "typing")]];
-        doneLines = lines(RNG, "done", 3);
+        script = [[0.4, M, line(RNG, "open")], [1.4, D, line(RNG, "guides")], [2.3, S, line(RNG, "typing")], [3.2, Q, line(RNG, "qa")]];
+        doneLines = lines(RNG, "done", 4);
         scriptI = 0;
         elapsed = 0;
         time = 0;
@@ -1378,10 +1444,11 @@ export function startBuildIntro({
         skipBtn.style.display = "";
         mount();
         requestAnimationFrame(() => rul.classList.add("bi-in"));
-        M.reset(); D.reset(); S.reset();
+        M.reset(); D.reset(); S.reset(); Q.reset();
         M.x = -40; M.y = 220;
         D.x = W() + 40; D.y = 260;
         S.x = W() / 2; S.y = H() + 40;
+        Q.x = W() / 2 + 220; Q.y = -40;
         for (const c of cursors) { c.render(0); c.el.classList.add("bi-show"); }
         phase = "build";
         running = true;
@@ -1408,7 +1475,7 @@ export function startBuildIntro({
         unmountOverlay();
         root.classList.remove("bi-live");
         root.classList.add(wasSkipped ? "bi-skipped" : "bi-done");
-        replayBtn.title = wasSkipped ? `Intro passée à ${elapsed.toFixed(1)} s` : `Construit par 3 curseurs en ${elapsed.toFixed(1)} s`;
+        replayBtn.title = wasSkipped ? `Intro passée à ${elapsed.toFixed(1)} s` : `Construit par 4 curseurs en ${elapsed.toFixed(1)} s`;
         document.body.appendChild(replayBtn);
         if (!wasSkipped) window.scrollTo({ top: 0, behavior: "smooth" });
         log(wasSkipped ? "finish:skip" : "finish:done");
@@ -1434,7 +1501,7 @@ export function startBuildIntro({
     raf = requestAnimationFrame((t) => { last = t; frame(t); });
     if (debug) {
         window.__intro = {
-            plan: () => tasks.map((t) => ({ kind: t.kind, intro: (t.el && t.el.dataset && t.el.dataset.intro) || null, state: t.state })),
+            plan: () => tasks.map((t) => ({ kind: t.kind, intro: (t.el && t.el.dataset && t.el.dataset.intro) || null, state: t.state, by: t.by || null, at: t.at ?? null })),
             play,
             skip: () => finish(true),
             events,
@@ -1448,7 +1515,11 @@ export function startBuildIntro({
     }
     if (autoplay && !reduced) play();
     else {
-        root.classList.remove("bi-pending");
+        // Le script bloquant a pu poser bi-pending : on libère la séquence d'entrée.
+        if (root.classList.contains("bi-pending")) {
+            root.classList.remove("bi-pending");
+            root.classList.add("bi-skipped");
+        }
         document.body.appendChild(replayBtn);
     }
 
