@@ -1,9 +1,9 @@
-import { Manrope, IBM_Plex_Sans } from "next/font/google";
+import { DM_Serif_Display, Inter, JetBrains_Mono } from "next/font/google";
 import "./globals.css";
-import Navbar from "@/app/components/Header";
+import Header from "@/app/components/Header";
+import { PROFILE } from "@/app/data/profile";
 import Footer from "@/app/components/Footer";
 import ScrollToTop from "@/app/components/ScrollToTop";
-import SnowEffect from "@/app/components/SnowEffect";
 import ScrollProgress from "@/app/components/ScrollProgress";
 import { Analytics } from "@vercel/analytics/react";
 
@@ -18,18 +18,33 @@ const themeInitScript = `
 })();
 `;
 
-const manrope = Manrope({
-    variable: "--font-manrope",
+// Sans JavaScript, rien ne poserait `html.entrance` ni `is-visible` :
+// on force l'affichage de tout ce que les animations masquent.
+const noscriptCss =
+    ".in,.rv,.rv .tile,.stage .c,.stage .tag,.hero h1 .ln span{animation:none!important;opacity:1!important;transform:none!important}" +
+    ".stage .c{transform:rotate(var(--r))!important}";
+
+const serif = DM_Serif_Display({
+    variable: "--font-serif",
     subsets: ["latin"],
     display: "swap",
-    weight: ["500", "600", "700", "800"],
+    weight: "400",
 });
 
-const plexSans = IBM_Plex_Sans({
-    variable: "--font-plex",
+const sans = Inter({
+    variable: "--font-sans",
     subsets: ["latin"],
     display: "swap",
-    weight: ["400", "500", "600"],
+    weight: ["400", "500", "600", "700"],
+});
+
+const mono = JetBrains_Mono({
+    variable: "--font-mono",
+    subsets: ["latin"],
+    display: "swap",
+    weight: ["400", "500"],
+    // Petits libellés seulement : inutile de la précharger avant le titre.
+    preload: false,
 });
 
 export const metadata = {
@@ -53,7 +68,7 @@ export const metadata = {
 };
 
 export const viewport = {
-    themeColor: "#f6f8fa",
+    themeColor: "#ffffff",
 };
 
 const jsonLd = {
@@ -66,10 +81,7 @@ const jsonLd = {
     alumniOf: { "@type": "EducationalOrganization", name: "EPSI Nantes" },
     worksFor: { "@type": "Organization", name: "Cloudity" },
     knowsAbout: ["Next.js", "React", "JavaScript", "Salesforce", "Apex", "PHP", "Symfony", "React Native"],
-    sameAs: [
-        "https://github.com/mat37dev",
-        "https://www.linkedin.com/in/mathieu-crosnier-b78a16238/",
-    ],
+    sameAs: [PROFILE.links.github, PROFILE.links.linkedin, PROFILE.links.malt],
 };
 
 export default function RootLayout({ children }) {
@@ -80,21 +92,22 @@ export default function RootLayout({ children }) {
                 <link rel="icon" type="image/svg+xml" href="/icon.svg" />
                 <link rel="shortcut icon" href="/favicon.ico" />
                 <script dangerouslySetInnerHTML={{ __html: themeInitScript }} />
+                <noscript>
+                    <style>{noscriptCss}</style>
+                </noscript>
                 <script
                     type="application/ld+json"
                     dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
                 />
             </head>
-            <body className={`${manrope.variable} ${plexSans.variable} antialiased bg-snow text-body font-sans leading-relaxed transition-colors duration-300`}>
+            <body className={`${serif.variable} ${sans.variable} ${mono.variable} antialiased font-sans`}>
                 <ScrollProgress />
-                <SnowEffect />
-                <div className="max-w-[1360px] mx-auto relative">
-                    <Navbar />
-                    {children}
-                    <Footer />
-                </div>
+                <Header />
+                {children}
+                <Footer />
                 <ScrollToTop />
-                <Analytics />
+                {/* Le script d'audience n'existe que sur Vercel (404 en local). */}
+                {process.env.VERCEL ? <Analytics /> : null}
             </body>
         </html>
     );

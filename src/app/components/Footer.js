@@ -1,34 +1,25 @@
-import Link from "next/link";
-import { GithubIcon, LinkedinIcon } from "@/app/components/icons/BrandIcons";
-import Logo from "@/app/components/Logo";
+import { PROFILE } from "@/app/data/profile";
 
-const Footer = () => {
+const LINKS = [
+    { href: PROFILE.links.github, label: "GitHub" },
+    { href: PROFILE.links.linkedin, label: "LinkedIn" },
+    { href: PROFILE.links.malt, label: "Malt" },
+];
+
+export default function Footer() {
     return (
-        <footer className="px-5 sm:px-8 lg:px-12 py-6 text-center bg-anthracite border-t border-[oklch(30%_0.014_235)]">
-            <Logo size={32} onDark className="mx-auto mb-4" />
-            <div className="flex items-center justify-center gap-6 mb-3">
-                <Link
-                    href="https://github.com/mat37dev"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    aria-label="Mon GitHub"
-                    className="p-2.5 -m-2.5 text-muted-anthracite hover:text-white transition-colors duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-anthracite rounded-md"
-                >
-                    <GithubIcon size={20} />
-                </Link>
-                <Link
-                    href="https://www.linkedin.com/in/mathieu-crosnier-b78a16238/"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    aria-label="Mon LinkedIn"
-                    className="p-2.5 -m-2.5 text-muted-anthracite hover:text-white transition-colors duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-anthracite rounded-md"
-                >
-                    <LinkedinIcon size={20} />
-                </Link>
+        <footer data-intro="footer" className="footer">
+            <div className="wrap">
+                <span className="footer-brand">{PROFILE.name}</span>
+                <nav aria-label="Liens externes">
+                    {LINKS.map((l) => (
+                        <a key={l.href} href={l.href} target="_blank" rel="noopener noreferrer" className="focus-ring">
+                            {l.label}
+                        </a>
+                    ))}
+                    <span>© 2026</span>
+                </nav>
             </div>
-            <p className="text-[13px] text-muted-anthracite">© 2026 Mathieu Crosnier</p>
         </footer>
     );
-};
-
-export default Footer;
+}

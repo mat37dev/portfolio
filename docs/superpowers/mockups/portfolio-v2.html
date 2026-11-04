@@ -1,0 +1,431 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Maquette · Mathieu Crosnier — portfolio</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#ffffff;--bg2:#fbfcfe;--card:#ffffff;--ink:#161618;--txt:#4b5563;--mute:#6b7280;--line:#e7ebf0;--line2:#cfd6df;
+  --acc:#2f7cf6;--acc-soft:#e6f0ff;--glow:rgba(47,124,246,.35);--shadow:rgba(22,40,70,.14);--shadow2:rgba(22,22,24,.08);
+  --sky1:#e4eefa;--sky2:#f3f7fd;--sky3:#ffffff;--sun1:rgba(255,255,255,.95);--sun2:rgba(214,230,250,.55);
+  --r1a:#c9dbef;--r1b:#f4f8fd;--r2a:#b3c9e4;--r2b:#f7fafd;--r3a:#9bb6d8;--r3b:#ffffff;--r4:#ffffff;
+  --topo:#c9d7e8;--topo2:#b3c4da;--alt:#9fb0c6;--flake:rgba(255,255,255,.98);--flakeglow:rgba(120,165,225,1);
+  --navbg:rgba(255,255,255,.82);--chipbg:#fff;--inv:0;
+  --serif:'DM Serif Display',Georgia,serif;--sans:Inter,system-ui,sans-serif;--mono:'JetBrains Mono',monospace;
+  --ease:cubic-bezier(.2,.8,.2,1);
+}
+body[data-theme="dark"]{
+  --bg:#0e131a;--bg2:#111822;--card:#151c26;--ink:#f2f5f8;--txt:#b6c0cb;--mute:#8793a1;--line:#243040;--line2:#334257;
+  --acc:#6f97ff;--acc-soft:#1a2740;--glow:rgba(111,151,255,.35);--shadow:rgba(0,0,0,.5);--shadow2:rgba(0,0,0,.35);
+  --sky1:#0b1a2e;--sky2:#0d1521;--sky3:#0e131a;--sun1:rgba(170,200,255,.22);--sun2:rgba(90,130,200,.10);
+  --r1a:#1b2a3f;--r1b:#0f1826;--r2a:#152233;--r2b:#0f1621;--r3a:#111b29;--r3b:#0e131a;--r4:#0e131a;
+  --topo:#1f2c3e;--topo2:#2a3a50;--alt:#4a5a70;--flake:rgba(255,255,255,.95);--flakeglow:rgba(180,205,255,.9);
+  --navbg:rgba(14,19,26,.8);--chipbg:#151c26;--inv:1;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:var(--bg);color:var(--txt);font-family:var(--sans);font-size:16px;line-height:1.6;-webkit-font-smoothing:antialiased;transition:background .4s,color .4s}
+a{color:inherit;text-decoration:none}
+.serif{font-family:var(--serif);font-weight:400;letter-spacing:-.02em;color:var(--ink)}
+.wrap{max-width:1120px;margin:0 auto;padding:0 32px;position:relative}
+section[id]{scroll-margin-top:90px}
+img.inv{filter:invert(var(--inv))}
+
+/* ---------- nav ---------- */
+.nav{position:fixed;left:0;right:0;top:14px;z-index:50;display:flex;justify-content:center;pointer-events:none;padding:0 16px;transition:top .3s}
+.nav .bar{pointer-events:auto;width:100%;max-width:1120px;background:var(--navbg);backdrop-filter:blur(14px);border:1px solid var(--line);border-radius:999px;box-shadow:0 10px 30px var(--shadow2);display:flex;align-items:center;justify-content:space-between;padding:8px 10px 8px 16px;transition:padding .3s,box-shadow .3s}
+body.scrolled .nav{top:8px}
+body.scrolled .nav .bar{padding:5px 8px 5px 14px;box-shadow:0 14px 36px var(--shadow2)}
+.brand{display:flex;align-items:center;gap:11px}
+.brand img{width:34px;height:34px;border-radius:50%;object-fit:cover;border:1px solid var(--line);transition:width .3s,height .3s}
+body.scrolled .brand img{width:28px;height:28px}
+.brand b{display:block;font-family:var(--serif);font-weight:400;font-size:17px;color:var(--ink);line-height:1.1}
+.brand small{display:block;font-family:var(--mono);font-size:9.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--acc);margin-top:2px}
+.nav ul{list-style:none;margin:0;padding:0;display:flex;gap:26px;font-size:14px;font-weight:500;color:var(--txt)}
+.nav li a{position:relative;padding:6px 0;transition:color .2s}
+.nav li a:hover,.nav li a.on{color:var(--ink)}
+.nav li a::after{content:"";position:absolute;left:0;right:0;bottom:-2px;height:2px;border-radius:2px;background:var(--acc);transform:scaleX(0);transform-origin:left;transition:transform .3s var(--ease)}
+.nav li a.on::after{transform:scaleX(1)}
+.pill{display:inline-flex;align-items:center;gap:8px;border-radius:999px;font-weight:600;font-size:14px;padding:11px 20px;cursor:pointer;white-space:nowrap;border:0;font-family:inherit;transition:transform .2s var(--ease),box-shadow .2s,background .2s}
+.pill.acc{background:var(--acc);color:#fff;box-shadow:0 8px 28px var(--glow)}
+.pill.acc:hover{transform:translateY(-2px);box-shadow:0 14px 34px var(--glow)}
+.pill.dark{background:var(--ink);color:var(--bg)}
+.pill.dark:hover{transform:translateY(-2px)}
+.pill.ghost{background:var(--card);border:1px solid var(--line);color:var(--ink);box-shadow:0 4px 14px var(--shadow2)}
+.pill.ghost:hover{transform:translateY(-2px);border-color:var(--line2);box-shadow:0 10px 24px var(--shadow2)}
+.card.nolink .im::after{content:"Projet d'école · sans lien public";background:rgba(22,22,24,.55)}
+.pill .ar{display:inline-block;transition:transform .25s var(--ease)}
+.pill:hover .ar{transform:translateX(4px)}
+
+/* ---------- hero ---------- */
+.hero{position:relative;text-align:center;padding:150px 0 0;min-height:100vh;overflow:hidden}
+.bg{position:absolute;inset:0;pointer-events:none}
+.sky{position:absolute;inset:0;background:linear-gradient(180deg,var(--sky1) 0%,var(--sky2) 40%,var(--sky3) 78%);transition:opacity .6s,background .4s}
+.sun{position:absolute;left:50%;top:-220px;width:1100px;height:760px;transform:translateX(-50%);background:radial-gradient(ellipse at center,var(--sun1),var(--sun2) 40%,transparent 68%);transition:opacity .6s}
+.stars{position:absolute;inset:0;opacity:0;transition:opacity .6s;background-image:radial-gradient(1px 1px at 12% 18%,#fff 60%,transparent),radial-gradient(1.2px 1.2px at 28% 8%,#fff 60%,transparent),radial-gradient(1px 1px at 44% 24%,#fff 60%,transparent),radial-gradient(1.5px 1.5px at 61% 12%,#fff 60%,transparent),radial-gradient(1px 1px at 75% 28%,#fff 60%,transparent),radial-gradient(1.2px 1.2px at 88% 9%,#fff 60%,transparent),radial-gradient(1px 1px at 52% 40%,#fff 60%,transparent),radial-gradient(1px 1px at 18% 42%,#fff 60%,transparent),radial-gradient(1.3px 1.3px at 92% 36%,#fff 60%,transparent),radial-gradient(1px 1px at 35% 33%,#fff 60%,transparent);background-size:100% 100%}
+body[data-theme="dark"] .stars{opacity:.7}
+.glow{position:absolute;left:50%;top:-200px;width:1200px;height:760px;transform:translateX(-50%);background:radial-gradient(ellipse at center,rgba(47,124,246,.14),rgba(47,124,246,.04) 45%,transparent 70%);opacity:0;transition:opacity .6s}
+.ridge{position:absolute;left:0;right:0;bottom:-2px;width:100%;height:52vh;min-height:360px;transition:opacity .6s}
+.topo{position:absolute;inset:0;width:100%;height:100%;opacity:0;transition:opacity .6s}
+.topo path{fill:none;stroke:var(--topo);stroke-width:1}
+.topo path.bold{stroke:var(--topo2);stroke-width:1.3}
+.alt{position:absolute;left:28px;top:140px;bottom:60px;width:1px;background:var(--topo);opacity:0;transition:opacity .6s}
+.alt span{position:absolute;left:8px;font-family:var(--mono);font-size:9px;color:var(--alt);letter-spacing:.06em;white-space:nowrap}
+.alt span::before{content:"";position:absolute;left:-9px;top:7px;width:6px;height:1px;background:var(--topo2)}
+canvas.snow{position:absolute;inset:0;width:100%;height:100%;transition:opacity .6s}
+body[data-bg="topo"] .sky,body[data-bg="topo"] .sun,body[data-bg="topo"] .ridge{opacity:0}
+body[data-bg="topo"] .topo,body[data-bg="topo"] .alt,body[data-bg="topo"] .glow{opacity:1}
+body[data-bg="mix"] .topo{opacity:.6}
+body[data-snow="off"] canvas.snow{opacity:0}
+
+.hero .wrap{z-index:2}
+.badge{display:inline-flex;align-items:center;gap:8px;border:1px solid var(--line);background:var(--navbg);border-radius:999px;padding:7px 14px;font-family:var(--mono);font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--mute);box-shadow:0 4px 14px var(--shadow2)}
+.badge i{width:7px;height:7px;border-radius:50%;background:var(--acc);box-shadow:0 0 0 4px var(--acc-soft);animation:pulse 2.4s infinite}
+@keyframes pulse{0%,100%{box-shadow:0 0 0 4px var(--acc-soft)}50%{box-shadow:0 0 0 7px transparent}}
+h1{margin:24px auto 0;font-size:clamp(44px,6.4vw,78px);line-height:1.02;max-width:900px}
+h1 .ln{display:block;overflow:hidden}
+h1 .ln span{display:block;transform:translateY(105%);animation:rise 1s var(--ease) forwards}
+h1 .ln:nth-child(2) span{animation-delay:.12s}
+@keyframes rise{to{transform:none}}
+.lead{margin:24px auto 0;max-width:640px;font-size:19px;color:var(--txt)}
+.lead b{color:var(--ink);font-weight:600}
+.cta{display:flex;justify-content:center;align-items:center;gap:22px;margin-top:32px}
+.cta .more{font-size:15px;font-weight:500;color:var(--ink)}
+.cta .more .ar{display:inline-block;transition:transform .3s var(--ease)}
+.cta .more:hover .ar{transform:translateY(3px)}
+.checks{display:flex;justify-content:center;gap:26px;margin-top:22px;font-family:var(--mono);font-size:11px;color:var(--acc)}
+.stage{position:relative;height:440px;margin:44px auto 0;max-width:900px}
+.stage .c{position:absolute;background:var(--card);border:1px solid var(--line);border-radius:22px;padding:12px;box-shadow:0 24px 60px var(--shadow);transition:transform .6s var(--ease),box-shadow .4s;will-change:transform;opacity:0;animation:pop .9s var(--ease) forwards}
+.stage .l{animation-delay:.55s}.stage .m{animation-delay:.4s}.stage .r{animation-delay:.7s}
+@keyframes pop{from{opacity:0;transform:rotate(var(--r)) translate3d(0,40px,0) scale(.94)}to{opacity:1;transform:rotate(var(--r)) translate3d(var(--px,0),var(--py,0),0)}}
+.stage .c img{display:block;border-radius:14px;object-fit:cover}
+.stage .l{left:40px;top:70px;width:300px;--r:-6deg}.stage .l img{width:100%;height:180px}
+.stage .m{left:50%;top:0;width:300px;margin-left:-150px;z-index:2;padding-bottom:42px;--r:0deg}.stage .m img{width:100%;height:300px;object-position:top}
+.stage .m span{position:absolute;left:0;right:0;bottom:14px;text-align:center;font-family:var(--mono);font-size:11px;color:var(--mute)}
+.stage .r{right:40px;top:70px;width:300px;--r:6deg}.stage .r img{width:100%;height:180px}
+.stage .c.live{animation:none;opacity:1;transform:rotate(var(--r)) translate3d(var(--px,0),var(--py,0),0)}
+.stage .c.live:hover{transform:rotate(0) translateY(-10px) scale(1.04);z-index:3;box-shadow:0 34px 70px var(--shadow)}
+.stage .tag{position:absolute;background:var(--card);border:1px solid var(--line);border-radius:999px;padding:7px 13px;font-family:var(--mono);font-size:11px;color:var(--ink);box-shadow:0 8px 20px var(--shadow2);z-index:4;white-space:nowrap;opacity:0;animation:in .8s var(--ease) forwards;animation-delay:1s}
+.stage .tag i{display:inline-block;width:7px;height:7px;border-radius:50%;background:var(--acc);margin-right:8px}
+.stage .t1{left:50%;top:-16px;margin-left:100px;animation-delay:1s}
+.stage .t2{left:50%;top:352px;margin-left:-300px;animation-delay:1.15s}
+.stage .t3{right:0;top:290px;animation-delay:1.3s}
+
+.in{opacity:0;transform:translateY(14px);animation:in .8s var(--ease) forwards}
+.in.d1{animation-delay:.1s}.in.d2{animation-delay:.25s}.in.d3{animation-delay:.4s}.in.d4{animation-delay:.55s}
+@keyframes in{to{opacity:1;transform:none}}
+
+/* ---------- sections ---------- */
+.sec{position:relative;border-top:1px solid var(--line);padding:96px 0 88px;background:var(--bg);transition:background .4s}
+.sec.tint{background:var(--bg2)}
+.eyebrow{font-family:var(--mono);font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--acc)}
+.sec h2{margin:12px 0 0;font-size:clamp(34px,4vw,48px);line-height:1.06;max-width:720px}
+.sec .sub{margin:16px 0 0;max-width:620px;font-size:17px}
+.head{display:flex;justify-content:space-between;align-items:end;gap:24px}
+.filters{display:flex;gap:6px;flex-wrap:wrap}
+.filters button{font-family:var(--mono);font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;border:1px solid var(--line);background:var(--chipbg);color:var(--mute);border-radius:999px;padding:7px 12px;cursor:pointer;transition:all .2s}
+.filters button:hover{color:var(--ink);border-color:var(--line2)}
+.filters button.on{background:var(--ink);border-color:var(--ink);color:var(--bg)}
+
+.feat{margin-top:36px;background:var(--card);border:1px solid var(--line);border-radius:24px;padding:34px;display:grid;grid-template-columns:1.2fr 1fr;gap:34px;align-items:center;box-shadow:0 14px 40px var(--shadow2);transition:border-color .3s,box-shadow .4s,transform .4s var(--ease)}
+.feat:hover{border-color:var(--line2);box-shadow:0 24px 60px var(--shadow2);transform:translateY(-3px)}
+.feat .num{font-family:var(--serif);font-size:28px;color:var(--acc);display:inline-flex;align-items:center;gap:14px;vertical-align:middle}
+.feat .num::after{content:"";width:1px;height:22px;background:var(--line)}
+.chip{display:inline-flex;align-items:center;gap:6px;border:1px solid var(--line);background:var(--chipbg);border-radius:999px;padding:4px 11px;font-family:var(--mono);font-size:10.5px;letter-spacing:.06em;text-transform:uppercase;color:var(--mute);vertical-align:middle}
+.chip.acc{background:var(--acc-soft);border-color:transparent;color:var(--acc)}
+.feat h3{margin:16px 0 0;font-size:36px;line-height:1.1}
+.feat p{margin:12px 0 0;font-size:16px}
+.feat .meta{margin-top:16px;font-family:var(--mono);font-size:11px;color:var(--mute);display:flex;gap:16px}
+.feat .acts{margin-top:22px;padding-top:20px;border-top:1px solid var(--line);display:flex;align-items:center;gap:18px}
+.feat .acts small{font-family:var(--mono);font-size:10.5px;color:var(--mute)}
+.pola{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:10px 10px 14px;box-shadow:0 18px 44px var(--shadow2);transform:rotate(2deg);transition:transform .5s var(--ease)}
+.feat:hover .pola{transform:rotate(-1deg) scale(1.03)}
+.pola .im{overflow:hidden;border-radius:12px}
+.pola img{width:100%;height:280px;object-fit:cover;display:block;transition:transform .8s var(--ease)}
+.feat:hover .pola img{transform:scale(1.06)}
+.pola b{display:block;font-family:var(--serif);font-weight:400;font-size:18px;color:var(--ink);margin:10px 4px 0}
+.pola small{font-family:var(--mono);font-size:10px;color:var(--mute);margin:0 4px}
+
+.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:18px;margin-top:18px}
+.card{position:relative;background:var(--card);border:1px solid var(--line);border-radius:18px;padding:10px;transition:transform .45s var(--ease),box-shadow .45s,border-color .3s;cursor:pointer;display:block;overflow:hidden}
+.card::before{content:"";position:absolute;inset:0;border-radius:inherit;background:radial-gradient(600px circle at var(--mx,50%) var(--my,0%),var(--acc-soft),transparent 45%);opacity:0;transition:opacity .4s;pointer-events:none}
+.card:hover{transform:translateY(-8px);box-shadow:0 26px 54px var(--shadow2);border-color:var(--line2)}
+.card:hover::before{opacity:.9}
+.card.hide{display:none}
+.card .im{position:relative;overflow:hidden;border-radius:12px}
+.card img{width:100%;height:170px;object-fit:cover;display:block;transition:transform .9s var(--ease)}
+.card:hover img{transform:scale(1.07)}
+.card .im::after{content:"Voir le projet →";position:absolute;left:10px;bottom:10px;background:rgba(22,22,24,.78);color:#fff;font-size:12px;font-weight:600;padding:6px 11px;border-radius:999px;backdrop-filter:blur(6px);transform:translateY(12px);opacity:0;transition:all .4s var(--ease)}
+.card:hover .im::after{opacity:1;transform:none}
+.card .b{padding:14px 8px 6px;position:relative}
+.card .b b{display:flex;justify-content:space-between;align-items:baseline;font-family:var(--serif);font-weight:400;font-size:21px;color:var(--ink);transition:color .25s}
+.card:hover .b b{color:var(--acc)}
+.card .b b small{font-family:var(--mono);font-size:10px;color:var(--mute)}
+.card .b p{margin:6px 0 0;font-size:14px;line-height:1.5}
+.card .b .tags{display:flex;flex-wrap:wrap;gap:5px;margin-top:10px}
+.tag{font-family:var(--mono);font-size:9.5px;letter-spacing:.05em;text-transform:uppercase;color:var(--mute);border:1px solid var(--line);border-radius:999px;padding:2px 8px;transition:all .2s}
+.card:hover .tag{border-color:var(--line2);color:var(--ink)}
+
+.tbl{margin-top:36px;background:var(--card);border:1px solid var(--line);border-radius:22px;overflow:hidden;display:grid;grid-template-columns:1fr 1fr}
+.cell{padding:28px 30px;border-right:1px solid var(--line);border-bottom:1px solid var(--line);transition:background .3s;position:relative}
+.cell:nth-child(2n){border-right:0}.cell:nth-last-child(-n+2){border-bottom:0}
+.cell::before{content:"";position:absolute;left:0;top:0;bottom:0;width:3px;background:var(--acc);transform:scaleY(0);transition:transform .35s var(--ease)}
+.cell:hover{background:var(--bg2)}
+.cell:hover::before{transform:scaleY(1)}
+.cell .h{display:flex;justify-content:space-between;align-items:baseline;gap:14px}
+.cell h3{margin:0;font-size:23px;line-height:1.2}
+.cell h3 span{font-family:var(--sans);font-size:14px;color:var(--mute);font-weight:500;letter-spacing:0}
+.cell .y{font-family:var(--mono);font-size:11px;color:var(--mute);white-space:nowrap}
+.cell .y.on{color:var(--acc)}
+.cell p{margin:10px 0 0;font-size:15px}
+.cell .tags{margin-top:14px;display:flex;flex-wrap:wrap;gap:6px}
+.edu{margin-top:18px;display:grid;grid-template-columns:repeat(3,1fr);gap:18px}
+.edu div{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:22px 24px;transition:transform .35s var(--ease),box-shadow .35s,border-color .3s}
+.edu div:hover{transform:translateY(-4px);box-shadow:0 18px 40px var(--shadow2);border-color:var(--line2)}
+.edu small{font-family:var(--mono);font-size:10.5px;color:var(--mute)}
+.edu small.on{color:var(--acc)}
+.edu b{display:block;font-family:var(--serif);font-weight:400;font-size:21px;color:var(--ink);margin-top:6px;line-height:1.2}
+.edu span{display:block;font-size:14px;color:var(--mute);margin-top:4px}
+
+.grp{display:grid;grid-template-columns:200px 1fr;gap:20px;padding:20px 0;border-top:1px solid var(--line);align-items:start}
+.grp:first-of-type{border-top:0;margin-top:28px}
+.grp h4{margin:0;padding-top:10px;font-family:var(--serif);font-weight:400;font-size:21px;color:var(--ink)}
+.tiles{display:flex;flex-wrap:wrap;gap:9px}
+.tile{position:relative;display:inline-flex;align-items:center;gap:10px;padding:9px 15px 9px 11px;border-radius:999px;background:var(--card);border:1px solid var(--line);font-size:14.5px;font-weight:500;color:var(--ink);cursor:default;transition:transform .25s var(--ease),box-shadow .25s,border-color .25s}
+.tile:hover{transform:translateY(-3px) scale(1.03);box-shadow:0 12px 26px var(--shadow2);border-color:var(--line2)}
+.tile img,.tile svg{width:18px;height:18px;display:block}
+.tile .lv{font-family:var(--mono);font-size:9px;letter-spacing:.04em;color:var(--acc);background:var(--acc-soft);border-radius:999px;padding:2px 7px;margin-left:2px}
+.rv .tile{opacity:0;transform:translateY(10px)}
+.rv.on .tile{opacity:1;transform:none;transition:opacity .5s var(--ease),transform .5s var(--ease),box-shadow .25s,border-color .25s}
+.rv.on .tile:nth-child(1){transition-delay:.05s}.rv.on .tile:nth-child(2){transition-delay:.1s}.rv.on .tile:nth-child(3){transition-delay:.15s}.rv.on .tile:nth-child(4){transition-delay:.2s}.rv.on .tile:nth-child(5){transition-delay:.25s}.rv.on .tile:nth-child(6){transition-delay:.3s}
+.rv.on .tile:hover{transform:translateY(-3px) scale(1.03)}
+
+.contact{position:relative;border-top:1px solid var(--line);padding:110px 0 96px;text-align:center;overflow:hidden;background:var(--bg)}
+.contact .cglow{position:absolute;left:50%;bottom:-320px;width:1100px;height:640px;transform:translateX(-50%);background:radial-gradient(ellipse at center,rgba(47,124,246,.16),transparent 65%);pointer-events:none}
+.contact h2{margin:12px auto 0;font-size:clamp(34px,4.4vw,52px);line-height:1.06;max-width:760px}
+.contact p{margin:16px auto 0;max-width:560px;font-size:17px}
+.form{display:flex;justify-content:center;gap:10px;margin-top:30px}
+.form input{width:360px;font:inherit;font-size:15px;padding:12px 18px;border-radius:999px;border:1px solid var(--line);background:var(--card);color:var(--ink);outline:none;transition:border-color .2s,box-shadow .2s}
+.form input:focus{border-color:var(--acc);box-shadow:0 0 0 4px var(--acc-soft)}
+.contact .alt2{margin-top:18px;font-size:15px;color:var(--mute)}
+.contact .alt2 a{color:var(--ink);font-weight:500;border-bottom:1px solid var(--line)}
+footer{border-top:1px solid var(--line);padding:26px 0 30px;font-size:13.5px;color:var(--mute);background:var(--bg)}
+footer .wrap{display:flex;justify-content:space-between;align-items:center}
+footer .fb{font-family:var(--serif);color:var(--ink);font-size:17px}
+footer nav{display:flex;gap:18px}
+
+.rv{opacity:0;transform:translateY(22px);transition:opacity .8s var(--ease),transform .8s var(--ease)}
+.rv.on{opacity:1;transform:none}
+.grid .card.rv:nth-child(2){transition-delay:.08s}.grid .card.rv:nth-child(3){transition-delay:.16s}.grid .card.rv:nth-child(5){transition-delay:.08s}.grid .card.rv:nth-child(6){transition-delay:.16s}
+.edu.rv div{transition:transform .35s var(--ease),box-shadow .35s,border-color .3s}
+
+/* ---------- demo panel ---------- */
+.panel{position:fixed;right:16px;bottom:16px;z-index:60;background:rgba(22,22,24,.92);color:#fff;border-radius:14px;padding:12px 14px;font-size:12px;backdrop-filter:blur(8px);box-shadow:0 14px 40px rgba(0,0,0,.3);display:grid;gap:8px;min-width:230px}
+.panel b{font-family:var(--mono);font-size:9.5px;letter-spacing:.12em;text-transform:uppercase;color:#9aa4b2}
+.panel .row{display:flex;gap:6px;flex-wrap:wrap}
+.panel button{font:inherit;font-size:12px;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.14);color:#fff;border-radius:8px;padding:5px 10px;cursor:pointer}
+.panel button.on{background:#2f7cf6;border-color:#2f7cf6}
+.panel .hide{position:absolute;right:8px;top:6px;background:none;border:0;padding:2px 6px;color:#9aa4b2}
+
+/* ---------- mobile ---------- */
+@media (max-width:860px){
+  .nav ul{display:none}
+  .hero{padding-top:120px;min-height:0;padding-bottom:0}
+  .topo,.alt{display:none}
+  body[data-bg="topo"] .sky,body[data-bg="topo"] .sun,body[data-bg="topo"] .ridge{opacity:1}
+  .ridge{height:360px;min-height:0}
+  .stage{height:380px;margin-top:36px}
+  .stage .l,.stage .r{display:none}
+  .stage .m{width:230px;margin-left:-115px;padding-bottom:36px}
+  .stage .m img{height:230px}
+  .stage .t1{left:auto;right:0;margin-left:0;top:-14px}.stage .t2{left:0;margin-left:0;top:262px}.stage .t3{display:none}
+  h1{font-size:40px}.lead{font-size:16px}
+  .cta{flex-direction:column;gap:14px}.checks{flex-direction:column;gap:6px;align-items:center}
+  .feat,.tbl,.edu,.grid{grid-template-columns:1fr}
+  .grp{grid-template-columns:1fr;gap:10px}.grp h4{padding-top:0}
+  .head{flex-direction:column;align-items:flex-start}
+  .form{flex-direction:column;align-items:center}.form input{width:100%}
+  .panel{right:10px;bottom:10px;min-width:0;padding:10px 12px}
+  footer .wrap{flex-direction:column;gap:10px}
+}
+@media (prefers-reduced-motion:reduce){.in,.rv,.stage .c,.stage .tag,h1 .ln span{animation:none!important;opacity:1!important;transform:none!important;transition:none!important}canvas.snow{display:none}}
+</style>
+</head>
+<body data-bg="mix" data-snow="on" data-theme="light">
+
+<div class="nav"><div class="bar">
+  <a class="brand" href="#top"><img src="photo.jpg" alt=""><div><b>Mathieu Crosnier</b><small>Développeur fullstack</small></div></a>
+  <ul><li><a href="#projets" data-s="projets">Projets</a></li><li><a href="#parcours" data-s="parcours">Parcours</a></li><li><a href="#competences" data-s="competences">Compétences</a></li><li><a href="#contact" data-s="contact">Contact</a></li></ul>
+  <a class="pill acc" href="#contact">Me contacter</a>
+</div></div>
+
+<section class="hero" id="top">
+  <div class="bg">
+    <div class="sky"></div><div class="stars"></div><div class="sun"></div><div class="glow"></div>
+    <svg class="topo" viewBox="0 0 1440 900" preserveAspectRatio="none">
+      <path d="M-20 160C180 90 340 240 560 160S920 30 1120 120 1360 60 1460 140"/><path class="bold" d="M-20 220C200 150 360 300 580 220S940 90 1140 180 1380 120 1460 200"/><path d="M-20 280C220 210 380 360 600 280S960 150 1160 240 1400 180 1460 260"/><path d="M-20 340C240 270 400 420 620 340S980 210 1180 300 1420 240 1460 320"/>
+      <path d="M-20 640C160 560 320 700 520 640S860 520 1040 600 1300 560 1460 640"/><path class="bold" d="M-20 700C180 620 340 760 540 700S880 580 1060 660 1320 620 1460 700"/><path d="M-20 760C200 680 360 820 560 760S900 640 1080 720 1340 680 1460 760"/><path d="M-20 820C220 740 380 880 580 820S920 700 1100 780 1360 740 1460 820"/>
+      <path d="M820 420c70-50 160-50 230 0s160 50 230 0"/><path d="M790 460c90-70 210-70 300 0s210 70 300 0"/>
+    </svg>
+    <div class="alt"><span style="top:0">2 400 m</span><span style="top:20%">2 000 m</span><span style="top:40%">1 600 m</span><span style="top:60%">1 200 m</span><span style="top:80%">800 m</span></div>
+    <svg class="ridge" viewBox="0 0 1440 400" preserveAspectRatio="none">
+      <defs>
+        <linearGradient id="g1" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="var(--r1a)"/><stop offset="1" stop-color="var(--r1b)"/></linearGradient>
+        <linearGradient id="g2" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="var(--r2a)"/><stop offset="1" stop-color="var(--r2b)"/></linearGradient>
+        <linearGradient id="g3" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="var(--r3a)"/><stop offset="1" stop-color="var(--r3b)"/></linearGradient>
+      </defs>
+      <polygon fill="url(#g1)" points="0,400 0,170 140,110 280,160 420,60 580,140 720,30 860,120 1000,80 1160,150 1300,95 1440,160 1440,400"/>
+      <polygon fill="url(#g2)" points="0,400 0,250 160,210 320,245 480,165 640,232 800,185 940,240 1120,190 1280,245 1440,218 1440,400"/>
+      <polygon fill="url(#g3)" points="0,400 0,330 180,300 340,320 520,280 700,316 900,288 1080,324 1260,300 1440,320 1440,400"/>
+      <polygon fill="var(--r4)" points="0,400 0,374 240,362 480,377 760,357 1040,374 1280,362 1440,370 1440,400"/>
+    </svg>
+    <canvas class="snow" id="snow"></canvas>
+  </div>
+  <div class="wrap">
+    <span class="badge in"><i></i>Freelance disponible · Nantes</span>
+    <h1 class="serif"><span class="ln"><span>Développeur fullstack,</span></span><span class="ln"><span>de Salesforce au mobile.</span></span></h1>
+    <p class="lead in d2">Je suis Mathieu, 23 ans, étudiant en Master SIN à l'EPSI Nantes et alternant chez <b>Cloudity</b>. Je conçois des applications web et mobiles avec <b>React, Next.js, Symfony</b> et la plateforme Salesforce.</p>
+    <div class="cta in d3"><a class="pill acc" href="#contact">Me contacter <span class="ar">→</span></a><a class="pill ghost" href="../../../public/cv.pdf" download><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>Télécharger mon CV</a><a class="more" href="#projets">Voir mes projets <span class="ar">↓</span></a></div>
+    <div class="checks in d4"><span>✓ Master SIN · EPSI</span><span>✓ Alternant chez Cloudity</span><span>✓ Freelance sur Malt</span></div>
+    <div class="stage" id="stage">
+      <a class="c l" href="#projets" data-depth="1.4"><img src="../../../public/projectImages/skimate.jpg" alt=""></a>
+      <div class="c m" data-depth=".6"><img src="photo.jpg" alt=""><span>Mathieu · Nantes</span></div>
+      <a class="c r" href="#projets" data-depth="1.4"><img src="../../../public/projectImages/notre-cuisine.jpg" alt=""></a>
+      <span class="tag t1"><i></i>Alternant chez Cloudity</span><span class="tag t2"><i></i>7 projets en ligne</span><span class="tag t3"><i></i>React · Next.js · Symfony</span>
+    </div>
+  </div>
+</section>
+
+<section class="sec" id="projets"><div class="wrap">
+  <div class="head rv">
+    <div><div class="eyebrow">Projets</div><h2 class="serif">Sept projets, du mobile au DevOps.</h2><p class="sub">Des applications conçues seul ou en équipe, en école comme en entreprise. Le code est ouvert pour la plupart d'entre elles.</p></div>
+    <div class="filters" id="filters"><button class="on" data-f="all">Tous</button><button data-f="Web">Web</button><button data-f="Mobile">Mobile</button><button data-f="Jeux vidéo">Jeux vidéo</button><button data-f="DevOps">DevOps</button></div>
+  </div>
+  <div class="feat rv">
+    <div>
+      <span class="num">01</span> <span class="chip">Mobile</span> <span class="chip acc">Projet phare</span>
+      <h3 class="serif">SkiMate</h3>
+      <p>Application mobile qui centralise les données utiles aux skieurs : conditions météo, cartographie des domaines skiables et informations en temps réel sur les stations françaises.</p>
+      <div class="meta"><span>Rôle : conception et développement</span><span>·</span><span>2025</span></div>
+      <div class="acts"><a class="pill dark" href="https://github.com/mat37dev" target="_blank" rel="noopener">Voir le projet <span class="ar">→</span></a><small>Symfony · React Native · React · MapBox · SQL · NoSQL</small></div>
+    </div>
+    <div class="pola"><div class="im"><img src="../../../public/projectImages/skimate.jpg" alt=""></div><b>SkiMate</b><small>iOS & Android</small></div>
+  </div>
+  <div class="grid" id="grid">
+    <a class="card rv" data-cat="DevOps" href="https://github.com/mat37dev/resilience-alpha" target="_blank" rel="noopener"><div class="im"><img src="../../../public/projectImages/resilience-alpha.jpg" alt=""></div><div class="b"><b>Resilience Alpha <small>2026</small></b><p>Plateforme de paiement auto-résiliente : détecte une anomalie et rétablit seule son service.</p><div class="tags"><span class="tag">Docker</span><span class="tag">Ansible</span><span class="tag">Grafana</span><span class="tag">ModSecurity</span></div></div></a>
+    <a class="card rv" data-cat="Web" href="https://github.com/mat37dev/notre-cuisine" target="_blank" rel="noopener"><div class="im"><img src="../../../public/projectImages/notre-cuisine.jpg" alt=""></div><div class="b"><b>Notre cuisine <small>2026</small></b><p>Recettes partagées en PWA, quantités recalculées, trois niveaux d'accès, API pour Claude.</p><div class="tags"><span class="tag">Next.js</span><span class="tag">TypeScript</span><span class="tag">Supabase</span></div></div></a>
+    <a class="card rv" data-cat="Web" href="https://github.com/mat37dev/crm-kodoka" target="_blank" rel="noopener"><div class="im"><img src="../../../public/projectImages/kodoka.jpg" alt=""></div><div class="b"><b>CRM Kōdoka <small>2023</small></b><p>Gestion des utilisateurs, permissions, devis, factures et avoirs.</p><div class="tags"><span class="tag">PHP</span><span class="tag">CodeIgniter</span><span class="tag">MySQL</span></div></div></a>
+    <a class="card rv" data-cat="Web" href="https://github.com/mat37dev/Geek4Fun" target="_blank" rel="noopener"><div class="im"><img src="../../../public/projectImages/geek4fun.jpg" alt=""></div><div class="b"><b>Geek4Fun <small>2022</small></b><p>Gestion de tournois pour un festival, en équipe de trois : module tournois et comptes.</p><div class="tags"><span class="tag">PHP</span><span class="tag">CodeIgniter</span></div></div></a>
+    <a class="card rv" data-cat="Jeux vidéo" href="https://iphinis.itch.io/find-build" target="_blank" rel="noopener"><div class="im"><img src="../../../public/projectImages/gameJam.png" alt=""></div><div class="b"><b>Find And Build <small>2020</small></b><p>Jeu 3D réalisé en 48 h lors d'une Game Jam à trois : retrouver des fragments d'une ville pour la reconstruire.</p><div class="tags"><span class="tag">Unity</span><span class="tag">C#</span></div></div></a>
+    <a class="card rv nolink" data-cat="Web"><div class="im"><img src="../../../public/projectImages/covoiturage.png" alt=""></div><div class="b"><b>Site de covoiturage <small>2020</small></b><p>Plateforme de covoiturage étudiant en PHP pur : profils, publication et recherche de trajets.</p><div class="tags"><span class="tag">PHP</span><span class="tag">MySQL</span><span class="tag">JavaScript</span></div></div></a>
+  </div>
+</div></section>
+
+<section class="sec tint" id="parcours"><div class="wrap">
+  <div class="rv"><div class="eyebrow">Parcours</div><h2 class="serif">Quatre ans entre alternances et stages.</h2><p class="sub">Du CRM Salesforce aux applications Symfony en environnement réglementé, avec une formation en continu jusqu'au Master.</p></div>
+  <div class="tbl rv">
+    <div class="cell"><div class="h"><h3 class="serif">Développeur Salesforce <span>· Cloudity</span></h3><span class="y on">12/2025 — auj.</span></div><p>Développement de solutions CRM sur mesure : Apex, automatisation de processus via Flow, intégrations avec des systèmes tiers.</p><div class="tags"><span class="tag">Apex</span><span class="tag">Flow</span><span class="tag">SOQL</span><span class="tag">Intégrations</span></div></div>
+    <div class="cell"><div class="h"><h3 class="serif">Développeur web <span>· Esima, Armée de l'air et de l'espace</span></h3><span class="y">09/2023 — 08/2025</span></div><p>Applications Symfony et Twig dans un cadre réglementé et sécurisé, machines virtuelles hors ligne, respect du DSFR.</p><div class="tags"><span class="tag">Symfony</span><span class="tag">Twig</span><span class="tag">DSFR</span><span class="tag">Sécurité</span></div></div>
+    <div class="cell"><div class="h"><h3 class="serif">Développeur PHP <span>· Kōdoka</span></h3><span class="y">03 — 04/2023</span></div><p>Conception d'une application web CRM à deux, actualisation en AJAX, respect des normes de sécurité.</p><div class="tags"><span class="tag">PHP</span><span class="tag">AJAX</span><span class="tag">MySQL</span></div></div>
+    <div class="cell"><div class="h"><h3 class="serif">Développeur JavaScript <span>· Kamisys</span></h3><span class="y">05 — 06/2022</span></div><p>Optimisation d'un script de génération de données de test en volume.</p><div class="tags"><span class="tag">JavaScript</span><span class="tag">Sequelize</span><span class="tag">MySQL</span></div></div>
+  </div>
+  <div class="edu rv">
+    <div><small class="on">2025 — 2027 · en cours</small><b>Master SIN</b><span>EPSI Nantes · Systèmes informatiques et numériques</span></div>
+    <div><small>2023 — 2025</small><b>Concepteur développeur d'applications</b><span>Titre RNCP niveau 6</span></div>
+    <div><small>2021 — 2023</small><b>BTS SIO, option SLAM</b><span>Solutions logicielles et applications métiers</span></div>
+  </div>
+</div></section>
+
+<section class="sec" id="competences"><div class="wrap">
+  <div class="rv"><div class="eyebrow">Compétences</div><h2 class="serif">Une stack web et mobile, plus Salesforce.</h2></div>
+  <div class="grp rv"><h4>Frontend</h4><div class="tiles">
+    <span class="tile"><img src="https://cdn.simpleicons.org/react/61DAFB" alt="">React<i class="lv">quotidien</i></span>
+    <span class="tile"><img class="inv" src="https://cdn.simpleicons.org/nextdotjs/000000" alt="">Next.js<i class="lv">quotidien</i></span>
+    <span class="tile"><img src="https://cdn.simpleicons.org/javascript/F7DF1E" alt="">JavaScript</span>
+    <span class="tile"><img src="https://cdn.simpleicons.org/tailwindcss/06B6D4" alt="">Tailwind CSS</span>
+    <span class="tile"><img src="https://cdn.simpleicons.org/html5/E34F26" alt="">HTML & CSS</span>
+    <span class="tile"><img src="https://cdn.simpleicons.org/bootstrap/7952B3" alt="">Bootstrap</span>
+  </div></div>
+  <div class="grp rv"><h4>Backend</h4><div class="tiles">
+    <span class="tile"><img src="https://cdn.simpleicons.org/php/777BB4" alt="">PHP<i class="lv">quotidien</i></span>
+    <span class="tile"><img class="inv" src="https://cdn.simpleicons.org/symfony/000000" alt="">Symfony</span>
+    <span class="tile"><img src="https://cdn.simpleicons.org/nodedotjs/5FA04E" alt="">Node.js</span>
+    <span class="tile"><img src="https://cdn.simpleicons.org/python/3776AB" alt="">Python</span>
+    <span class="tile"><img src="https://cdn.simpleicons.org/openjdk/437291" alt="">Java</span>
+    <span class="tile"><img src="https://cdn.simpleicons.org/dotnet/512BD4" alt="">C#</span>
+  </div></div>
+  <div class="grp rv"><h4>Salesforce</h4><div class="tiles">
+    <span class="tile"><svg viewBox="0 0 24 24" fill="#00A1E0"><path d="M10 5.5a4.3 4.3 0 0 1 3.3 1.6 3.8 3.8 0 0 1 2-.6 4 4 0 0 1 3.9 3.2A3.6 3.6 0 0 1 24 13.3a3.7 3.7 0 0 1-3.8 3.6 3.3 3.3 0 0 1-.8-.1 3.4 3.4 0 0 1-3 1.9 3.5 3.5 0 0 1-1.5-.4 4 4 0 0 1-7.2-.2 3.5 3.5 0 0 1-.8.1A3.7 3.7 0 0 1 3 10.9a3.8 3.8 0 0 1-.3-1.5A4 4 0 0 1 6.7 5.4a4.2 4.2 0 0 1 3.3.1z"/></svg>Apex<i class="lv">quotidien</i></span>
+    <span class="tile"><svg viewBox="0 0 24 24" fill="#00A1E0"><path d="M10 5.5a4.3 4.3 0 0 1 3.3 1.6 3.8 3.8 0 0 1 2-.6 4 4 0 0 1 3.9 3.2A3.6 3.6 0 0 1 24 13.3a3.7 3.7 0 0 1-3.8 3.6 3.3 3.3 0 0 1-.8-.1 3.4 3.4 0 0 1-3 1.9 3.5 3.5 0 0 1-1.5-.4 4 4 0 0 1-7.2-.2 3.5 3.5 0 0 1-.8.1A3.7 3.7 0 0 1 3 10.9a3.8 3.8 0 0 1-.3-1.5A4 4 0 0 1 6.7 5.4a4.2 4.2 0 0 1 3.3.1z"/></svg>Flow<i class="lv">quotidien</i></span>
+    <span class="tile"><svg viewBox="0 0 24 24" fill="#00A1E0"><path d="M10 5.5a4.3 4.3 0 0 1 3.3 1.6 3.8 3.8 0 0 1 2-.6 4 4 0 0 1 3.9 3.2A3.6 3.6 0 0 1 24 13.3a3.7 3.7 0 0 1-3.8 3.6 3.3 3.3 0 0 1-.8-.1 3.4 3.4 0 0 1-3 1.9 3.5 3.5 0 0 1-1.5-.4 4 4 0 0 1-7.2-.2 3.5 3.5 0 0 1-.8.1A3.7 3.7 0 0 1 3 10.9a3.8 3.8 0 0 1-.3-1.5A4 4 0 0 1 6.7 5.4a4.2 4.2 0 0 1 3.3.1z"/></svg>SOQL</span>
+  </div></div>
+  <div class="grp rv"><h4>Mobile & données</h4><div class="tiles">
+    <span class="tile"><img src="https://cdn.simpleicons.org/react/61DAFB" alt="">React Native</span>
+    <span class="tile"><img class="inv" src="https://cdn.simpleicons.org/expo/000020" alt="">Expo</span>
+    <span class="tile"><img src="https://cdn.simpleicons.org/postgresql/4169E1" alt="">PostgreSQL</span>
+    <span class="tile"><img src="https://cdn.simpleicons.org/mysql/4479A1" alt="">MySQL</span>
+    <span class="tile"><img src="https://cdn.simpleicons.org/mongodb/47A248" alt="">NoSQL</span>
+  </div></div>
+  <div class="grp rv"><h4>Outils & langues</h4><div class="tiles">
+    <span class="tile"><img src="https://cdn.simpleicons.org/git/F05032" alt="">Git<i class="lv">quotidien</i></span>
+    <span class="tile"><img src="https://cdn.simpleicons.org/docker/2496ED" alt="">Docker</span>
+    <span class="tile"><img src="https://cdn.simpleicons.org/ansible/EE0000" alt="">Ansible</span>
+    <span class="tile"><img src="https://cdn.simpleicons.org/grafana/F46800" alt="">Grafana</span>
+    <span class="tile">Français<i class="lv">natif</i></span>
+    <span class="tile">Anglais<i class="lv">professionnel</i></span>
+  </div></div>
+</div></section>
+
+<section class="contact" id="contact"><div class="cglow"></div><div class="wrap rv">
+  <div class="eyebrow">Contact</div>
+  <h2 class="serif">Un projet, une mission, une question ?</h2>
+  <p>Laissez-moi votre adresse ou écrivez-moi directement : je réponds généralement dans la journée.</p>
+  <form class="form" onsubmit="event.preventDefault();this.querySelector('button').textContent='Merci, à très vite ✓'"><input type="email" placeholder="votre@email.fr" required><button class="pill acc">Être recontacté <span class="ar">→</span></button></form>
+  <div class="checks"><span>✓ Réponse sous 24 h</span><span>✓ Nantes ou à distance</span><span>✓ Missions freelance via Malt</span></div>
+  <p class="alt2">ou directement : <a href="mailto:mathieu.crosnier15@outlook.fr">mathieu.crosnier15@outlook.fr</a></p>
+</div></section>
+
+<footer><div class="wrap"><span class="fb">Mathieu Crosnier</span><nav><a href="#">GitHub</a><a href="#">LinkedIn</a><a href="https://www.malt.fr/profile/mathieucrosnier" target="_blank" rel="noopener">Malt</a><span>© 2026</span></nav></div></footer>
+
+<div class="panel" id="panel">
+  <b>Maquette · fond du hero</b>
+  <div class="row"><button data-bg="ridge">Crêtes</button><button data-bg="topo">Topo</button><button data-bg="mix" class="on">Mixte</button></div>
+  <b>Neige</b>
+  <div class="row"><button data-snow="on" class="on">Oui</button><button data-snow="off">Non</button></div>
+  <b>Thème</b>
+  <div class="row"><button data-theme="light" class="on">Jour</button><button data-theme="dark">Nuit</button></div>
+</div>
+
+<script>
+// ---- panel
+for(const k of ['bg','snow','theme']){document.querySelectorAll(`.panel [data-${k}]`).forEach(b=>b.onclick=()=>{document.body.dataset[k]=b.dataset[k];document.querySelectorAll(`.panel [data-${k}]`).forEach(x=>x.classList.toggle('on',x===b))})}
+
+// ---- neige (légère mais visible)
+const c=document.getElementById('snow'),ctx=c.getContext('2d');let flakes=[];
+function rs(){c.width=c.clientWidth;c.height=c.clientHeight;flakes=Array.from({length:Math.round(c.width/11)},()=>({x:Math.random()*c.width,y:Math.random()*c.height,r:Math.random()*2.2+.9,s:Math.random()*.55+.25,w:Math.random()*6.28,o:Math.random()*.5+.5}))}
+rs();addEventListener('resize',rs);
+(function loop(){if(document.body.dataset.snow==='on'){const cs=getComputedStyle(document.body);ctx.clearRect(0,0,c.width,c.height);ctx.shadowColor=cs.getPropertyValue('--flakeglow');ctx.shadowBlur=6;for(const p of flakes){p.y+=p.s;p.w+=.008;p.x+=Math.sin(p.w)*.4;if(p.y>c.height){p.y=-6;p.x=Math.random()*c.width}ctx.globalAlpha=p.o;ctx.fillStyle=cs.getPropertyValue('--flake');ctx.beginPath();ctx.arc(p.x,p.y,p.r,0,6.28);ctx.fill()}ctx.globalAlpha=1}requestAnimationFrame(loop)})();
+
+// ---- parallaxe des cartes du hero (après leur entrée)
+const stage=document.getElementById('stage');
+setTimeout(()=>stage.querySelectorAll('.c').forEach(el=>el.classList.add('live')),1700);
+addEventListener('mousemove',e=>{const x=e.clientX/innerWidth-.5,y=e.clientY/innerHeight-.5;stage.querySelectorAll('.c').forEach(el=>{const d=+el.dataset.depth||1;el.style.setProperty('--px',(x*-16*d)+'px');el.style.setProperty('--py',(y*-12*d)+'px')})},{passive:true});
+
+// ---- lueur qui suit la souris sur les cartes projets
+document.querySelectorAll('.card').forEach(card=>card.addEventListener('mousemove',e=>{const r=card.getBoundingClientRect();card.style.setProperty('--mx',((e.clientX-r.left)/r.width*100)+'%');card.style.setProperty('--my',((e.clientY-r.top)/r.height*100)+'%')}));
+
+// ---- filtres projets
+document.querySelectorAll('#filters button').forEach(b=>b.onclick=()=>{document.querySelectorAll('#filters button').forEach(x=>x.classList.toggle('on',x===b));const f=b.dataset.f;document.querySelectorAll('#grid .card').forEach(card=>card.classList.toggle('hide',f!=='all'&&card.dataset.cat!==f))});
+
+// ---- reveal au scroll, nav active, nav compacte
+const io=new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting){e.target.classList.add('on');io.unobserve(e.target)}}),{rootMargin:'0px 0px -10% 0px'});
+document.querySelectorAll('.rv').forEach(el=>io.observe(el));
+const links=[...document.querySelectorAll('.nav a[data-s]')];
+const so=new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting)links.forEach(l=>l.classList.toggle('on',l.dataset.s===e.target.id))}),{rootMargin:'-40% 0px -55% 0px'});
+['projets','parcours','competences','contact'].forEach(id=>so.observe(document.getElementById(id)));
+addEventListener('scroll',()=>document.body.classList.toggle('scrolled',scrollY>40),{passive:true});
+</script>
+</body>
+</html>

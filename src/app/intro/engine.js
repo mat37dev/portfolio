@@ -1,5 +1,5 @@
 /*
- * Moteur de l'intro "le site se construit" (route /beta).
+ * Moteur de l'intro "le site se construit" (page d'accueil).
  *
  * Principe : le vrai site est rendu normalement par React. Le moteur masque
  * ses éléments, puis trois curseurs les "construisent" un par un (tracé à la
@@ -15,14 +15,23 @@
  * inertie, rotation dans le sens du mouvement.
  */
 
-const ACC = "oklch(50% 0.1 235)";
-const WOOD = "oklch(50% 0.07 35)";
+import { charDelay, typingPlan } from "./typing.js";
+import { bendFor, settleOffset, preClickPause, dragSpeed, approachEase, IDLE } from "./motion.js";
+import { buildPlan as buildPlanSections } from "./plan.js";
+import { pickMistakes } from "./mistakes.js";
+import { line, lines } from "./dialogue.js";
+import { pickEggs } from "./eggs.js";
+
+const ACC = "#2f7cf6";
+const WOOD = "oklch(45% 0.12 240)"; // Design : bleu glacier foncé
 const VIOLET = "oklch(52% 0.13 300)";
 const RED = "#e5484d";
 const GREEN = "oklch(58% 0.12 150)";
 const SVGNS = "http://www.w3.org/2000/svg";
 
-const rand = (a, b) => a + Math.random() * (b - a);
+// Source aléatoire : remplacée par le générateur seedable reçu en option.
+let RNG = Math.random;
+const rand = (a, b) => a + RNG() * (b - a);
 const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
 const easeOut = (t) => 1 - Math.pow(1 - t, 3);
 const easeInOut = (t) => (t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2);
@@ -79,12 +88,15 @@ const SHAPES = (c) => ({
     bucket: `<path d="M-1 -1l6-6 8 8-6 6z" fill="${c}" stroke="#fff" stroke-width="1.3" stroke-linejoin="round"/><path d="M-1 -1l-4 4" stroke="#fff" stroke-width="3" stroke-linecap="round"/><path d="M-1 -1l-4 4" stroke="${c}" stroke-width="1.5" stroke-linecap="round"/><path d="M12 6c2.5 3 2.5 5.5 0 7.5c-2.5-2-2.5-4.5 0-7.5z" fill="${c}" stroke="#fff" stroke-width=".8"/>`,
     comment: `<path d="M0 0l2-6h11a3 3 0 0 1 3 3v6a3 3 0 0 1-3 3H6z" fill="${c}" stroke="#fff" stroke-width="1.3" stroke-linejoin="round"/><circle cx="7" cy="1.5" r="1" fill="#fff"/><circle cx="10.5" cy="1.5" r="1" fill="#fff"/><circle cx="14" cy="1.5" r="1" fill="#fff"/>`,
     hand: `<path d="M0 0l2 10 3-2 3 7 3-1-3-7 4-.5z" fill="${c}" stroke="#fff" stroke-width="1.3" stroke-linejoin="round"/>`,
+    rotate: `<path d="M-8 -2a8 8 0 1 1 4 7" fill="none" stroke="#fff" stroke-width="4.5" stroke-linecap="round"/><path d="M-8 -2a8 8 0 1 1 4 7" fill="none" stroke="${c}" stroke-width="1.8" stroke-linecap="round"/><path d="M-11 -5l3 3 3-3" fill="none" stroke="#fff" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/><path d="M-11 -5l3 3 3-3" fill="none" stroke="${c}" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>`,
+    robot: `<rect x="-9" y="-9" width="18" height="16" rx="4" fill="${c}" stroke="#fff" stroke-width="1.4"/><circle cx="-4" cy="-2" r="2" fill="#fff"/><circle cx="4" cy="-2" r="2" fill="#fff"/><path d="M-4 4h8" stroke="#fff" stroke-width="1.6" stroke-linecap="round"/><path d="M0 -9v-4" stroke="${c}" stroke-width="2"/><circle cx="0" cy="-14" r="1.8" fill="${c}" stroke="#fff" stroke-width="1"/>`,
+    tie: `<path d="M0 0L13 7.5L7.5 9L4.3 15.5Z" fill="${c}" stroke="#fff" stroke-width="1.4" stroke-linejoin="round"/><path d="M12 10l3-2 3 2-2 4 2 6-3 2-3-2 2-6z" fill="#c2410c" stroke="#fff" stroke-width="1"/>`,
 });
 
 class Cursor {
-    constructor(layer, name, color, skills, short) {
-        Object.assign(this, { name, color, skills, short });
-        const fast = Math.random() < 0.25;
+    constructor(layer, name, color, skills, short, { scale = 1 } = {}) {
+        Object.assign(this, { name, color, skills, short, scale });
+        const fast = RNG() < 0.25;
         this.speed = fast ? rand(1000, 1500) : rand(300, 750);
         this.force = fast ? rand(3500, 6000) : rand(700, 1800);
         this.spin = fast ? rand(2.2, 3.4) : rand(0.8, 1.8);
@@ -92,6 +104,8 @@ class Cursor {
         const sh = SHAPES(color);
         this.el = document.createElement("div");
         this.el.className = "bi-cur";
+        this.el.dataset.name = name;
+        this.el.style.setProperty("--scale", String(scale));
         this.el.innerHTML =
             `<svg width="28" height="28" viewBox="-14 -14 28 28">${Object.keys(sh)
                 .map((k) => `<g data-s="${k}">${sh[k]}</g>`)
@@ -109,7 +123,7 @@ class Cursor {
             x: 0, y: 0, vx: 0, vy: 0, angle: 0, press: 0, shape: "arrow",
             path: null, gen: null, task: null, drag: null, sel: null, pen: null,
             chip: null, prog: null, pop: null, key: null, flash: null, gdrag: null,
-            caret: null, msgT: 0,
+            caret: null, msgT: 0, rot: null, hold: false,
         });
         this.el.classList.remove("bi-talk");
     }
@@ -120,7 +134,7 @@ class Cursor {
     }
     render(dt) {
         this.el.style.transform = `translate(${this.x.toFixed(1)}px,${this.y.toFixed(1)}px)`;
-        this.svg.style.transform = `rotate(${this.angle}rad) scale(${1 - this.press * 0.12})`;
+        this.svg.style.transform = `rotate(${this.angle}rad) scale(${(1 - this.press * 0.12) * this.scale})`;
         if (this._shape !== this.shape) {
             for (const g of this.groups) g.style.display = g.dataset.s === this.shape ? "" : "none";
             this._shape = this.shape;
@@ -135,37 +149,59 @@ class Cursor {
 /* ------------------------------------------------------------------ */
 /* Moteur                                                              */
 /* ------------------------------------------------------------------ */
-export function startBuildIntro({ autoplay = true } = {}) {
+export function startBuildIntro({
+    autoplay = true,
+    tempoScale = 1,
+    rng = Math.random,
+    seed = null,
+    egg = null,
+    mistakes = null,
+    debug = false,
+    onFinish = null,
+} = {}) {
     const root = document.documentElement;
     const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    RNG = rng;
+    const events = [];
+    const timeline = [];
+    const log = (e) => { if (debug) { events.push(e); timeline.push([Number(elapsed.toFixed(2)), e]); } };
 
     // ---------- overlay ----------
     const world = document.createElement("div");
     world.className = "bi-world";
+    world.setAttribute("aria-hidden", "true");
     const wov = document.createElementNS(SVGNS, "svg");
     world.appendChild(wov);
     const grid = document.createElement("div");
     grid.className = "bi-grid";
+    grid.setAttribute("aria-hidden", "true");
     const rul = document.createElementNS(SVGNS, "svg");
     rul.setAttribute("class", "bi-rulers");
+    rul.setAttribute("aria-hidden", "true");
     const hud = document.createElement("div");
     hud.className = "bi-hud";
     hud.innerHTML =
-        `<span class="bi-pill" data-r="status">Bêta · 3 curseurs</span>` +
+        `<span class="bi-pill" data-r="status">4 curseurs</span>` +
         `<button type="button" class="bi-pill bi-btn bi-golive" data-r="golive">🚀 Mettre en ligne</button>` +
+        `<span class="bi-pill bi-deploy" data-r="deploy"><i></i><span data-r="dtxt">Build…</span></span>` +
         `<button type="button" class="bi-pill bi-btn" data-r="skip">Passer l'intro<span class="bi-hint"><kbd>clic</kbd><kbd>Espace</kbd><kbd>Échap</kbd></span></button>`;
     const status = hud.querySelector('[data-r="status"]');
     const golive = hud.querySelector('[data-r="golive"]');
+    const deploy = hud.querySelector('[data-r="deploy"]');
+    const deployTxt = hud.querySelector('[data-r="dtxt"]');
     const skipBtn = hud.querySelector('[data-r="skip"]');
     const replayBtn = document.createElement("button");
     replayBtn.type = "button";
     replayBtn.className = "bi-pill bi-btn bi-replay";
-    replayBtn.innerHTML = "<b>BÊTA</b>↻ Rejouer l'intro";
+    replayBtn.textContent = "↻ Rejouer l'intro";
 
-    const M = new Cursor(world, "Mathieu Crosnier", ACC, ["box", "dup", "line", "fix", "resolve"], "M");
-    const D = new Cursor(world, "Design", WOOD, ["guide", "paint", "image", "color", "comment", "title"], "D");
-    const S = new Cursor(world, "Stagiaire", VIOLET, ["type", "edit", "dupoops"], "S");
-    const cursors = [M, D, S];
+    const M = new Cursor(world, "Mathieu Crosnier", ACC, ["box", "dup", "fix", "resolve", "egg-copine", "egg-prod", "egg-console-fix", "egg-recruiter"], "M");
+    const D = new Cursor(world, "Design", WOOD, ["guide", "paint", "line", "image", "color", "comment", "title", "rotate", "toggle", "shrink", "egg-theme"], "D");
+    const S = new Cursor(world, "Stagiaire", VIOLET, ["type", "edit", "dupoops", "fix-image", "egg-console"], "S");
+    // QA : vérifie derrière les autres, partage les duplications, images et corrections.
+    const Q = new Cursor(world, "QA", "#e0791a", ["dup", "dupmany", "image", "fix", "resolve", "edit"], "Q");
+    const cursors = [M, D, S, Q];
+    const BASE_CURSORS = cursors.length;
 
     // ---------- état restaurable ----------
     let texts = new Map(); // Text -> data d'origine
@@ -193,6 +229,7 @@ export function startBuildIntro({ autoplay = true } = {}) {
             else el.setAttribute("style", s);
         }
         for (const el of tokEls) el.removeAttribute("data-bi");
+        root.removeAttribute("data-bi-theme");
         texts = new Map();
         styles = new Map();
         tokEls = new Set();
@@ -203,6 +240,10 @@ export function startBuildIntro({ autoplay = true } = {}) {
     let guides = [];
     let comments = [];
     let oops = new Map();
+    let wrongs = new Map(); // img -> src de la mauvaise couverture (overlay)
+    let toast = null; // panne en prod : { el, text, state }
+    let chips = []; // console.log posés dans l'overlay
+    let eggIds = [];
     let said = {};
 
     function buildPlan() {
@@ -218,15 +259,31 @@ export function startBuildIntro({ autoplay = true } = {}) {
         };
         const box = (el, deps = []) => (isVisible(el) ? T({ kind: "box", el, deps }) : null);
         const type = (el, o = {}) =>
-            isVisible(el) && textNodesOf(el).length ? T({ kind: "type", el, deps: o.deps || [], typo: o.typo, grow: o.grow }) : null;
+            isVisible(el) && textNodesOf(el).length
+                ? T({ kind: "type", el, deps: o.deps || [], typo: o.typo, grow: o.grow, big: o.big, caps: o.caps })
+                : null;
         // Titres de section : tapés par "Design" pour soulager le Stagiaire.
-        const title = (el, deps = []) => (isVisible(el) && textNodesOf(el).length ? T({ kind: "title", el, deps }) : null);
-        const image = (img, deps = []) => (isVisible(img) ? T({ kind: "image", el: img, file: fileNameOf(img), deps: deps.filter(Boolean) }) : null);
+        const title = (el, deps = [], o = {}) =>
+            isVisible(el) && textNodesOf(el).length ? T({ kind: "title", el, deps, caps: o.caps }) : null;
+        const image = (img, deps = [], o = {}) =>
+            isVisible(img)
+                ? T({
+                      kind: "image",
+                      el: img,
+                      file: fileNameOf(img),
+                      wrong: o.wrong ? { file: fileNameOf(o.wrong), src: o.wrong.currentSrc || o.wrong.src } : null,
+                      deps: deps.filter(Boolean),
+                  })
+                : null;
         const dupGroup = (els, o = {}) => {
             els = els.filter(isVisible);
             if (!els.length) return [];
             const first = box(els[0], o.deps || []);
             const out = [first];
+            if (o.many && els.length > 1) {
+                out.push(T({ kind: "dupmany", el: els[1], els: els.slice(1), src: els[0], deps: [first, ...(o.deps || [])] }));
+                return out;
+            }
             els.slice(1).forEach((el, i) => {
                 const kind = o.oops === i + 1 ? "dupoops" : "dup";
                 const t = T({ kind, el, src: els[0], group: els, deps: [first, ...(o.deps || [])] });
@@ -246,99 +303,13 @@ export function startBuildIntro({ autoplay = true } = {}) {
             return out;
         };
 
-        // En-tête
-        const header = q("body header");
-        box(header);
-
-        // Hero
-        const hero = q("#hero");
-        const h1 = q("h1", hero);
-        if (hero && h1) {
-            const heroGrid = q(":scope > div", hero);
-            T({ kind: "guide", el: hero, x: () => rectW(h1).x });
-            if (heroGrid) T({ kind: "guide", el: hero, x: () => { const r = rectW(heroGrid); return r.x + r.w; } });
-            type(h1.previousElementSibling, { typo: "Développeur Fullstak" });
-            type(h1, { grow: true });
-            type(h1.nextElementSibling);
-            type(h1.nextElementSibling && h1.nextElementSibling.nextElementSibling);
-            dupGroup(qa(":scope > span", q("h1 ~ div:nth-of-type(1)", hero)), { edit: true });
-            const btns = qa(":scope > a", q("h1 ~ div:nth-of-type(2)", hero));
-            const b0 = box(btns[0]);
-            if (b0) T({ kind: "color", el: btns[0], deps: [b0] });
-            if (btns[1]) {
-                const cm = T({ kind: "comment", el: btns[1], text: "Et le CV ? 📄", deps: b0 ? [b0] : [] });
-                const b1 = box(btns[1], [cm]);
-                if (b1) T({ kind: "resolve", el: btns[1], comment: cm, deps: [b1] });
-            }
-            const avatar = q("img", hero);
-            const ab = box(avatar);
-            image(avatar, [ab]);
-            const ridge = q(":scope > svg", hero);
-            const poly = ridge && q("polygon", ridge);
-            if (ridge && poly && isVisible(ridge)) {
-                const raw = poly.getAttribute("points").trim().split(/\s+/).map((p) => p.split(",").map(Number));
-                const pts = raw.filter(([, y]) => y < 180);
-                T({
-                    kind: "line",
-                    el: ridge,
-                    pts: () => {
-                        const r = rectW(ridge);
-                        return pts.map(([x, y]) => ({ x: r.x + (x / 1440) * r.w, y: r.y + (y / 180) * r.h }));
-                    },
-                });
-            }
-        }
-
-        // Parcours
-        const parcours = q("#parcours");
-        if (parcours) {
-            const t0 = title(q("h2", parcours));
-            qa("h3", parcours).forEach((h3) => {
-                const th = title(h3, [t0]);
-                const list = h3.nextElementSibling;
-                dupGroup(qa(":scope > div > div", list), { edit: "h4", deps: [th || t0] });
-            });
-        }
-
-        // Compétences
-        const comp = q("#competences");
-        if (comp) {
-            const t0 = title(q("h2", comp));
-            dupGroup(qa(".grid > div > div", comp), { edit: "h3", oops: 3, deps: [t0] });
-        }
-
-        // Projets
-        const proj = q("#projets");
-        if (proj) {
-            const h2 = q("h2", proj);
-            const t0 = title(h2);
-            type(h2 && h2.nextElementSibling, { deps: [t0] });
-            dupGroup(qa(":scope > button", q("h2 ~ div:nth-of-type(1)", proj)), { edit: true, deps: [t0] });
-            const arts = qa(".grid > article", proj);
-            if (arts.length) {
-                const fb = box(arts[0], [t0]);
-                image(q("img", arts[0]), [fb]);
-                const rest = arts.slice(1);
-                const ts = dupGroup(rest, { edit: "h3" });
-                rest.forEach((a, i) => image(q("img", a), [ts[i]]));
-            }
-        }
-
-        // Contact (fond anthracite peint au pot de peinture)
-        const contact = q("#contact");
-        if (contact) {
-            T({ kind: "paint", el: contact });
-            title(q("h2", contact));
-            qa("form > *", contact).forEach((el) => box(el));
-            qa(":scope > div:last-child > *", q(":scope > .grid", contact)).forEach((el) => type(el));
-        }
-
-        // Pied de page
-        const footer = q("body footer");
-        if (footer) {
-            box(footer);
-            type(q("p", footer));
-        }
+        // Sections et gestes : voir plan.js (lit les attributs data-intro).
+        buildPlanSections(document, { T, box, type, title, image, dupGroup, q, qa, rectW, isVisible, textNodesOf }, {
+            snowEnabled: document.documentElement.dataset.snow !== "off",
+            mistakes: pickMistakes(RNG, mistakes),
+            eggs: eggIds,
+            line: (key) => line(RNG, key),
+        });
 
         // Dépendance implicite : un élément attend que son conteneur soit construit
         for (const t of L) {
@@ -359,40 +330,69 @@ export function startBuildIntro({ autoplay = true } = {}) {
             if (["box", "type", "title", "dup", "dupoops", "line"].includes(t.kind)) addTok(t.el, "hide");
             if (t.kind === "image") addTok(t.el, "noimg");
             if (t.kind === "color") addTok(t.el, "nocolor");
+            if (t.kind === "dupmany") for (const el of t.els) addTok(el, "hide");
             if (t.kind === "paint") {
                 addTok(t.el, "paint");
                 saveStyle(t.el);
                 t.el.style.setProperty("--bi-r", "0px");
             }
+            if (t.kind === "rotate") {
+                saveStyle(t.el);
+                t.el.style.setProperty("--r", "0deg");
+            }
+            if (t.kind === "toggle" && t.hero) addTok(t.hero, "nosnow");
         }
     }
 
     // Débloqué quand l'élément est à l'écran (ou qu'on est déjà tout en bas de la page).
     const atBottom = () => ST() + H() >= document.documentElement.scrollHeight - 12;
-    const unlocked = (t) => rectW(t.el).y < ST() + H() - 40 || atBottom();
+    const unlocked = (t) => !t.el || rectW(t.el).y < ST() + H() - 40 || atBottom();
     const pick = (c) =>
-        tasks.find((t) => t.state === "wait" && c.skills.includes(t.kind) && t.deps.every((d) => d.state === "done") && unlocked(t));
+        tasks.find((t) => t.state === "wait" && !t.final && c.skills.includes(t.kind) && t.deps.every((d) => d.state === "done") && unlocked(t));
     const doneRatio = () => (tasks.length ? tasks.filter((t) => t.state === "done").length / tasks.length : 0);
-    const tempo = () => 1.35 + 1.35 * doneRatio();
+    const built = () => tasks.every((t) => t.final || t.state === "done");
+    // Tempo global : accélère au fil de l'avancement (spec §5.3) ; le facteur de
+    // base est calibré pour un passage complet de 35–50 s sur desktop.
+    const TEMPO_BASE = 1.9;
+    const tempo = () => TEMPO_BASE * (1 + 0.5 * doneRatio()) * tempoScale;
 
     // ---------- primitives (générateurs, yield renvoie un dt déjà accéléré) ----------
     function* wait(t) {
         let n = 0;
         while (n < t) n += yield;
     }
+    // Attente en temps réel, indépendante du tempo (barre de déploiement).
+    function* realWait(t) {
+        const until = performance.now() + t * 1000;
+        while (performance.now() < until) yield;
+    }
+    // Déplacement (spec §5.3) : arc à faible courbure, arrivée freinée, puis
+    // micro-correction de 2–3 px en 150 ms vers la cible exacte (sauf drag).
     function* moveTo(c, target, o = {}) {
         const end = target();
         const dist = Math.hypot(end.x - c.x, end.y - c.y);
         const dur = clamp(0.12 + Math.sqrt(dist) * 0.021, 0.14, 0.9) / (o.speed || 1);
-        const bend = o.bend !== undefined ? o.bend : (Math.random() < 0.5 ? -1 : 1) * rand(0.04, 0.14) * Math.min(dist, 600);
-        c.path = { sx: c.x, sy: c.y, target, t: 0, dur, bend, drag: !!o.drag };
+        const bend = o.bend !== undefined ? o.bend : o.drag ? 0 : bendFor(dist, RNG);
+        const settle = !o.drag && o.settle !== false && dist > 24;
+        const off = settle ? settleOffset(RNG) : null;
+        const first = settle ? () => { const p = target(); return { x: p.x + off.dx, y: p.y + off.dy }; } : target;
+        c.path = { sx: c.x, sy: c.y, target: first, t: 0, dur, bend, drag: !!o.drag };
         while (c.path) yield;
+        if (settle) {
+            c.path = { sx: c.x, sy: c.y, target, t: 0, dur: 0.15, bend: 0, drag: false, settle: true };
+            while (c.path) yield;
+        }
     }
+    // Clic : courte pause après l'arrivée, puis enfoncement.
+    function* click(c) {
+        yield* wait(preClickPause(RNG));
+        c.press = 1;
+    }
+    // Frappe (spec §5.2) : caractère par caractère sur les textes courts,
+    // par rafales de 2 à 4 caractères au-delà de 80 caractères. Délais en ms
+    // dans typing.js, en secondes ici.
+    const step = (ch) => charDelay(ch, RNG) / 1000;
     function* typeNodes(c, el, nodes, finals, o = {}) {
-        const N = finals.reduce((a, s) => a + s.length, 0);
-        const k = clamp(70 / Math.max(1, N), 0.06, 1);
-        const step = (ch) =>
-            rand(0.012, 0.04) * k + (ch === " " ? rand(0, 0.03) : 0) + (Math.random() < 0.025 ? rand(0.08, 0.2) : 0);
         for (let i = 0; i < nodes.length; i++) {
             const node = nodes[i];
             const full = finals[i];
@@ -400,15 +400,19 @@ export function startBuildIntro({ autoplay = true } = {}) {
             if (o.typo && i === 0) {
                 for (let j = 1; j <= o.typo.length; j++) { node.data = o.typo.slice(0, j); yield* wait(step(o.typo[j - 1])); }
                 yield* wait(0.35);
-                if (!said.typo) { said.typo = true; D.say("typo 👀", 1.8); }
+                if (!said.typo) { said.typo = true; D.say(line(RNG, "typo"), 1.8); }
                 yield* wait(0.5);
                 node.data = o.typo.slice(0, -1);
                 yield* wait(0.14);
                 for (let j = o.typo.length; j <= full.length; j++) { node.data = full.slice(0, j); yield* wait(step(full[j - 1])); }
-                c.say("corrigé 😅", 1.6);
+                c.say(line(RNG, "typoFixed"), 1.6);
             } else {
                 const lead = full.match(/^\s*/)[0];
-                for (let j = lead.length + 1; j <= full.length; j++) { node.data = full.slice(0, j); yield* wait(step(full[j - 1])); }
+                const body = full.slice(lead.length);
+                for (const st of typingPlan(body, RNG)) {
+                    yield* wait(st.delay / 1000);
+                    node.data = lead + body.slice(0, st.upTo);
+                }
             }
         }
         c.caret = null;
@@ -422,11 +426,11 @@ export function startBuildIntro({ autoplay = true } = {}) {
             c.shape = "ew";
             const y0 = ST() + clamp(H() * 0.35, 140, 320) + rand(-20, 20);
             yield* moveTo(c, () => ({ x: 8, y: y0 }));
-            c.press = 1;
+            yield* click(c);
             yield* wait(0.1);
             c.gdrag = true;
             const x = t.x();
-            yield* moveTo(c, () => ({ x, y: y0 + rand(-14, 14) }), { drag: true, bend: 0, speed: 0.8 });
+            yield* moveTo(c, () => ({ x, y: y0 + rand(-14, 14) }), { drag: true, bend: 0, speed: dragSpeed(RNG) });
             c.gdrag = null;
             guides.push({ x, flash: 1 });
             c.press = 1;
@@ -437,11 +441,11 @@ export function startBuildIntro({ autoplay = true } = {}) {
             const el = t.el;
             c.shape = "cross";
             yield* moveTo(c, () => ptW(el, 0, 0));
-            c.press = 1;
+            yield* click(c);
             snapGuide(ptW(el, 0, 0).x);
             yield* wait(0.08);
             c.drag = { kind: "box", el };
-            yield* moveTo(c, () => ptW(el, 1, 1), { drag: true, bend: 0, speed: 0.9 });
+            yield* moveTo(c, () => ptW(el, 1, 1), { drag: true, bend: 0, speed: dragSpeed(RNG) });
             c.drag = null;
             c.press = 1;
             addTok(el, "ph");
@@ -457,7 +461,7 @@ export function startBuildIntro({ autoplay = true } = {}) {
             const finals = nodes.map((n) => { saveText(n); return texts.get(n); });
             c.shape = "ibeam";
             yield* moveTo(c, () => ptW(el, 0, 0.5));
-            c.press = 1;
+            yield* click(c);
             snapGuide(ptW(el, 0, 0.5).x);
             yield* wait(0.1);
             saveStyle(el);
@@ -465,19 +469,282 @@ export function startBuildIntro({ autoplay = true } = {}) {
             nodes.forEach((n) => (n.data = ""));
             if (t.grow) { el.style.transformOrigin = "left center"; el.style.transform = "scale(.55)"; }
             delTok(el, "hide");
+            if (t.caps) {
+                // Erreur « majuscules » : tout en capitales, sélection, suppression, nouvelle frappe.
+                yield* typeNodes(c, el, nodes, finals.map((s) => s.toUpperCase()), {});
+                yield* wait(0.4);
+                log("mistake:caps");
+                D.say(line(RNG, "caps"), 1.8);
+                yield* wait(0.6);
+                addTok(el, "sel");
+                yield* wait(0.3);
+                delTok(el, "sel");
+                nodes.forEach((n) => (n.data = ""));
+                yield* wait(0.15);
+            }
             yield* typeNodes(c, el, nodes, finals, { typo: t.typo });
             if (t.grow) {
-                for (const s of [0.68, 0.8, 0.9, 1]) { el.style.transform = `scale(${s})`; c.key = "⌘ +"; yield* wait(0.07); }
+                const steps = t.big ? [0.68, 0.85, 1, 1.12] : [0.68, 0.8, 0.9, 1];
+                for (const s of steps) { el.style.transform = `scale(${s})`; c.key = "⌘ +"; yield* wait(0.07); }
                 c.key = null;
-                el.style.transform = "";
-                el.style.transformOrigin = "";
+                if (t.big) {
+                    // Erreur « titre trop gros » : on laisse le titre à 112 %, Design le réduira.
+                    log("mistake:title-too-big");
+                } else {
+                    el.style.transform = "";
+                    el.style.transformOrigin = "";
+                }
             }
             el.style.minHeight = "";
             c.shape = "arrow";
             yield* wait(0.12);
         },
         *title(c, t) { yield* jobs.type(c, t); },
+        *shrink(c, t) {
+            const el = t.el;
+            yield* moveTo(c, () => ptW(el, 0.5, 0.5));
+            yield* click(c);
+            c.sel = el;
+            for (const s of [1.06, 1]) { el.style.transform = `scale(${s})`; c.key = "⌘ −"; yield* wait(0.18); }
+            c.key = null;
+            el.style.transform = "";
+            el.style.transformOrigin = "";
+            c.sel = null;
+            c.say(line(RNG, "fix"), 1.5);
+            yield* wait(0.2);
+        },
+        *["fix-image"](c, t) {
+            c.say(line(RNG, "fix"), 1.5);
+            yield* jobs.image(c, { ...t, wrong: null, fixing: true });
+        },
+        // ---- easter eggs ----
+        *["egg-copine"](c, t) {
+            const el = t.el;
+            log("egg:copine");
+            const g = guest("copine", "#ff5c8a", "c", { scale: 0.85 });
+            g.x = -40;
+            g.y = edgeY(el);
+            yield* moveTo(g, () => ptW(el, 0.5, 0.4));
+            yield* click(g);
+            g.shape = "hand";
+            saveStyle(el);
+            el.style.transition = "none";
+            g.hold = true;
+            let k = 0;
+            while (k < 1) {
+                k = Math.min(1, k + (yield) / 0.6);
+                const dx = -30 * easeOut(k);
+                el.style.setProperty("--px", `${dx.toFixed(1)}px`);
+                el.style.setProperty("--r", "0deg");
+                const p = ptW(el, 0.5, 0.4);
+                g.x = p.x;
+                g.y = p.y;
+            }
+            g.hold = false;
+            g.shape = "arrow";
+            g.press = 1;
+            yield* wait(0.3);
+            g.say("😍", 3);
+            yield* wait(1.4);
+            c.say("…", 1.2);
+            yield* wait(1.4);
+            c.say("bon.", 1.4);
+            yield* moveTo(g, () => ({ x: -60, y: g.y }), { speed: 0.9 });
+            dropGuest(g);
+            yield* moveTo(c, () => ptW(el, 0.5, 0.4));
+            yield* click(c);
+            c.shape = "hand";
+            c.hold = true;
+            k = 0;
+            while (k < 1) {
+                k = Math.min(1, k + (yield) / 0.5);
+                el.style.setProperty("--px", `${(-30 * (1 - easeOut(k))).toFixed(1)}px`);
+                const p = ptW(el, 0.5, 0.4);
+                c.x = p.x;
+                c.y = p.y;
+            }
+            el.style.setProperty("--px", "0px");
+            el.style.transition = "";
+            c.hold = false;
+            c.shape = "arrow";
+            c.press = 1;
+            yield* wait(0.2);
+        },
+        *["egg-prod"](c, t) {
+            const el = t.el;
+            log("egg:prod");
+            toast = { el, text: "500 — service indisponible", state: "down" };
+            yield* wait(0.8);
+            S.say("ah.", 1.6);
+            const g = guest("Resilience Alpha", GREEN, "R");
+            g.shape = "robot";
+            g.x = W() + 40;
+            g.y = edgeY(el);
+            yield* moveTo(g, () => { const r = rectW(el); return { x: r.x + r.w - 100, y: r.y + 24 }; });
+            yield* click(g);
+            toast.state = "fixing";
+            let k = 0;
+            while (k < 1) {
+                k = Math.min(1, k + (yield) / 1.8);
+                toast.text = `rétablissement… ${(k * 1.8).toFixed(1)} s`;
+            }
+            toast.state = "up";
+            toast.text = "rétabli en 1,8 s ✓";
+            D.say("c'est réparé ?", 1.8);
+            yield* wait(0.6);
+            c.say("automatique 😎", 2);
+            yield* wait(1.2);
+            toast = null;
+            yield* moveTo(g, () => ({ x: W() + 60, y: g.y }), { speed: 0.9 });
+            dropGuest(g);
+        },
+        *["egg-console"](c, t) {
+            const el = t.el;
+            log("egg:console");
+            yield* moveTo(c, () => ptW(el, 0.5, 1.2));
+            yield* click(c);
+            const p = ptW(el, 0.5, 1.15);
+            chips.push({ x: p.x - 80, y: p.y, text: "console.log('coucou')", sel: false });
+            c.say("pour tester 🙈", 1.6);
+            yield* wait(0.5);
+        },
+        *["egg-console-fix"](c, t) {
+            const chip = chips[chips.length - 1];
+            if (!chip) return;
+            yield* moveTo(c, () => ({ x: chip.x + 70, y: chip.y + 12 }));
+            yield* click(c);
+            chip.sel = true;
+            yield* wait(0.4);
+            c.key = "Suppr";
+            yield* wait(0.3);
+            chips = chips.filter((x) => x !== chip);
+            c.key = null;
+            c.say("on nettoie avant la prod 🙄", 2.2);
+            yield* wait(0.5);
+        },
+        *["egg-theme"](c, t) {
+            const btn = t.el;
+            log("egg:theme");
+            yield* moveTo(c, () => ptW(btn, 0.5, 0.5));
+            yield* click(c);
+            addTok(btn, "pressed");
+            yield* wait(0.15);
+            delTok(btn, "pressed");
+            const dark = root.classList.contains("dark");
+            root.dataset.biTheme = dark ? "light" : "dark";
+            yield* wait(0.6);
+            c.say("oups", 1.4);
+            yield* wait(1.5);
+            yield* click(c);
+            addTok(btn, "pressed");
+            yield* wait(0.15);
+            delTok(btn, "pressed");
+            root.removeAttribute("data-bi-theme");
+            yield* wait(0.3);
+        },
+        *["egg-recruiter"](c, t) {
+            const el = t.el;
+            log("egg:recruiter");
+            const g = guest("Recruteur", "#3b4453", "R");
+            g.shape = "tie";
+            g.x = W() + 40;
+            g.y = edgeY(el);
+            yield* moveTo(g, () => ptW(el, 0.5, 0.5));
+            yield* click(g);
+            addTok(el, "pressed");
+            g.dl = { el, k: 0 };
+            let k = 0;
+            while (k < 1) { k = Math.min(1, k + (yield) / 0.8); g.dl.k = k; }
+            delTok(el, "pressed");
+            g.dl = null;
+            g.say("merci 👍", 2);
+            yield* wait(1.5);
+            yield* moveTo(g, () => ({ x: W() + 60, y: g.y }), { speed: 0.9 });
+            dropGuest(g);
+        },
+        // Rotation par poignée : le curseur attrape un point au-dessus de la carte
+        // et décrit un arc ; la carte suit (--r), un badge affiche l'angle.
+        *rotate(c, t) {
+            const el = t.el;
+            c.shape = "rotate";
+            const center = () => ptW(el, 0.5, 0.5);
+            const radius = () => rectW(el).h / 2 + 28;
+            const handleAt = (deg) => {
+                const o = center();
+                const a = (deg * Math.PI) / 180;
+                return { x: o.x + Math.sin(a) * radius(), y: o.y - Math.cos(a) * radius() };
+            };
+            saveStyle(el);
+            const from = parseFloat(el.style.getPropertyValue("--r")) || 0;
+            yield* moveTo(c, () => handleAt(from));
+            yield* click(c);
+            c.rot = { el, angle: from };
+            yield* wait(0.1);
+            el.style.transition = "none";
+            c.hold = true;
+            let k = 0;
+            while (k < 1) {
+                k = Math.min(1, k + (yield) / 0.7);
+                const a = from + (t.angle - from) * easeInOut(k);
+                el.style.setProperty("--r", `${a.toFixed(2)}deg`);
+                c.rot.angle = a;
+                const p = handleAt(a);
+                c.x = p.x;
+                c.y = p.y;
+            }
+            el.style.setProperty("--r", `${t.angle}deg`);
+            c.hold = false;
+            c.press = 1;
+            yield* wait(0.25);
+            c.rot = null;
+            el.style.transition = "";
+            c.shape = "arrow";
+            if (t.mistake === "tilted-card") {
+                log("mistake:tilted-card");
+                yield* wait(0.3);
+                M.say(line(RNG, "tilted"), 2);
+                yield* wait(0.5);
+            }
+            if (t.fixOf) c.say(line(RNG, "fix"), 1.5);
+            yield* wait(0.1);
+        },
+        // Interrupteur neige : clic animé sur le vrai bouton, sans déclencher React.
+        *toggle(c, t) {
+            const el = t.el;
+            yield* moveTo(c, () => ptW(el, 0.5, 0.5));
+            yield* click(c);
+            addTok(el, "pressed");
+            yield* wait(0.15);
+            delTok(el, "pressed");
+            if (t.hero) delTok(t.hero, "nosnow");
+            c.say("et les flocons ❄️", 1.8);
+            yield* wait(0.3);
+        },
         *dup(c, t) { yield* dupJob(c, t, false); },
+        // Duplication en rafale (⌘ D) : la sélection est copiée et chaque copie
+        // se pose à sa place, le curseur glisse de l'une à l'autre.
+        *dupmany(c, t) {
+            const s = t.src;
+            c.shape = "arrow";
+            yield* moveTo(c, () => ptW(s, 0.5, 0.5));
+            yield* click(c);
+            c.sel = s;
+            yield* wait(rand(0.2, 0.3));
+            c.shape = "dup";
+            for (const el of t.els) {
+                c.key = "⌘ D";
+                c.press = 1;
+                addTok(el, "settle");
+                delTok(el, "hide");
+                yield* moveTo(c, () => ptW(el, 0.5, 0.5), { speed: 1.6, bend: 0, settle: false });
+                delTok(el, "settle");
+                yield* wait(0.05);
+            }
+            c.key = null;
+            c.sel = null;
+            c.shape = "arrow";
+            yield* wait(0.15);
+        },
         *dupoops(c, t) { yield* dupJob(c, t, true); },
         *edit(c, t) {
             const el = t.el;
@@ -486,7 +753,7 @@ export function startBuildIntro({ autoplay = true } = {}) {
             const full = texts.get(node);
             c.shape = "ibeam";
             yield* moveTo(c, () => ptW(el, 0.3, 0.5));
-            c.press = 1;
+            yield* click(c);
             yield* wait(0.09);
             c.press = 1;
             addTok(el, "sel");
@@ -503,7 +770,7 @@ export function startBuildIntro({ autoplay = true } = {}) {
             const pts = t.pts();
             c.pen = [];
             for (const p of pts) {
-                yield* moveTo(c, () => p, { bend: rand(-3, 3), speed: 1.2 });
+                yield* moveTo(c, () => p, { bend: rand(-3, 3), speed: 1.2, settle: false });
                 c.press = 1;
                 c.pen.push(p);
                 yield* wait(rand(0.04, 0.12));
@@ -518,9 +785,9 @@ export function startBuildIntro({ autoplay = true } = {}) {
         *paint(c, t) {
             const sec = t.el;
             c.shape = "bucket";
-            if (!said.paint) { said.paint = true; c.say("un peu de contraste 🪣", 2); }
+            if (!said.paint) { said.paint = true; c.say(line(RNG, "paint"), 2); }
             yield* moveTo(c, () => inView(ptW(sec, 0.12, 0.2)));
-            c.press = 1;
+            yield* click(c);
             const r = rectW(sec);
             const px = c.x - r.x;
             const py = c.y - r.y;
@@ -539,11 +806,11 @@ export function startBuildIntro({ autoplay = true } = {}) {
         *image(c, t) {
             const el = t.el;
             yield* moveTo(c, () => ({ x: W() - 40, y: clamp(ptW(el, 0.5, 0.5).y, ST() + 90, ST() + H() - 60) }), { speed: 1.1 });
-            c.press = 1;
+            yield* click(c);
             c.shape = "hand";
-            c.chip = t.file;
+            c.chip = t.wrong ? t.wrong.file : t.file;
             yield* wait(0.15);
-            yield* moveTo(c, () => ptW(el, 0.5, 0.5), { drag: true, speed: 0.85 });
+            yield* moveTo(c, () => ptW(el, 0.5, 0.5), { drag: true, speed: dragSpeed(RNG) });
             c.chip = null;
             c.shape = "arrow";
             c.press = 1;
@@ -551,21 +818,42 @@ export function startBuildIntro({ autoplay = true } = {}) {
             let k = 0;
             while (k < 1) { k = Math.min(1, k + (yield) / 0.45); c.prog.k = k; }
             c.prog = null;
+            if (t.wrong) {
+                // Erreur « mauvaise image » : la fausse couverture s'affiche (overlay), Design réagit.
+                wrongs.set(el, t.wrong.src);
+                log("mistake:wrong-image");
+                yield* wait(0.5);
+                D.say(line(RNG, "wrongImage"), 2);
+                yield* wait(0.6);
+                return;
+            }
+            wrongs.delete(el);
             delTok(el, "noimg");
             yield* wait(0.15);
         },
         *color(c, t) {
             const el = t.el;
             yield* moveTo(c, () => ptW(el, 0.85, 0.5));
-            c.press = 1;
+            yield* click(c);
             yield* wait(0.12);
             const o = ptW(el, 1, 0);
-            c.pop = { x: o.x + 14, y: o.y - 6, pick: 4 };
+            const pick = t.pick ?? 3;
+            c.pop = { x: o.x + 14, y: o.y - 6, pick };
             yield* wait(0.35);
-            yield* moveTo(c, () => ({ x: c.pop.x + 10 + 4 * 18 + 6, y: c.pop.y + 14 }), { speed: 0.9 });
-            c.press = 1;
+            yield* moveTo(c, () => ({ x: c.pop.x + 10 + pick * 18 + 6, y: c.pop.y + 14 }), { speed: 0.9 });
+            yield* click(c);
             yield* wait(0.15);
             delTok(el, "nocolor");
+            if (t.mistake === "wrong-color") {
+                addTok(el, "wrongcolor");
+                log("mistake:wrong-color");
+                c.pop = null;
+                yield* wait(0.5);
+                M.say(line(RNG, "color"), 2);
+                yield* wait(0.6);
+                return;
+            }
+            if (t.fixOf) { delTok(el, "wrongcolor"); c.say(line(RNG, "fix"), 1.5); }
             c.pop = null;
             yield* wait(0.25);
         },
@@ -574,7 +862,7 @@ export function startBuildIntro({ autoplay = true } = {}) {
             c.shape = "comment";
             const at = () => ptW(el, 0.5, 0.5);
             yield* moveTo(c, at);
-            c.press = 1;
+            yield* click(c);
             const p = at();
             t.pin = { x: p.x, y: p.y, text: t.text, state: "open", who: c, k: 0 };
             comments.push(t.pin);
@@ -585,7 +873,7 @@ export function startBuildIntro({ autoplay = true } = {}) {
             const pin = t.comment.pin;
             if (!pin) return;
             yield* moveTo(c, () => ({ x: pin.x, y: pin.y }));
-            c.press = 1;
+            yield* click(c);
             pin.state = "done";
             yield* wait(0.55);
             comments = comments.filter((x) => x !== pin);
@@ -595,9 +883,9 @@ export function startBuildIntro({ autoplay = true } = {}) {
             const el = t.el;
             const o = oops.get(el);
             if (!o) return;
-            c.say("je réaligne", 1.8);
+            c.say(line(RNG, "fix"), 1.8);
             yield* moveTo(c, () => ptW(el, 0.5, 0.5));
-            c.press = 1;
+            yield* click(c);
             c.sel = el;
             yield* wait(0.25);
             while (o.x > 0) { o.x = Math.max(0, o.x - 6.5); el.style.transform = `translate(${o.x}px,${o.y}px)`; c.key = "←"; yield* wait(0.075); }
@@ -617,13 +905,13 @@ export function startBuildIntro({ autoplay = true } = {}) {
         const el = t.el;
         c.shape = "arrow";
         yield* moveTo(c, () => ptW(s, 0.5, 0.5));
-        c.press = 1;
+        yield* click(c);
         c.sel = s;
         yield* wait(rand(0.15, 0.3));
         c.shape = "dup";
         c.drag = { kind: "dup", el, src: s, group: t.group };
         const off = bad ? { x: 28, y: 14 } : { x: 0, y: 0 };
-        yield* moveTo(c, () => { const p = ptW(el, 0.5, 0.5); return { x: p.x + off.x, y: p.y + off.y }; }, { drag: true, bend: 0, speed: 0.7 });
+        yield* moveTo(c, () => { const p = ptW(el, 0.5, 0.5); return { x: p.x + off.x, y: p.y + off.y }; }, { drag: true, bend: 0, speed: dragSpeed(RNG) });
         c.drag = null;
         c.sel = null;
         (t.copy || []).forEach(({ node, from }) => { saveText(node); node.data = from; });
@@ -634,30 +922,56 @@ export function startBuildIntro({ autoplay = true } = {}) {
         }
         addTok(el, "settle");
         delTok(el, "hide");
-        if (bad) c.say("oups 😬", 1.8);
+        if (bad) { log("mistake:misaligned"); c.say(line(RNG, "oops"), 1.8); }
         yield* wait(0.2);
         delTok(el, "settle");
         c.shape = "arrow";
         yield* wait(0.05);
     }
 
+    // Curseurs invités (easter eggs) : ajoutés à l'overlay le temps d'une scène.
+    function guest(name, color, short, o = {}) {
+        const g = new Cursor(world, name, color, [], short, o);
+        g.render(0);
+        g.el.classList.add("bi-show");
+        cursors.push(g);
+        return g;
+    }
+    function dropGuest(g) {
+        const i = cursors.indexOf(g);
+        if (i >= BASE_CURSORS) cursors.splice(i, 1);
+        g.el.remove();
+    }
+    const dropGuests = () => { while (cursors.length > BASE_CURSORS) dropGuest(cursors[cursors.length - 1]); };
+    const edgeY = (el) => clamp(ptW(el, 0.5, 0.5).y, ST() + 100, ST() + H() - 80);
+
     let live = false;
     let destroyed = false;
     function* finalJob(c, i) {
-        const spots = [{ x: -80, y: 0 }, { x: 80, y: -30 }, { x: 10, y: 60 }];
+        const spots = [{ x: -80, y: 0 }, { x: 80, y: -30 }, { x: 10, y: 60 }, { x: -10, y: -80 }];
         golive.style.display = "inline-block";
         yield* moveTo(c, () => ({ x: W() / 2 + spots[i].x, y: ST() + H() / 2 + spots[i].y }));
         yield* wait(0.5 + i * 0.6);
-        c.say(["Site prêt ✓", "on publie ? 🚀", "go go go 🎉"][i], 2.6);
+        c.say(doneLines[i], 2.6);
         yield* wait(2.4 - i * 0.5);
         if (i === 0) {
             yield* moveTo(c, () => { const r = golive.getBoundingClientRect(); return { x: r.left + r.width / 2, y: ST() + r.top + r.height / 2 }; });
-            yield* wait(0.25);
-            c.press = 1;
+            yield* click(c);
             golive.classList.add("bi-pressed");
             yield* wait(0.15);
             golive.classList.remove("bi-pressed");
             golive.textContent = "✓ En ligne";
+            tasks.filter((t) => t.final).forEach((t) => { t.state = "done"; log(`task:${t.kind}:`); });
+            deploy.style.display = "inline-flex";
+            deploy.classList.add("bi-building");
+            deploy.classList.remove("bi-deployed");
+            deployTxt.textContent = "Build…";
+            yield* realWait(1.2);
+            deploy.classList.remove("bi-building");
+            deploy.classList.add("bi-deployed");
+            deployTxt.textContent = "Déployé ✓";
+            log("deployed");
+            yield* realWait(0.8);
             live = true;
             guides = [];
             comments = [];
@@ -668,28 +982,26 @@ export function startBuildIntro({ autoplay = true } = {}) {
             while (!live) yield;
             yield* wait(0.4 + i * 0.3);
         }
-        const exits = [{ x: -80, y: ST() + 120 }, { x: W() + 80, y: ST() + 160 }, { x: W() / 2 + 60, y: ST() + H() + 80 }];
+        const exits = [{ x: -80, y: ST() + 120 }, { x: W() + 80, y: ST() + 160 }, { x: W() / 2 + 60, y: ST() + H() + 80 }, { x: W() / 2 - 80, y: ST() - 80 }];
         yield* moveTo(c, () => exits[i], { speed: 0.7 });
     }
 
     // ---------- physique ----------
     let time = 0;
     let mouse = null;
+    // Au repos, le curseur se pose près de sa prochaine tâche (40 px au-dessus)
+    // ou reste où il est s'il n'en a plus.
     const home = (c) => {
-        const nxt = tasks.find((t) => t.state === "wait" && c.skills.includes(t.kind));
-        let p;
-        if (nxt) p = ptW(nxt.el, 0.5, 0.5);
-        else {
-            const o = cursors.find((x) => x !== c && x.gen);
-            p = o ? { x: o.x, y: o.y } : { x: W() / 2, y: ST() + H() / 2 };
-        }
-        return { x: clamp(p.x, 60, W() - 140), y: clamp(p.y, ST() + 100, ST() + H() - 80) };
+        const nxt = tasks.find((t) => t.state === "wait" && c.skills.includes(t.kind) && t.el);
+        if (!nxt) return { x: c.x, y: c.y };
+        const p = ptW(nxt.el, 0.5, 0.5);
+        return { x: clamp(p.x, 60, W() - 140), y: clamp(p.y - 40, ST() + 100, ST() + H() - 80) };
     };
     function physics(c, dt) {
         if (c.path) {
             const p = c.path;
             p.t = Math.min(1, p.t + (dt * tempo()) / p.dur);
-            const e = p.drag || p.t < 0.15 ? easeInOut(p.t) : easeOut(p.t);
+            const e = p.drag ? easeInOut(p.t) : p.settle ? easeOut(p.t) : approachEase(p.t);
             const end = p.target();
             const dx = end.x - p.sx;
             const dy = end.y - p.sy;
@@ -702,9 +1014,12 @@ export function startBuildIntro({ autoplay = true } = {}) {
             c.x = x;
             c.y = y;
             if (p.t >= 1) { c.path = null; c.vx *= 0.1; c.vy *= 0.1; }
+        } else if (c.hold) {
+            c.vx = 0;
+            c.vy = 0;
         } else {
             const h = home(c);
-            const R = 60 * (1 + 0.18 * Math.sin(time * 0.55));
+            const R = IDLE.radius * (1 + 0.18 * Math.sin(time * 0.55));
             const swirl = Math.tanh(3 * Math.cos(time * 0.11));
             const dx = c.x - h.x;
             const dy = c.y - h.y;
@@ -712,11 +1027,11 @@ export function startBuildIntro({ autoplay = true } = {}) {
             const nx = dx / d;
             const ny = dy / d;
             const ang = Math.atan2(dy, dx);
-            const rr = R * (1 + 0.3 * Math.sin(3 * ang + 0.7 * time)) + (c.orbit - 120) * 0.3;
-            const tang = 150 * (0.7 + c.spin * 0.2) * swirl;
+            const rr = R * (1 + 0.3 * Math.sin(3 * ang + 0.7 * time)) + (c.orbit - 120) * 0.1;
+            const tang = IDLE.tangent * (0.7 + c.spin * 0.2) * swirl;
             const rad = clamp((rr - d) * 4, -900, 600);
-            let wx = tang * -ny + rad * nx;
-            let wy = tang * nx + rad * ny;
+            let wx = tang * -ny + rad * nx + Math.sin(time * 0.9 + c.orbit) * IDLE.drift;
+            let wy = tang * nx + rad * ny + Math.cos(time * 0.7 + c.orbit) * IDLE.drift;
             for (const o of cursors) {
                 if (o === c) continue;
                 const ox = c.x - o.x;
@@ -769,7 +1084,7 @@ export function startBuildIntro({ autoplay = true } = {}) {
     const keycap = (x, y, txt, col) =>
         `<g transform="translate(${x},${y})"><rect width="30" height="24" rx="4" fill="#fff" stroke="${col}" stroke-width="1.2"/><rect x="2" y="2" width="26" height="18" rx="3" fill="#f3f4f6"/><text x="15" y="15" font-size="11" fill="${col}" text-anchor="middle" font-family="system-ui,sans-serif" font-weight="700">${esc(txt)}</text></g>`;
     const lineS = (a, b, c2, d, col, sw = 1.2) => `<line x1="${a}" y1="${b}" x2="${c2}" y2="${d}" stroke="${col}" stroke-width="${sw}"/>`;
-    const SW = ["#cfd4da", WOOD, GREEN, ACC, "oklch(20% 0.014 235)"];
+    const SW = ["#cfd4da", "#f59e0b", GREEN, ACC, "#161618"];
 
     function measures(x, y, w, h, el, group) {
         let s = "";
@@ -814,6 +1129,20 @@ export function startBuildIntro({ autoplay = true } = {}) {
             g.flash = Math.max(0, g.flash - dt * 2.5);
             s += lineS(g.x, 0, g.x, PH, RED, g.flash > 0 ? 2.2 : 1);
             if (g.flash > 0) s += `<line x1="${g.x}" y1="0" x2="${g.x}" y2="${PH}" stroke="${RED}" stroke-width="8" opacity="${(g.flash * 0.25).toFixed(2)}"/>`;
+        }
+        if (toast) {
+            const r = rectW(toast.el);
+            const w = toast.text.length * 6.6 + 24;
+            const col = toast.state === "up" ? GREEN : RED;
+            s += `<g transform="translate(${r.x + r.w - w - 10},${r.y + 10})"><rect width="${w}" height="28" rx="8" fill="${col}"/><circle cx="12" cy="14" r="3.5" fill="#fff"/><text x="22" y="18" font-size="11.5" fill="#fff" font-weight="600" font-family="system-ui,sans-serif">${esc(toast.text)}</text></g>`;
+        }
+        for (const ch of chips) {
+            const w = ch.text.length * 6.9 + 22;
+            s += `<g transform="translate(${ch.x},${ch.y})"><rect width="${w}" height="24" rx="6" fill="#1e1e1e" stroke="${ch.sel ? RED : "#555"}" stroke-width="${ch.sel ? 2 : 1}"/><text x="11" y="16" font-size="11.5" fill="#9cdcfe" font-family="ui-monospace,monospace">${esc(ch.text)}</text></g>`;
+        }
+        for (const [img, src] of wrongs) {
+            const r = rectW(img);
+            s += `<image href="${esc(src)}" x="${r.x}" y="${r.y}" width="${r.w}" height="${r.h}" preserveAspectRatio="xMidYMid slice"/>`;
         }
         for (const [el, o] of oops) {
             const r = rectW(el);
@@ -869,6 +1198,17 @@ export function startBuildIntro({ autoplay = true } = {}) {
                     `</g>`;
             }
             if (c.key) s += keycap(c.x + 16, c.y - 32, c.key, c.color);
+            if (c.dl) {
+                const r = rectW(c.dl.el);
+                const k = c.dl.k;
+                s += `<g transform="translate(${r.x + r.w / 2},${r.y - 18 + k * 14})" opacity="${(1 - k * 0.6).toFixed(2)}"><path d="M0 -8v12M-5 0l5 5 5-5" stroke="${c.color}" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></g>`;
+            }
+            if (c.rot) {
+                const r = rectW(c.rot.el);
+                s += lineS(r.x + r.w / 2, r.y + r.h / 2, c.x, c.y, c.color, 1.2) +
+                    `<circle cx="${c.x}" cy="${c.y}" r="5" fill="#fff" stroke="${c.color}" stroke-width="1.5"/>` +
+                    badge(c.x + 12, c.y - 26, `${Math.round(c.rot.angle)}°`, c.color);
+            }
         }
         for (const pin of comments) {
             pin.k = Math.min(1, pin.k + dt * 4);
@@ -910,8 +1250,8 @@ export function startBuildIntro({ autoplay = true } = {}) {
     let expectedScroll = 0;
     function tour(dt) {
         let y = Infinity;
-        for (const t of tasks) if (t.state === "run") y = Math.min(y, rectW(t.el).y);
-        const first = tasks.find((t) => t.state === "wait");
+        for (const t of tasks) if (t.state === "run" && t.el) y = Math.min(y, rectW(t.el).y);
+        const first = tasks.find((t) => t.state === "wait" && t.el && !t.final);
         if (first) y = Math.min(y, rectW(first.el).y);
         if (y === Infinity) return;
         const maxS = document.documentElement.scrollHeight - H();
@@ -919,7 +1259,7 @@ export function startBuildIntro({ autoplay = true } = {}) {
         const delta = desired - ST();
         if (Math.abs(delta) < 0.5) return;
         // Pas d'au moins 1 px : sinon l'arrondi du navigateur bloque la fin du trajet.
-        const stepPx = Math.sign(delta) * Math.max(1, Math.abs(delta) * Math.min(1, dt * 2.5));
+        const stepPx = Math.sign(delta) * Math.max(1, Math.abs(delta) * Math.min(1, dt * 2.5 * tempoScale));
         const next = Math.abs(stepPx) > Math.abs(delta) ? desired : ST() + stepPx;
         window.scrollTo({ top: next, behavior: "instant" });
         expectedScroll = ST();
@@ -933,36 +1273,46 @@ export function startBuildIntro({ autoplay = true } = {}) {
     let finals = null;
     let raf = 0;
     let scriptI = 0;
-    const script = [
-        [0.4, M, "On construit le portfolio ?"],
-        [1.4, D, "je pose les repères 📐"],
-        [2.3, S, "je prends les textes ✍️"],
-    ];
+    let script = [];
+    let doneLines = [];
 
+    let paused = false; // onglet caché : la boucle ne compte plus le temps
+    let turn = 0;
     function frame(now) {
         raf = requestAnimationFrame(frame);
         const dt = Math.min(0.05, (now - last) / 1000 || 0.016);
         last = now;
-        if (!running) return;
+        if (!running || paused) return;
         // L'utilisateur a fait défiler la page lui-même (barre de défilement...) : on arrête.
         if (phase === "build" && Math.abs(ST() - expectedScroll) > 40) { finish(true); return; }
         time += dt;
         elapsed += dt;
-        status.textContent = `Bêta · 3 curseurs · ${elapsed.toFixed(1)} s`;
+        status.textContent = `4 curseurs · ${elapsed.toFixed(1)} s`;
         while (scriptI < script.length && elapsed >= script[scriptI][0]) { script[scriptI][1].say(script[scriptI][2]); scriptI++; }
         if (phase === "build") {
             tour(dt);
-            for (const c of cursors) {
-                if (!c.gen) {
-                    const t = pick(c);
-                    if (t) { t.state = "run"; c.task = t; c.gen = jobs[t.kind](c, t); }
-                }
-                if (c.gen) {
-                    const r = c.gen.next(dt * tempo());
-                    if (r.done) { c.task.state = "done"; c.task = null; c.gen = null; }
+            // En mode rapide (tempoScale > 1) chaque générateur avance plusieurs
+            // fois par image : sinon chaque `yield` coûte au moins une image.
+            const sub = Math.max(1, Math.round(tempoScale));
+            // L'ordre de service tourne à chaque image : aucun curseur n'est
+            // prioritaire sur les tâches partagées (duplications, images…).
+            turn = (turn + 1) % cursors.length;
+            const order = cursors.slice(turn).concat(cursors.slice(0, turn));
+            for (const c of order) {
+                for (let k = 0; k < sub; k++) {
+                    if (!c.gen) {
+                        const t = pick(c);
+                        if (!t) break;
+                        t.state = "run";
+                        t.by = c.short;
+                        c.task = t;
+                        c.gen = jobs[t.kind](c, t);
+                    }
+                    const r = c.gen.next((dt * tempo()) / sub);
+                    if (r.done) { c.task.state = "done"; c.task.at = elapsed; log(`task:${c.task.kind}:${(c.task.el && c.task.el.dataset && c.task.el.dataset.intro) || ""}`); c.task = null; c.gen = null; }
                 }
             }
-            if (tasks.every((t) => t.state === "done")) {
+            if (built()) {
                 phase = "final";
                 finals = cursors.map((c, i) => finalJob(c, i));
             }
@@ -970,7 +1320,7 @@ export function startBuildIntro({ autoplay = true } = {}) {
             let left = 0;
             finals.forEach((g, i) => {
                 if (!g) return;
-                const r = g.next(dt);
+                const r = g.next(dt * tempoScale);
                 if (r.done) finals[i] = null;
                 else left++;
             });
@@ -995,6 +1345,10 @@ export function startBuildIntro({ autoplay = true } = {}) {
     };
     const onWheel = () => { if (running) finish(true); };
     const onResize = () => { if (running) finish(true); };
+    const onVisibility = () => {
+        paused = !!document.hidden;
+        if (!paused) last = performance.now();
+    };
     const onMove = (e) => { mouse = { x: e.pageX, y: e.pageY }; };
     const onLeave = () => { mouse = null; };
 
@@ -1006,6 +1360,7 @@ export function startBuildIntro({ autoplay = true } = {}) {
         window[m]("wheel", onWheel, { passive: true });
         window[m]("resize", onResize);
         window[m]("mousemove", onMove, { passive: true });
+        document[m]("visibilitychange", onVisibility);
         document.documentElement[m]("mouseleave", onLeave);
     }
     skipBtn.addEventListener("click", (e) => { e.stopPropagation(); finish(true); });
@@ -1023,8 +1378,33 @@ export function startBuildIntro({ autoplay = true } = {}) {
         hud.remove();
     }
 
+    const canPlay = () =>
+        window.innerWidth >= 860 && !window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+    // Si l'intro ne peut pas démarrer (ou plante), on rend la page et on
+    // déclenche la séquence d'entrée CSS : rien ne doit rester masqué.
+    function release() {
+        restoreDom();
+        dropGuests();
+        unmountOverlay();
+        root.classList.remove("bi-pending", "bi-live");
+        root.classList.add("bi-skipped");
+    }
+
     async function play() {
         if (running) return;
+        if (!canPlay()) { release(); return; }
+        try {
+            await start();
+        } catch (err) {
+            running = false;
+            listen(false);
+            release();
+            if (debug) console.error("[intro]", err);
+        }
+    }
+
+    async function start() {
         window.scrollTo({ top: 0, behavior: "instant" });
         expectedScroll = 0;
         root.classList.add("bi-pending");
@@ -1033,11 +1413,18 @@ export function startBuildIntro({ autoplay = true } = {}) {
         }
         if (destroyed || running) return;
         restoreDom();
+        dropGuests();
+        eggIds = pickEggs(RNG, egg);
+        toast = null;
+        chips = [];
         tasks = buildPlan();
         guides = [];
         comments = [];
         oops = new Map();
         said = {};
+        wrongs = new Map();
+        script = [[0.4, M, line(RNG, "open")], [1.4, D, line(RNG, "guides")], [2.3, S, line(RNG, "typing")], [3.2, Q, line(RNG, "qa")]];
+        doneLines = lines(RNG, "done", 4);
         scriptI = 0;
         elapsed = 0;
         time = 0;
@@ -1047,18 +1434,21 @@ export function startBuildIntro({ autoplay = true } = {}) {
         lastRul = "";
         world._h = 0;
         applyInitialState();
-        root.classList.remove("bi-pending");
+        root.classList.remove("bi-pending", "bi-skipped", "bi-done");
+        root.classList.add("bi-live");
         grid.classList.remove("bi-fadeout");
         rul.classList.remove("bi-fadeout", "bi-in");
         golive.style.display = "none";
         golive.textContent = "🚀 Mettre en ligne";
+        deploy.style.display = "none";
         skipBtn.style.display = "";
         mount();
         requestAnimationFrame(() => rul.classList.add("bi-in"));
-        M.reset(); D.reset(); S.reset();
+        M.reset(); D.reset(); S.reset(); Q.reset();
         M.x = -40; M.y = 220;
         D.x = W() + 40; D.y = 260;
         S.x = W() / 2; S.y = H() + 40;
+        Q.x = W() / 2 + 220; Q.y = -40;
         for (const c of cursors) { c.render(0); c.el.classList.add("bi-show"); }
         phase = "build";
         running = true;
@@ -1075,32 +1465,130 @@ export function startBuildIntro({ autoplay = true } = {}) {
         guides = [];
         comments = [];
         oops = new Map();
+        wrongs = new Map();
+        toast = null;
+        chips = [];
+        dropGuests();
         for (const c of cursors) { c.reset(); c.el.classList.remove("bi-show"); }
         wov.innerHTML = "";
         lastOv = "";
         unmountOverlay();
-        replayBtn.title = wasSkipped ? `Intro passée à ${elapsed.toFixed(1)} s` : `Construit par 3 curseurs en ${elapsed.toFixed(1)} s`;
+        root.classList.remove("bi-live");
+        root.classList.add(wasSkipped ? "bi-skipped" : "bi-done");
+        replayBtn.title = wasSkipped ? `Intro passée à ${elapsed.toFixed(1)} s` : `Construit par 4 curseurs en ${elapsed.toFixed(1)} s`;
         document.body.appendChild(replayBtn);
         if (!wasSkipped) window.scrollTo({ top: 0, behavior: "smooth" });
+        log(wasSkipped ? "finish:skip" : "finish:done");
+        if (onFinish) onFinish(wasSkipped);
     }
 
     function destroy() {
         destroyed = true;
         cancelAnimationFrame(raf);
+        cancelAnimationFrame(skierRaf);
+        skierRaf = 0;
+        for (const el of document.querySelectorAll(".bi-skier, .bi-skier-trail")) el.remove();
         if (running) { running = false; listen(false); }
         restoreDom();
         unmountOverlay();
         replayBtn.remove();
+        dropGuests();
         cursors.forEach((c) => c.el.remove());
-        root.classList.remove("bi-pending");
+        root.classList.remove("bi-pending", "bi-live");
+        if (debug && window.__intro && window.__intro.destroy === destroy) delete window.__intro;
     }
 
     raf = requestAnimationFrame((t) => { last = t; frame(t); });
+    if (debug) {
+        window.__intro = {
+            plan: () => tasks.map((t) => ({ kind: t.kind, intro: (t.el && t.el.dataset && t.el.dataset.intro) || null, state: t.state, by: t.by || null, at: t.at ?? null })),
+            play,
+            skip: () => finish(true),
+            events,
+            timeline,
+            elapsed: () => elapsed,
+            seed,
+            egg: () => eggIds,
+            mistakes,
+            destroy,
+        };
+    }
     if (autoplay && !reduced) play();
     else {
-        root.classList.remove("bi-pending");
+        // Le script bloquant a pu poser bi-pending : on libère la séquence d'entrée.
+        if (root.classList.contains("bi-pending")) {
+            root.classList.remove("bi-pending");
+            root.classList.add("bi-skipped");
+        }
         document.body.appendChild(replayBtn);
     }
 
-    return { play, skip: () => finish(true), destroy };
+    // ---------- skieur (déclencheur caché « ski ») ----------
+    // Descend la crête avant du hero de gauche à droite en 3 s, trace pointillée,
+    // puis disparaît. Indépendant de la boucle de l'intro ; relançable.
+    let skierRaf = 0;
+    function runSkier() {
+        if (skierRaf || destroyed) return;
+        const poly = document.querySelector('[data-intro="ridge-3"]');
+        const ridgeSvg = poly && poly.closest("svg");
+        if (!poly || !ridgeSvg || !isVisible(ridgeSvg)) return;
+        const r = rectW(ridgeSvg);
+        const pts = poly.getAttribute("points").trim().split(/\s+/).map((p) => p.split(",").map(Number))
+            .filter(([, y]) => y < 400)
+            .map(([x, y]) => ({ x: r.x + (x / 1440) * r.w, y: r.y + (y / 400) * r.h - 6 }));
+        if (pts.length < 2) return;
+        const seg = [];
+        let total = 0;
+        for (let i = 1; i < pts.length; i++) { const d = Math.hypot(pts[i].x - pts[i - 1].x, pts[i].y - pts[i - 1].y); seg.push(d); total += d; }
+        const at = (k) => {
+            let d = k * total;
+            for (let i = 0; i < seg.length; i++) {
+                if (d <= seg[i] || i === seg.length - 1) {
+                    const u = seg[i] ? Math.min(1, d / seg[i]) : 1;
+                    const a = pts[i];
+                    const b = pts[i + 1];
+                    return { x: a.x + (b.x - a.x) * u, y: a.y + (b.y - a.y) * u, ang: Math.atan2(b.y - a.y, b.x - a.x) };
+                }
+                d -= seg[i];
+            }
+            return { ...pts[pts.length - 1], ang: 0 };
+        };
+        const mounted = world.isConnected;
+        if (!mounted) { world.style.height = `${document.documentElement.scrollHeight}px`; document.body.appendChild(world); }
+        const layer = document.createElementNS(SVGNS, "svg");
+        layer.setAttribute("class", "bi-skier-trail");
+        const trail = document.createElementNS(SVGNS, "polyline");
+        trail.setAttribute("fill", "none");
+        trail.setAttribute("stroke", ACC);
+        trail.setAttribute("stroke-width", "1.5");
+        trail.setAttribute("stroke-dasharray", "3 5");
+        layer.appendChild(trail);
+        const skier = document.createElement("div");
+        skier.className = "bi-skier";
+        skier.innerHTML = `<svg width="30" height="30" viewBox="-15 -15 30 30"><g stroke="#fff" stroke-width="4" stroke-linecap="round" fill="none"><path d="M-9 8l18-6"/><path d="M-2 -3l4 5 3 5M-2 -3l-5 2M-2 -3l6-2"/></g><g stroke="${ACC}" stroke-width="1.8" stroke-linecap="round" fill="none"><path d="M-9 8l18-6"/><path d="M-2 -3l4 5 3 5M-2 -3l-5 2M-2 -3l6-2"/></g><circle cx="-1" cy="-9" r="3" fill="${ACC}" stroke="#fff" stroke-width="1.2"/></svg>`;
+        world.append(layer, skier);
+        const t0 = performance.now();
+        const DUR = 3000;
+        const done = () => {
+            cancelAnimationFrame(skierRaf);
+            skierRaf = 0;
+            skier.remove();
+            layer.remove();
+            if (!mounted && !running) world.remove();
+        };
+        const step = (now) => {
+            const k = Math.min(1, (now - t0) / DUR);
+            const p = at(k);
+            skier.style.transform = `translate(${p.x.toFixed(1)}px,${p.y.toFixed(1)}px) rotate(${(p.ang * 0.6).toFixed(3)}rad)`;
+            skier.style.opacity = k > 0.92 ? String((1 - k) / 0.08) : "1";
+            const tp = [];
+            for (let i = 0; i <= 40; i++) { const q = at((k * i) / 40); tp.push(`${q.x.toFixed(1)},${(q.y + 10).toFixed(1)}`); }
+            trail.setAttribute("points", tp.join(" "));
+            if (k < 1) skierRaf = requestAnimationFrame(step);
+            else setTimeout(done, 400);
+        };
+        skierRaf = requestAnimationFrame(step);
+    }
+
+    return { play, skip: () => finish(true), destroy, runSkier };
 }

@@ -23,8 +23,8 @@ export default function ScrollToTop() {
         <button
             onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
             aria-label="Retour en haut"
-            className={`fixed bottom-6 right-6 z-50 w-12 h-12 flex items-center justify-center rounded-full bg-accent text-white shadow-lg
-                hover:bg-accent-dark transition-all duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 ${
+            className={`fixed bottom-6 right-6 z-50 w-11 h-11 flex items-center justify-center rounded-full bg-[var(--acc-btn)] text-[var(--on-acc)] shadow-[0_8px_28px_var(--glow)]
+                hover:-translate-y-0.5 transition-all duration-300 ease-ease2 focus-ring ${
                 visible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4 pointer-events-none"
             }`}
         >

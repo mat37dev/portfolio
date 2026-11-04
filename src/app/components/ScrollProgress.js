@@ -63,11 +63,11 @@ export default function ScrollProgress() {
             aria-valuenow={0}
             aria-valuemin={0}
             aria-valuemax={100}
-            className="fixed top-0 left-0 right-0 z-30 h-[3px] bg-transparent"
+            className="fixed top-0 left-0 right-0 z-[60] h-[3px] bg-transparent"
         >
             <div
                 ref={barRef}
-                className="h-full w-full origin-left bg-gradient-to-r from-accent to-wood"
+                className="h-full w-full origin-left bg-acc"
                 style={{ transform: "scaleX(0)" }}
             />
         </div>

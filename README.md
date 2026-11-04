@@ -29,6 +29,29 @@ Ouvrir [http://localhost:3000](http://localhost:3000).
 | `npm run build` | Build de production |
 | `npm run start` | Démarre le build de production (après `npm run build`) |
 | `npm run lint` | Vérifie le code avec ESLint |
+| `npm test` | Tests unitaires puis tests de mise en page |
+| `npm run test:unit` | Tests unitaires des modules de données (`node --test`) |
+| `npm run test:e2e` | Tests Playwright (fenêtres 1280×800 et 390×844, serveur `next dev` sur le port 3100) |
+
+## Tests
+
+- **Unitaires** (`tests/unit/`) : modules purs de `src/app/data/` et table des logos, avec `node --test`.
+- **Mise en page** (`tests/e2e/`) : Playwright lance `next dev -p 3100` (ou réutilise un serveur déjà sur ce port) et vérifie les copies, les jetons jour/nuit, la nav, le hero (neige, scène), les projets (filtres), le parcours, les compétences, le contact (Formspree simulé) et le mouvement réduit. Premier lancement : `npx playwright install chromium`.
+
+## Intro « le site se construit »
+
+Sur desktop (≥ 860 px), quatre curseurs construisent la page d'accueil sous les yeux du visiteur (`src/app/intro/`). Elle ne se joue pas si le visiteur préfère moins de mouvement, si la fenêtre est étroite, si le navigateur est piloté, ou si elle a déjà été vue dans la session ; un clic, une touche, la molette ou un redimensionnement la passent. Paramètres d'URL réservés aux tests et à la mesure :
+
+| Paramètre | Effet |
+|---|---|
+| `?intro=0` | Pas d'intro |
+| `?intro=fast` | Tempo × 6 (force le lancement, sauf mouvement réduit ou fenêtre étroite) |
+| `?intro=debug` | Expose `window.__intro` (`plan()`, `play()`, `skip()`, `events`, `timeline`, `elapsed()`, `egg()`) |
+| `?seed=42` | Rend le passage reproductible |
+| `?egg=copine,theme` ou `?egg=none` | Force les easter eggs du passage (tests) |
+| `?mistakes=caps,wrong-color` | Force les erreurs jouées (`wrong-image`, `tilted-card`, `caps`, `wrong-color`, `misaligned`, `title-too-big`) |
+
+Durée d'un passage complet sans skip : environ 57 s sur desktop (tempo de base 1,9, accéléré de 50 % au fil de l'avancement). À chaque lancement, chaque easter egg est tiré indépendamment : copine 1/3, panne en prod 1/4, console.log 1/4, recruteur 1/4, thème 1/5. Déclencheurs cachés : taper « ski » hors d'un champ de saisie, et une bannière dans la console.
 
 ## Structure du projet
 
