@@ -83,3 +83,30 @@ test.describe('desktop', () => {
     expect(await snapshot(page)).toBe(ref);
   });
 });
+
+test.describe('ordre du hero et easter eggs', () => {
+  test.beforeEach(({}, info) => {
+    test.skip(info.project.name !== 'desktop', 'intro desktop seulement');
+    test.setTimeout(120000);
+  });
+
+  test('« Voir mes projets » et les coches viennent après le titre et les boutons', async ({ page }) => {
+    await page.goto('/?intro=fast&intro=debug&seed=1&egg=none');
+    await expect(page.locator('.bi-replay')).toBeVisible({ timeout: 90000 });
+    const tl = await page.evaluate(() => window.__intro.timeline.map(([t, e]) => [t, e]));
+    const at = (e) => tl.find(([, x]) => x === e)?.[0];
+    expect(at('task:type:cta-projects')).toBeGreaterThan(at('task:type:h1'));
+    expect(at('task:type:cta-projects')).toBeGreaterThan(at('task:box:cta-contact'));
+    expect(at('task:box:cta-contact')).toBeGreaterThan(at('task:type:h1'));
+  });
+
+  test('sans paramètre, des easter eggs tombent au hasard', async ({ page }) => {
+    const seen = new Set();
+    for (const seed of [11, 12, 13]) {
+      await page.goto(`/?intro=debug&seed=${seed}`);
+      await page.waitForFunction(() => window.__intro?.plan().length > 0);
+      for (const id of await page.evaluate(() => window.__intro.egg())) seen.add(id);
+    }
+    expect(seen.size).toBeGreaterThan(0);
+  });
+});

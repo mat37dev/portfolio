@@ -40,7 +40,7 @@ Ouvrir [http://localhost:3000](http://localhost:3000).
 
 ## Intro « le site se construit »
 
-Sur desktop (≥ 860 px), trois curseurs construisent la page d'accueil sous les yeux du visiteur (`src/app/intro/`). Elle ne se joue pas si le visiteur préfère moins de mouvement, si la fenêtre est étroite, si le navigateur est piloté, ou si elle a déjà été vue dans la session ; un clic, une touche, la molette ou un redimensionnement la passent. Paramètres d'URL réservés aux tests et à la mesure :
+Sur desktop (≥ 860 px), quatre curseurs construisent la page d'accueil sous les yeux du visiteur (`src/app/intro/`). Elle ne se joue pas si le visiteur préfère moins de mouvement, si la fenêtre est étroite, si le navigateur est piloté, ou si elle a déjà été vue dans la session ; un clic, une touche, la molette ou un redimensionnement la passent. Paramètres d'URL réservés aux tests et à la mesure :
 
 | Paramètre | Effet |
 |---|---|
@@ -48,10 +48,10 @@ Sur desktop (≥ 860 px), trois curseurs construisent la page d'accueil sous les
 | `?intro=fast` | Tempo × 6 (force le lancement, sauf mouvement réduit ou fenêtre étroite) |
 | `?intro=debug` | Expose `window.__intro` (`plan()`, `play()`, `skip()`, `events`, `timeline`, `elapsed()`, `egg()`) |
 | `?seed=42` | Rend le passage reproductible |
-| `?egg=copine\|prod\|console\|theme\|recruiter\|none` | Force l'easter egg du passage |
+| `?egg=copine,theme` ou `?egg=none` | Force les easter eggs du passage (tests) |
 | `?mistakes=caps,wrong-color` | Force les erreurs jouées (`wrong-image`, `tilted-card`, `caps`, `wrong-color`, `misaligned`, `title-too-big`) |
 
-Durée d'un passage complet sans skip : environ 50 s sur desktop (tempo de base 3,4, accéléré au fil de l'avancement). Déclencheurs cachés : taper « ski » hors d'un champ de saisie, et une bannière dans la console.
+Durée d'un passage complet sans skip : environ 57 s sur desktop (tempo de base 1,9, accéléré de 50 % au fil de l'avancement). À chaque lancement, chaque easter egg est tiré indépendamment : copine 1/3, panne en prod 1/4, console.log 1/4, recruteur 1/4, thème 1/5. Déclencheurs cachés : taper « ski » hors d'un champ de saisie, et une bannière dans la console.
 
 ## Structure du projet
 

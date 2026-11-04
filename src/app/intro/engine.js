@@ -20,7 +20,7 @@ import { bendFor, settleOffset, preClickPause, dragSpeed, approachEase, IDLE } f
 import { buildPlan as buildPlanSections } from "./plan.js";
 import { pickMistakes } from "./mistakes.js";
 import { line, lines } from "./dialogue.js";
-import { pickEgg } from "./eggs.js";
+import { pickEggs } from "./eggs.js";
 
 const ACC = "#2f7cf6";
 const WOOD = "oklch(45% 0.12 240)"; // Design : bleu glacier foncé
@@ -243,7 +243,7 @@ export function startBuildIntro({
     let wrongs = new Map(); // img -> src de la mauvaise couverture (overlay)
     let toast = null; // panne en prod : { el, text, state }
     let chips = []; // console.log posés dans l'overlay
-    let eggId = "none";
+    let eggIds = [];
     let said = {};
 
     function buildPlan() {
@@ -307,7 +307,7 @@ export function startBuildIntro({
         buildPlanSections(document, { T, box, type, title, image, dupGroup, q, qa, rectW, isVisible, textNodesOf }, {
             snowEnabled: document.documentElement.dataset.snow !== "off",
             mistakes: pickMistakes(RNG, mistakes),
-            egg: eggId,
+            eggs: eggIds,
             line: (key) => line(RNG, key),
         });
 
@@ -353,7 +353,7 @@ export function startBuildIntro({
     const built = () => tasks.every((t) => t.final || t.state === "done");
     // Tempo global : accélère au fil de l'avancement (spec §5.3) ; le facteur de
     // base est calibré pour un passage complet de 35–50 s sur desktop.
-    const TEMPO_BASE = 1.6;
+    const TEMPO_BASE = 1.9;
     const tempo = () => TEMPO_BASE * (1 + 0.5 * doneRatio()) * tempoScale;
 
     // ---------- primitives (générateurs, yield renvoie un dt déjà accéléré) ----------
@@ -1414,7 +1414,7 @@ export function startBuildIntro({
         if (destroyed || running) return;
         restoreDom();
         dropGuests();
-        eggId = pickEgg(RNG, egg);
+        eggIds = pickEggs(RNG, egg);
         toast = null;
         chips = [];
         tasks = buildPlan();
@@ -1508,7 +1508,7 @@ export function startBuildIntro({
             timeline,
             elapsed: () => elapsed,
             seed,
-            egg: () => eggId,
+            egg: () => eggIds,
             mistakes,
             destroy,
         };

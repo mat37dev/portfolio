@@ -8,6 +8,8 @@ export function buildPlan(root, helpers, options = {}) {
     const snowEnabled = options.snowEnabled !== false;
     const mistakes = new Set(options.mistakes || []);
     const has = (id) => mistakes.has(id);
+    const eggs = new Set(options.eggs || []);
+    const hasEgg = (id) => eggs.has(id);
     const g = (name, r = root) => q(`[data-intro="${name}"]`, r);
     const ga = (name, r = root) => qa(`[data-intro="${name}"]`, r);
 
@@ -54,13 +56,14 @@ export function buildPlan(root, helpers, options = {}) {
             T({ kind: "resolve", el: h1, comment: cm, deps: [sh] });
         }
         const tl = type(g("lead", hero), { deps: [th1] });
-        if (tl && options.egg === "console") {
+        if (tl && hasEgg("console")) {
             const e1 = T({ kind: "egg-console", el: tl.el, deps: [tl] });
             T({ kind: "egg-console-fix", el: tl.el, deps: [e1] });
         }
 
+        // Ordre du hero : pastille → titre → paragraphe → boutons → lien et coches.
         const ctaContact = g("cta-contact", hero);
-        const b0 = box(ctaContact);
+        const b0 = box(ctaContact, [tl || th1]);
         if (b0 && has("wrong-color")) {
             const c1 = T({ kind: "color", el: ctaContact, pick: 2, mistake: "wrong-color", deps: [b0] });
             T({ kind: "color", el: ctaContact, pick: 3, fixOf: "wrong-color", deps: [c1] });
@@ -71,8 +74,8 @@ export function buildPlan(root, helpers, options = {}) {
             const b1 = box(ctaCv, [cm]);
             if (b1) T({ kind: "resolve", el: ctaCv, comment: cm, deps: [b1] });
         }
-        type(g("cta-projects", hero));
-        dupGroup(qa(":scope > span", g("checks", hero)), { many: true });
+        type(g("cta-projects", hero), { deps: [b0] });
+        dupGroup(qa(":scope > span", g("checks", hero)), { many: true, deps: [b0] });
 
         // Scène : trois cartes posées, images déposées, cartes latérales tournées.
         const heroTail = [];
@@ -88,7 +91,7 @@ export function buildPlan(root, helpers, options = {}) {
                 if (!c.el || !isVisible(c.el)) continue;
                 const b = box(c.el);
                 const im = image(q("img", c.el), [b]);
-                if (c.angle === 0 && options.egg === "copine") T({ kind: "egg-copine", el: c.el, deps: [im || b] });
+                if (c.angle === 0 && hasEgg("copine")) T({ kind: "egg-copine", el: c.el, deps: [im || b] });
                 if (c.angle > 0 && has("tilted-card")) {
                     const r1 = T({ kind: "rotate", el: c.el, angle: 18, mistake: "tilted-card", deps: [im || b] });
                     T({ kind: "rotate", el: c.el, angle: c.angle, fixOf: "tilted-card", deps: [r1] });
@@ -99,7 +102,7 @@ export function buildPlan(root, helpers, options = {}) {
         const snowBtn = g("snow-toggle");
         if (snowEnabled && snowBtn && isVisible(snowBtn)) heroTail.push(T({ kind: "toggle", el: snowBtn, hero, deps: [] }));
         const themeBtn = g("theme-toggle");
-        if (options.egg === "theme" && themeBtn && isVisible(themeBtn)) T({ kind: "egg-theme", el: themeBtn, deps: heroTail.filter(Boolean) });
+        if (hasEgg("theme") && themeBtn && isVisible(themeBtn)) T({ kind: "egg-theme", el: themeBtn, deps: heroTail.filter(Boolean) });
     }
 
     // ---------- projets ----------
@@ -129,7 +132,7 @@ export function buildPlan(root, helpers, options = {}) {
                 it = image(img, [ts[i]], { wrong: other });
                 if (it) it = T({ kind: "fix-image", el: img, file: it.file, deps: [it] });
             } else it = image(img, [ts[i]]);
-            if (options.egg === "prod" && card.dataset.category === "DevOps") T({ kind: "egg-prod", el: card, deps: [it || ts[i]] });
+            if (hasEgg("prod") && card.dataset.category === "DevOps") T({ kind: "egg-prod", el: card, deps: [it || ts[i]] });
         });
     }
 
@@ -173,7 +176,7 @@ export function buildPlan(root, helpers, options = {}) {
         const fb = box(footer);
         const ft = type(q(".footer-brand", footer), { deps: [fb] });
         const cv = g("cta-cv");
-        if (options.egg === "recruiter" && cv) T({ kind: "egg-recruiter", el: cv, deps: [ft || fb] });
+        if (hasEgg("recruiter") && cv) T({ kind: "egg-recruiter", el: cv, deps: [ft || fb] });
     }
 
     // ---------- mise en ligne ----------
