@@ -34,7 +34,7 @@ export default function FeaturedProject({ project }) {
                         alt={project.imageAlt}
                         width={480}
                         height={280}
-                        sizes="(max-width: 859px) 100vw, 480px"
+                        sizes="(max-width: 859px) calc(100vw - 64px), 480px"
                     />
                 </div>
                 <figcaption>

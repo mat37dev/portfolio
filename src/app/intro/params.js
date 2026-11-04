@@ -3,6 +3,7 @@
 //   seed=<entier>             rend le passage reproductible
 //   egg=<id>                  force un easter egg
 //   mistakes=a,b              force les erreurs jouées
+//   scope=hero                mobile : ne construit que le hero (mini-intro)
 
 export function readParams(search = "") {
     const sp = new URLSearchParams(search || "");
@@ -17,5 +18,6 @@ export function readParams(search = "") {
     const egg = sp.get("egg") || null;
     const mistakesRaw = sp.get("mistakes");
     const mistakes = mistakesRaw ? mistakesRaw.split(",").map((s) => s.trim()).filter(Boolean) : null;
-    return { mode, debug, seed, egg, mistakes };
+    const scope = sp.get("scope") === "hero" ? "hero" : null;
+    return { mode, debug, seed, egg, mistakes, scope };
 }

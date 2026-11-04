@@ -58,6 +58,8 @@ export const metadata = {
         title: "Mathieu Crosnier - Développeur Fullstack | Nantes",
         description: "Portfolio de Mathieu Crosnier, développeur fullstack en Master SIN à l'EPSI Nantes, alternant chez Cloudity.",
         url: "https://mathieucrosnier.fr",
+        siteName: "Mathieu Crosnier",
+        locale: "fr_FR",
         type: "profile",
     },
     twitter: {
@@ -77,7 +79,9 @@ const jsonLd = {
     name: "Mathieu Crosnier",
     url: "https://mathieucrosnier.fr",
     email: "mathieu.crosnier15@outlook.fr",
+    image: "https://mathieucrosnier.fr/profile.jpg",
     jobTitle: "Développeur Fullstack",
+    address: { "@type": "PostalAddress", addressLocality: PROFILE.city, addressCountry: "FR" },
     alumniOf: { "@type": "EducationalOrganization", name: "EPSI Nantes" },
     worksFor: { "@type": "Organization", name: "Cloudity" },
     knowsAbout: ["Next.js", "React", "JavaScript", "Salesforce", "Apex", "PHP", "Symfony", "React Native"],

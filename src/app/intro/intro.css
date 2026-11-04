@@ -350,10 +350,32 @@ html.bi-live .stage .c {
     }
 }
 
-/* L'intro ne se joue ni sous 860 px ni avec le mouvement réduit : pas de bouton. */
-@media (max-width: 859px), (prefers-reduced-motion: reduce) {
+/* Avec le mouvement réduit, l'intro ne se joue pas : pas de bouton. */
+@media (prefers-reduced-motion: reduce) {
     .bi-replay {
         display: none !important;
+    }
+}
+
+/* Mini-intro mobile : HUD et bouton plus compacts. */
+@media (max-width: 859px) {
+    .bi-hud {
+        bottom: 12px;
+        gap: 6px;
+        max-width: calc(100vw - 120px);
+    }
+    .bi-pill {
+        font-size: 11.5px;
+        padding: 7px 11px;
+    }
+    .bi-deploy {
+        min-width: 0;
+    }
+    .bi-deploy i {
+        width: 32px;
+    }
+    .bi-replay {
+        bottom: 18px;
     }
 }
 

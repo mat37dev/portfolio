@@ -21,6 +21,7 @@ import { buildPlan as buildPlanSections } from "./plan.js";
 import { pickMistakes } from "./mistakes.js";
 import { line, lines } from "./dialogue.js";
 import { pickEggs } from "./eggs.js";
+import { introLayout } from "./gating.js";
 
 const ACC = "#2f7cf6";
 const WOOD = "oklch(45% 0.12 240)"; // Design : bleu glacier foncé
@@ -156,12 +157,16 @@ export function startBuildIntro({
     seed = null,
     egg = null,
     mistakes = null,
+    scope = null,
     debug = false,
     onFinish = null,
 } = {}) {
     const root = document.documentElement;
     const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     RNG = rng;
+    // Mise en page du passage en cours, fixée au démarrage de chaque passage.
+    let mobile = false;
+    let startWidth = 0;
     const events = [];
     const timeline = [];
     const log = (e) => { if (debug) { events.push(e); timeline.push([Number(elapsed.toFixed(2)), e]); } };
@@ -201,7 +206,23 @@ export function startBuildIntro({
     // QA : vérifie derrière les autres, partage les duplications, images et corrections.
     const Q = new Cursor(world, "QA", "#e0791a", ["dup", "dupmany", "image", "fix", "resolve", "edit"], "Q");
     const cursors = [M, D, S, Q];
-    const BASE_CURSORS = cursors.length;
+    let BASE_CURSORS = cursors.length;
+    const BASE_SKILLS = new Map([M, D, S].map((c) => [c, c.skills.slice()]));
+    // Mobile, sans QA : les boîtes et les rafales sont partagées à trois.
+    const MOBILE_EXTRA = new Map([[M, ["dupmany"]], [D, ["box"]], [S, ["dupmany"]]]);
+    // Desktop : quatre curseurs. Mobile : trois curseurs plus petits, sans QA.
+    function setCast() {
+        const cast = mobile ? [M, D, S] : [M, D, S, Q];
+        cursors.length = 0;
+        cursors.push(...cast);
+        BASE_CURSORS = cursors.length;
+        for (const [c, base] of BASE_SKILLS) c.skills = mobile ? [...base, ...MOBILE_EXTRA.get(c)] : base.slice();
+        for (const c of [M, D, S, Q]) {
+            c.scale = mobile ? 0.85 : 1;
+            c.el.style.setProperty("--scale", String(c.scale));
+        }
+        Q.el.classList.remove("bi-show");
+    }
 
     // ---------- état restaurable ----------
     let texts = new Map(); // Text -> data d'origine
@@ -306,7 +327,9 @@ export function startBuildIntro({
         // Sections et gestes : voir plan.js (lit les attributs data-intro).
         buildPlanSections(document, { T, box, type, title, image, dupGroup, q, qa, rectW, isVisible, textNodesOf }, {
             snowEnabled: document.documentElement.dataset.snow !== "off",
-            mistakes: pickMistakes(RNG, mistakes),
+            layout: mobile ? "mobile" : "desktop",
+            scope,
+            mistakes: mobile ? [] : pickMistakes(RNG, mistakes),
             eggs: eggIds,
             line: (key) => line(RNG, key),
         });
@@ -354,7 +377,9 @@ export function startBuildIntro({
     // Tempo global : accélère au fil de l'avancement (spec §5.3) ; le facteur de
     // base est calibré pour un passage complet de 35–50 s sur desktop.
     const TEMPO_BASE = 1.9;
-    const tempo = () => TEMPO_BASE * (1 + 0.5 * doneRatio()) * tempoScale;
+    const TEMPO_MOBILE = 3.2;
+    // Mobile : la page entière est longue à parcourir, l'accélération est plus franche.
+    const tempo = () => (mobile ? TEMPO_MOBILE * (1 + 0.9 * doneRatio()) : TEMPO_BASE * (1 + 0.5 * doneRatio())) * tempoScale;
 
     // ---------- primitives (générateurs, yield renvoie un dt déjà accéléré) ----------
     function* wait(t) {
@@ -949,11 +974,14 @@ export function startBuildIntro({
     let destroyed = false;
     function* finalJob(c, i) {
         const spots = [{ x: -80, y: 0 }, { x: 80, y: -30 }, { x: 10, y: 60 }, { x: -10, y: -80 }];
+        const k = mobile ? 0.25 : 1; // mini-intro : fin resserrée
+        const sx = mobile ? 0.5 : 1;
         golive.style.display = "inline-block";
-        yield* moveTo(c, () => ({ x: W() / 2 + spots[i].x, y: ST() + H() / 2 + spots[i].y }));
-        yield* wait(0.5 + i * 0.6);
-        c.say(doneLines[i], 2.6);
-        yield* wait(2.4 - i * 0.5);
+        if (mobile) skipBtn.style.display = "none";
+        yield* moveTo(c, () => ({ x: W() / 2 + spots[i].x * sx, y: ST() + H() / 2 + spots[i].y }), { speed: mobile ? 1.4 : 1 });
+        yield* wait((0.5 + i * 0.6) * k);
+        c.say(doneLines[i], 2.6 * k + 0.6);
+        yield* wait((2.4 - i * 0.5) * k);
         if (i === 0) {
             yield* moveTo(c, () => { const r = golive.getBoundingClientRect(); return { x: r.left + r.width / 2, y: ST() + r.top + r.height / 2 }; });
             yield* click(c);
@@ -966,24 +994,24 @@ export function startBuildIntro({
             deploy.classList.add("bi-building");
             deploy.classList.remove("bi-deployed");
             deployTxt.textContent = "Build…";
-            yield* realWait(1.2);
+            yield* realWait(mobile ? 0.5 : 1.2);
             deploy.classList.remove("bi-building");
             deploy.classList.add("bi-deployed");
             deployTxt.textContent = "Déployé ✓";
             log("deployed");
-            yield* realWait(0.8);
+            yield* realWait(mobile ? 0.35 : 0.8);
             live = true;
             guides = [];
             comments = [];
             grid.classList.add("bi-fadeout");
             rul.classList.add("bi-fadeout");
-            yield* wait(0.9);
+            yield* wait(mobile ? 0.2 : 0.9);
         } else {
             while (!live) yield;
-            yield* wait(0.4 + i * 0.3);
+            yield* wait((0.4 + i * 0.3) * k);
         }
         const exits = [{ x: -80, y: ST() + 120 }, { x: W() + 80, y: ST() + 160 }, { x: W() / 2 + 60, y: ST() + H() + 80 }, { x: W() / 2 - 80, y: ST() - 80 }];
-        yield* moveTo(c, () => exits[i], { speed: 0.7 });
+        yield* moveTo(c, () => exits[i], { speed: mobile ? 1.6 : 0.7, settle: false });
     }
 
     // ---------- physique ----------
@@ -1221,7 +1249,8 @@ export function startBuildIntro({
         }
         if (s !== lastOv) { wov.innerHTML = s; lastOv = s; }
 
-        // Grille de points qui suit le scroll, règles graduées fixes
+        // Grille de points qui suit le scroll, règles graduées fixes (desktop seulement)
+        if (mobile) return;
         grid.style.backgroundPosition = `0 ${-(ST() % 20)}px`;
         const w = W();
         const h = H();
@@ -1255,7 +1284,9 @@ export function startBuildIntro({
         if (first) y = Math.min(y, rectW(first.el).y);
         if (y === Infinity) return;
         const maxS = document.documentElement.scrollHeight - H();
-        const desired = clamp(y - 190, 0, Math.max(0, maxS));
+        // Mobile : on ne défile que si la tâche sort de l'écran, et on la place
+        // dans la moitié basse pour garder visible ce qui vient d'être construit.
+        const desired = clamp(mobile ? y - H() * 0.55 : y - 190, 0, Math.max(0, maxS));
         const delta = desired - ST();
         if (Math.abs(delta) < 0.5) return;
         // Pas d'au moins 1 px : sinon l'arrondi du navigateur bloque la fin du trajet.
@@ -1287,7 +1318,7 @@ export function startBuildIntro({
         if (phase === "build" && Math.abs(ST() - expectedScroll) > 40) { finish(true); return; }
         time += dt;
         elapsed += dt;
-        status.textContent = `4 curseurs · ${elapsed.toFixed(1)} s`;
+        status.textContent = `${cursors.length} curseurs · ${elapsed.toFixed(1)} s`;
         while (scriptI < script.length && elapsed >= script[scriptI][0]) { script[scriptI][1].say(script[scriptI][2]); scriptI++; }
         if (phase === "build") {
             tour(dt);
@@ -1314,6 +1345,8 @@ export function startBuildIntro({
             }
             if (built()) {
                 phase = "final";
+                // Mini-intro : on remonte voir le hero terminé pendant la mise en ligne.
+                if (mobile) window.scrollTo({ top: 0, behavior: "smooth" });
                 finals = cursors.map((c, i) => finalJob(c, i));
             }
         } else if (phase === "final") {
@@ -1344,7 +1377,11 @@ export function startBuildIntro({
         finish(true);
     };
     const onWheel = () => { if (running) finish(true); };
-    const onResize = () => { if (running) finish(true); };
+    const onResize = () => {
+        if (!running) return;
+        if (mobile && window.innerWidth === startWidth) return; // barre d'adresse, pas un vrai redimensionnement
+        finish(true);
+    };
     const onVisibility = () => {
         paused = !!document.hidden;
         if (!paused) last = performance.now();
@@ -1368,7 +1405,8 @@ export function startBuildIntro({
 
     // ---------- cycle de vie ----------
     function mount() {
-        document.body.append(grid, world, rul, hud);
+        if (mobile) document.body.append(world, hud);
+        else document.body.append(grid, world, rul, hud);
         replayBtn.remove();
     }
     function unmountOverlay() {
@@ -1379,7 +1417,7 @@ export function startBuildIntro({
     }
 
     const canPlay = () =>
-        window.innerWidth >= 860 && !window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+        window.innerWidth >= 320 && !window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
     // Si l'intro ne peut pas démarrer (ou plante), on rend la page et on
     // déclenche la séquence d'entrée CSS : rien ne doit rester masqué.
@@ -1414,7 +1452,11 @@ export function startBuildIntro({
         if (destroyed || running) return;
         restoreDom();
         dropGuests();
-        eggIds = pickEggs(RNG, egg);
+        mobile = introLayout(window.innerWidth) === "mobile";
+        startWidth = window.innerWidth;
+        setCast();
+        // Sur mobile, seul l'easter egg « copine » a sa place (la photo est au centre).
+        eggIds = pickEggs(RNG, egg).filter((id) => !mobile || id === "copine");
         toast = null;
         chips = [];
         tasks = buildPlan();
@@ -1423,8 +1465,10 @@ export function startBuildIntro({
         oops = new Map();
         said = {};
         wrongs = new Map();
-        script = [[0.4, M, line(RNG, "open")], [1.4, D, line(RNG, "guides")], [2.3, S, line(RNG, "typing")], [3.2, Q, line(RNG, "qa")]];
-        doneLines = lines(RNG, "done", 4);
+        script = mobile
+            ? [[0.3, M, line(RNG, "open")], [1.0, S, line(RNG, "typing")]]
+            : [[0.4, M, line(RNG, "open")], [1.4, D, line(RNG, "guides")], [2.3, S, line(RNG, "typing")], [3.2, Q, line(RNG, "qa")]];
+        doneLines = lines(RNG, "done", cursors.length);
         scriptI = 0;
         elapsed = 0;
         time = 0;
@@ -1445,8 +1489,8 @@ export function startBuildIntro({
         mount();
         requestAnimationFrame(() => rul.classList.add("bi-in"));
         M.reset(); D.reset(); S.reset(); Q.reset();
-        M.x = -40; M.y = 220;
-        D.x = W() + 40; D.y = 260;
+        M.x = -40; M.y = mobile ? 160 : 220;
+        D.x = W() + 40; D.y = mobile ? 200 : 260;
         S.x = W() / 2; S.y = H() + 40;
         Q.x = W() / 2 + 220; Q.y = -40;
         for (const c of cursors) { c.render(0); c.el.classList.add("bi-show"); }
@@ -1475,7 +1519,7 @@ export function startBuildIntro({
         unmountOverlay();
         root.classList.remove("bi-live");
         root.classList.add(wasSkipped ? "bi-skipped" : "bi-done");
-        replayBtn.title = wasSkipped ? `Intro passée à ${elapsed.toFixed(1)} s` : `Construit par 4 curseurs en ${elapsed.toFixed(1)} s`;
+        replayBtn.title = wasSkipped ? `Intro passée à ${elapsed.toFixed(1)} s` : `Construit par ${cursors.length} curseurs en ${elapsed.toFixed(1)} s`;
         document.body.appendChild(replayBtn);
         if (!wasSkipped) window.scrollTo({ top: 0, behavior: "smooth" });
         log(wasSkipped ? "finish:skip" : "finish:done");

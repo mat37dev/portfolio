@@ -63,12 +63,14 @@ export default function Header() {
     return (
         <header ref={headerRef} data-intro="nav" className="nav">
             <div className="nav-bar">
-                <Link href="/#top" className="brand focus-ring" aria-label="Retour en haut">
+                <Link href="/#top" className="brand focus-ring">
                     <Image src="/profile.jpg" alt="" width={34} height={34} priority />
                     <span>
                         <b>{PROFILE.name}</b>
                         <small>{PROFILE.role}</small>
                     </span>
+                    {/* Nom accessible = texte visible + destination (WCAG 2.5.3). */}
+                    <span className="sr-only"> : retour en haut</span>
                 </Link>
 
                 <nav aria-label="Sections">

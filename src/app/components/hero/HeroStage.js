@@ -23,6 +23,8 @@ export default function HeroStage() {
         for (const el of cards) el.addEventListener("animationend", onEnd);
         const offEnd = () => cards.forEach((el) => el.removeEventListener("animationend", onEnd));
         if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return offEnd;
+        // Parallaxe réservée aux souris : un toucher génère un faux mousemove.
+        if (!window.matchMedia("(hover: hover) and (pointer: fine)").matches) return offEnd;
         const onMove = (e) => {
             const x = e.clientX / window.innerWidth - 0.5;
             const y = e.clientY / window.innerHeight - 0.5;

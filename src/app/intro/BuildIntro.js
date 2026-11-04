@@ -34,6 +34,7 @@ export default function BuildIntro() {
             seed,
             egg: params.egg,
             mistakes: params.mistakes,
+            scope: params.scope,
             debug: params.debug,
             onFinish: () => {
                 try {
