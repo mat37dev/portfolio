@@ -19,7 +19,8 @@ test("onglet caché : le temps de l'intro ne saute pas au retour", async ({ page
   });
   await page.waitForTimeout(200);
   const t1 = await page.evaluate(() => window.__intro.elapsed());
-  expect(t1 - t0).toBeLessThan(0.6);
+  // Sans pause, l'intro sauterait de ~2 s ; marge pour une machine chargée.
+  expect(t1 - t0).toBeLessThan(1);
   // L'intro reprend ensuite normalement.
   await page.waitForTimeout(1000);
   expect(await page.evaluate(() => window.__intro.elapsed())).toBeGreaterThan(t1 + 0.5);

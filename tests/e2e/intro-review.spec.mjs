@@ -2,7 +2,9 @@ import { test, expect } from '@playwright/test';
 
 // Tests ajoutés après la relecture du chantier B.
 
-const snapshot = (page) =>
+// Attend l'hydratation (icône du bouton thème rendue) avant de relever le DOM.
+const snapshot = async (page) =>
+  (await page.locator('[data-intro="theme-toggle"] svg').waitFor()) ||
   page.evaluate(() =>
     [document.querySelector('header'), document.querySelector('main'), document.querySelector('footer')]
       .map((e) => e.outerHTML)

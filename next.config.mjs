@@ -16,6 +16,8 @@ const nextConfig = {
     distDir: process.env.NEXT_DIST_DIR || ".next",
     experimental: {
         optimizePackageImports: ["lucide-react"],
+        // CSS intégré au HTML : plus de requêtes CSS bloquantes avant le rendu.
+        inlineCss: true,
     },
     async headers() {
         return [

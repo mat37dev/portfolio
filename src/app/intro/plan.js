@@ -152,7 +152,7 @@ export function buildPlan(root, helpers, options = {}) {
         type(g("competences-eyebrow", comp));
         const t0 = title(g("competences-h2", comp));
         const groups = ga("grp", comp);
-        const gts = dupGroup(groups, { edit: "h4", deps: [t0] });
+        const gts = dupGroup(groups, { edit: "h3", deps: [t0] });
         // Pilules dupliquées sans réédition du nom : chaque pilule garde son texte.
         groups.forEach((grp, i) => dupGroup(ga("tile", grp), { many: true, deps: [gts[i]] }));
     }

@@ -41,6 +41,7 @@
     --flakeglow: rgba(120, 165, 225, 1);
     --navbg: rgba(255, 255, 255, 0.82);
     --on-acc: #ffffff;
+    --acc-btn: #2563eb;
     --inv: 0;
     --ease: cubic-bezier(0.2, 0.8, 0.2, 1);
 }
@@ -79,6 +80,7 @@
     --flakeglow: rgba(180, 205, 255, 0.9);
     --navbg: rgba(14, 19, 26, 0.8);
     --on-acc: #0e131a;
+    --acc-btn: #6f97ff;
     --inv: 1;
 }
 
@@ -115,6 +117,7 @@
     --flakeglow: rgba(120, 165, 225, 1);
     --navbg: rgba(255, 255, 255, 0.82);
     --on-acc: #ffffff;
+    --acc-btn: #2563eb;
     --inv: 0;
 }
 
@@ -186,7 +189,7 @@ a {
     transition: transform 0.2s var(--ease), box-shadow 0.2s, background 0.2s, border-color 0.2s;
 }
 .pill-acc {
-    background: var(--acc);
+    background: var(--acc-btn);
     color: var(--on-acc);
     box-shadow: 0 8px 28px var(--glow);
 }
@@ -238,9 +241,19 @@ a {
     cursor: pointer;
     transition: border-color 0.2s, transform 0.2s var(--ease);
 }
+.icon-btn svg {
+    transition: transform 0.4s var(--ease);
+}
 .icon-btn:hover {
-    border-color: var(--line2);
+    border-color: var(--acc);
     transform: translateY(-1px);
+    box-shadow: 0 6px 16px var(--shadow2);
+}
+.icon-btn:hover svg {
+    transform: rotate(-20deg) scale(1.1);
+}
+.icon-btn:active {
+    transform: scale(0.94);
 }
 
 /* ===================== Nav flottante ===================== */
@@ -292,7 +305,17 @@ a {
     border-radius: 50%;
     object-fit: cover;
     border: 1px solid var(--line);
-    transition: width 0.3s, height 0.3s;
+    transition: width 0.3s, height 0.3s, transform 0.4s var(--ease), border-color 0.3s;
+}
+.brand:hover img {
+    transform: scale(1.08) rotate(-4deg);
+    border-color: var(--acc);
+}
+.brand b {
+    transition: color 0.2s;
+}
+.brand:hover b {
+    color: var(--acc);
 }
 .nav.is-scrolled .brand img {
     width: 28px;
@@ -321,35 +344,62 @@ a {
     margin: 0;
     padding: 0;
     display: flex;
-    gap: 26px;
+    gap: 4px;
     font-size: 14px;
     font-weight: 500;
     color: var(--txt);
 }
 .nav li a {
     position: relative;
-    padding: 6px 0;
-    transition: color 0.2s;
+    isolation: isolate;
+    display: inline-block;
+    padding: 7px 13px;
+    border-radius: 999px;
+    transition: color 0.2s, transform 0.25s var(--ease);
 }
-.nav li a:hover,
+.nav li a::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    border-radius: inherit;
+    background: var(--acc-soft);
+    opacity: 0;
+    transform: scale(0.8);
+    transition: opacity 0.25s var(--ease), transform 0.35s var(--ease);
+}
+.nav li a:hover {
+    color: var(--acc);
+    transform: translateY(-1px);
+}
+.nav li a:hover::before {
+    opacity: 1;
+    transform: none;
+}
+.nav li a:active {
+    transform: scale(0.96);
+}
 .nav li a.is-active {
     color: var(--ink);
 }
 .nav li a::after {
     content: "";
     position: absolute;
-    left: 0;
-    right: 0;
-    bottom: -2px;
+    left: 13px;
+    right: 13px;
+    bottom: 1px;
     height: 2px;
     border-radius: 2px;
     background: var(--acc);
     transform: scaleX(0);
-    transform-origin: left;
+    transform-origin: center;
     transition: transform 0.3s var(--ease);
 }
 .nav li a.is-active::after {
     transform: scaleX(1);
+}
+.nav .pill-acc:active {
+    transform: scale(0.96);
 }
 .nav-actions {
     display: flex;
@@ -1332,7 +1382,7 @@ a {
     border-top: 0;
     margin-top: 28px;
 }
-.grp h4 {
+.grp h3 {
     margin: 0;
     padding-top: 10px;
     font-family: var(--font-serif), Georgia, serif;
@@ -1387,7 +1437,7 @@ a {
         grid-template-columns: 1fr;
         gap: 10px;
     }
-    .grp h4 {
+    .grp h3 {
         padding-top: 0;
     }
 }

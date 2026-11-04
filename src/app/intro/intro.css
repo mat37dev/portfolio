@@ -269,7 +269,7 @@ html.bi-live .stage .c {
     transform: translateX(-50%);
     bottom: 16px;
     z-index: 60;
-    background: var(--acc);
+    background: var(--acc-btn);
     color: var(--on-acc);
     border-color: transparent;
     font-family: var(--font-sans), system-ui, sans-serif;

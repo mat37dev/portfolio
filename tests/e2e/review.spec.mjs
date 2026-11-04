@@ -34,7 +34,7 @@ test.describe('survols (desktop)', () => {
     await card.hover();
     // rotation(-6°) → b ≈ -0.10 ; redressée → b ≈ 0 et translation vers le haut
     await expect.poll(async () => Math.abs(matrix(await transformOf(card))[1])).toBeLessThan(0.02);
-    expect(matrix(await transformOf(card))[5]).toBeLessThan(-5);
+    await expect.poll(async () => matrix(await transformOf(card))[5]).toBeLessThan(-5);
   });
 });
 

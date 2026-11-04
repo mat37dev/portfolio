@@ -7,7 +7,9 @@ test.beforeEach(({}, info) => {
 
 // Empreinte du DOM utile : header, main, footer, sans les classes d'animation
 // (is-visible, is-live, entrance…) qui dépendent du défilement et du temps.
-const snapshot = (page) =>
+// Attend l'hydratation (icône du bouton thème rendue) avant de relever le DOM.
+const snapshot = async (page) =>
+  (await page.locator('[data-intro="theme-toggle"] svg').waitFor()) ||
   page.evaluate(() =>
     [document.querySelector('header'), document.querySelector('main'), document.querySelector('footer')]
       .map((e) => e.outerHTML)

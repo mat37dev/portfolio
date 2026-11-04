@@ -27,9 +27,19 @@ export default function HeroBackground() {
         let running = false;
         let inView = true;
 
+        // Couleurs lues une fois, puis à chaque changement de thème : les relire
+        // à chaque image forçait un recalcul de style (reflow) 60 fois par seconde.
+        let colors = { flake: "", glow: "" };
+        const readColors = () => {
+            const cs = getComputedStyle(document.documentElement);
+            colors = { flake: cs.getPropertyValue("--flake"), glow: cs.getPropertyValue("--flakeglow") };
+        };
+
         const resize = () => {
-            canvas.width = canvas.clientWidth;
-            canvas.height = canvas.clientHeight;
+            const w = canvas.clientWidth;
+            const h = canvas.clientHeight;
+            canvas.width = w;
+            canvas.height = h;
             flakes = Array.from({ length: Math.round(canvas.width / 11) }, () => ({
                 x: Math.random() * canvas.width,
                 y: Math.random() * canvas.height,
@@ -53,11 +63,10 @@ export default function HeroBackground() {
                 ctx.clearRect(0, 0, canvas.width, canvas.height);
                 return;
             }
-            const cs = getComputedStyle(document.documentElement);
             ctx.clearRect(0, 0, canvas.width, canvas.height);
-            ctx.shadowColor = cs.getPropertyValue("--flakeglow");
+            ctx.shadowColor = colors.glow;
             ctx.shadowBlur = 6;
-            ctx.fillStyle = cs.getPropertyValue("--flake");
+            ctx.fillStyle = colors.flake;
             for (const p of flakes) {
                 p.y += p.s;
                 p.w += 0.008;
@@ -88,6 +97,7 @@ export default function HeroBackground() {
             }
         };
 
+        readColors();
         resize();
         sync();
 
@@ -104,6 +114,8 @@ export default function HeroBackground() {
         const mo = new MutationObserver(sync);
         mo.observe(hero, { attributes: true, attributeFilter: ["data-bi"] });
         mo.observe(document.documentElement, { attributes: true, attributeFilter: ["data-snow"] });
+        const themeMo = new MutationObserver(readColors);
+        themeMo.observe(document.documentElement, { attributes: true, attributeFilter: ["class", "data-bi-theme"] });
         window.addEventListener("resize", onResize);
         window.addEventListener("snow:change", sync);
         document.addEventListener("visibilitychange", sync);
@@ -113,6 +125,7 @@ export default function HeroBackground() {
             cancelAnimationFrame(raf);
             io.disconnect();
             mo.disconnect();
+            themeMo.disconnect();
             window.removeEventListener("resize", onResize);
             window.removeEventListener("snow:change", sync);
             document.removeEventListener("visibilitychange", sync);

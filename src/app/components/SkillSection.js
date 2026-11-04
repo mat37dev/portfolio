@@ -15,7 +15,7 @@ export default function SkillSection() {
                 </div>
                 {SKILL_GROUPS.map((group, i) => (
                     <div key={group.name} className={`grp rv${i === 0 ? " grp-first" : ""}`} data-intro="grp">
-                        <h4>{group.name}</h4>
+                        <h3>{group.name}</h3>
                         <div className="tiles">
                             {group.skills.map((s) => (
                                 <span key={s.name} className="tile" data-intro="tile">

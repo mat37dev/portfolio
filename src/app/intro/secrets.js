@@ -32,7 +32,22 @@ export function installSecrets({ onSki }) {
         }
     };
     window.addEventListener("keydown", onKey);
-    return () => window.removeEventListener("keydown", onKey);
+    // Dans la console du navigateur, taper `ski` (puis Entrée) lance aussi le skieur.
+    try {
+        Object.defineProperty(window, "ski", {
+            configurable: true,
+            get() {
+                onSki();
+                return "⛷️  c'est parti !";
+            },
+        });
+    } catch {}
+    return () => {
+        window.removeEventListener("keydown", onKey);
+        try {
+            delete window.ski;
+        } catch {}
+    };
 }
 
 const BANNER = [
@@ -45,7 +60,7 @@ const BANNER = [
     "  _____/          \\/        \\__/    \\_____",
     "",
     "  Curieux ? Le code de cette intro est maison. mathieu.crosnier15@outlook.fr",
-    "  Astuce : tapez « ski ».",
+    "  Astuce : tapez ski ici puis Entrée, ou « ski » au clavier directement sur la page.",
     "",
 ].join("\n");
 

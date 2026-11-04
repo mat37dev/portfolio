@@ -43,6 +43,8 @@ const mono = JetBrains_Mono({
     subsets: ["latin"],
     display: "swap",
     weight: ["400", "500"],
+    // Petits libellés seulement : inutile de la précharger avant le titre.
+    preload: false,
 });
 
 export const metadata = {
@@ -104,7 +106,8 @@ export default function RootLayout({ children }) {
                 {children}
                 <Footer />
                 <ScrollToTop />
-                <Analytics />
+                {/* Le script d'audience n'existe que sur Vercel (404 en local). */}
+                {process.env.VERCEL ? <Analytics /> : null}
             </body>
         </html>
     );
