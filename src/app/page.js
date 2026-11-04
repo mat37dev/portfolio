@@ -15,7 +15,7 @@ const pendingScript = `(function(){try{
 var m=new URLSearchParams(location.search).getAll("intro");
 if(m.indexOf("0")>-1)return;
 if(matchMedia("(prefers-reduced-motion: reduce)").matches)return;
-if(innerWidth<860)return;
+if(innerWidth<320)return;
 var force=m.indexOf("fast")>-1||m.indexOf("debug")>-1;
 if(!force){
 if(navigator.webdriver)return;

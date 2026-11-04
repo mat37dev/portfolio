@@ -28,10 +28,10 @@ test('bi-pending posé mais intro non lancée : le hero finit visible', async ({
   await expect.poll(() => page.locator('[data-intro="card-photo"]').evaluate((e) => getComputedStyle(e).opacity), { timeout: 8000 }).toBe('1');
 });
 
-test('mobile : pas de bouton « Rejouer l’intro »', async ({ page }, info) => {
+test('mobile : bouton « Rejouer l’intro » disponible (mini-intro)', async ({ page }, info) => {
   test.skip(info.project.name !== 'mobile');
   await page.goto('/');
-  await expect(page.locator('.bi-replay')).toBeHidden();
+  await expect(page.locator('.bi-replay')).toBeVisible();
 });
 
 test('mouvement réduit : pas de bouton « Rejouer l’intro »', async ({ browser }) => {

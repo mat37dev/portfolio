@@ -1,17 +1,66 @@
 // Plan de construction de l'intro sur la page d'accueil (spec §5.1).
 // Lit le DOM par les attributs `data-intro` posés par les composants.
 // `helpers` sont les fabriques du moteur (elles enregistrent les tâches) ;
-// `options = { snowEnabled, mistakes }`.
+// `options = { snowEnabled, mistakes, eggs, layout, scope, line }`.
+
+// Hero mobile (< 860 px) : version compacte, construite de haut en bas.
+// Les autres sections reprennent le plan desktop (sans erreurs : `mistakes`
+// est vide sur mobile). Avec `scope: "hero"`, seul le hero est construit et le
+// reste de la page arrive avec la révélation au défilement.
+function buildMobileHero(root, helpers, options) {
+    const { T, box, type, image, dupGroup, q, qa, isVisible } = helpers;
+    const g = (name, r = root) => q(`[data-intro="${name}"]`, r);
+    const eggs = new Set(options.eggs || []);
+    const hero = g("hero");
+    if (hero) {
+        const sky = g("sky", hero);
+        if (sky) T({ kind: "paint", el: sky, deps: [] });
+        const badge = g("badge", hero);
+        const bb = box(badge);
+        type(badge, { deps: [bb] });
+        const th1 = type(g("h1", hero), { grow: true, typo: "Développeur fullstak", deps: [bb] });
+        const tl = type(g("lead", hero), { deps: [th1] });
+        const cta = g("cta-contact", hero);
+        const b0 = box(cta, [tl || th1]);
+        if (b0) T({ kind: "color", el: cta, pick: 3, deps: [b0] });
+        box(g("cta-cv", hero), [b0]);
+        type(g("cta-projects", hero), { deps: [b0] });
+        dupGroup(qa(":scope > span", g("checks", hero)), { many: true, deps: [b0] });
+        const photo = g("card-photo", hero);
+        let im = null;
+        if (photo && isVisible(photo)) {
+            const b = box(photo, [b0]);
+            im = image(q("img", photo), [b]) || b;
+            if (eggs.has("copine")) T({ kind: "egg-copine", el: photo, deps: [im] });
+        }
+        dupGroup([g("tag-1", hero), g("tag-2", hero), g("tag-3", hero)], { many: true, deps: [im] });
+        const snowBtn = g("snow-toggle");
+        if (options.snowEnabled !== false && snowBtn && isVisible(snowBtn)) T({ kind: "toggle", el: snowBtn, hero, deps: [im || th1] });
+    }
+}
 
 export function buildPlan(root, helpers, options = {}) {
-    const { T, box, type, title, image, dupGroup, q, qa, rectW, isVisible } = helpers;
+    const mobile = options.layout === "mobile";
+    if (mobile) {
+        buildMobileHero(root, helpers, options);
+        if (options.scope !== "hero") buildSections(root, helpers, options);
+    } else {
+        buildDesktopTop(root, helpers, options);
+        buildSections(root, helpers, options);
+    }
+    // ---------- mise en ligne ----------
+    helpers.T({ kind: "deploy", el: null, deps: [], final: true });
+}
+
+// Nav et hero desktop : crêtes au stylo, guides, scène à trois cartes.
+function buildDesktopTop(root, helpers, options) {
+    const { T, box, type, image, dupGroup, q, qa, isVisible, rectW } = helpers;
     const snowEnabled = options.snowEnabled !== false;
     const mistakes = new Set(options.mistakes || []);
     const has = (id) => mistakes.has(id);
     const eggs = new Set(options.eggs || []);
     const hasEgg = (id) => eggs.has(id);
     const g = (name, r = root) => q(`[data-intro="${name}"]`, r);
-    const ga = (name, r = root) => qa(`[data-intro="${name}"]`, r);
 
     // ---------- nav ----------
     const nav = box(g("nav"));
@@ -104,6 +153,20 @@ export function buildPlan(root, helpers, options = {}) {
         const themeBtn = g("theme-toggle");
         if (hasEgg("theme") && themeBtn && isVisible(themeBtn)) T({ kind: "egg-theme", el: themeBtn, deps: heroTail.filter(Boolean) });
     }
+}
+
+// Sections sous le hero : projets, parcours, compétences, contact, pied de page.
+function buildSections(root, helpers, options) {
+    const { T, box, type, title, image, dupGroup, q, qa, isVisible } = helpers;
+    const mistakes = new Set(options.mistakes || []);
+    const has = (id) => mistakes.has(id);
+    const eggs = new Set(options.eggs || []);
+    const hasEgg = (id) => eggs.has(id);
+    const g = (name, r = root) => q(`[data-intro="${name}"]`, r);
+    const ga = (name, r = root) => qa(`[data-intro="${name}"]`, r);
+    // Mobile : tout est empilé, chaque copie ferait défiler la page. Les groupes
+    // sont dupliqués en rafale (cartes, cellules, compétences), sans réédition.
+    const compact = options.layout === "mobile";
 
     // ---------- projets ----------
     const proj = g("projets");
@@ -123,8 +186,12 @@ export function buildPlan(root, helpers, options = {}) {
             image(q("img", g("featured-image", feat)), [fb]);
         }
         const cards = ga("card", g("grid", proj));
-        const ts = dupGroup(cards, { edit: "h3" });
-        cards.forEach((card, i) => {
+        if (compact) {
+            const [first] = dupGroup(cards, { many: true });
+            if (first) image(q("img", cards[0]), [first]);
+        }
+        const ts = compact ? [] : dupGroup(cards, { edit: "h3" });
+        if (!compact) cards.forEach((card, i) => {
             const img = q("img", card);
             let it;
             if (i === 1 && has("wrong-image") && cards[0]) {
@@ -142,8 +209,9 @@ export function buildPlan(root, helpers, options = {}) {
         type(g("parcours-eyebrow", parcours));
         const t0 = title(g("parcours-h2", parcours), [], { caps: has("caps") });
         type(g("parcours-sub", parcours), { deps: [t0] });
-        dupGroup(ga("cell", parcours), { edit: "h3", deps: [t0], oops: has("misaligned") ? 2 : undefined });
-        dupGroup(ga("edu", parcours), { deps: [t0] });
+        if (compact) dupGroup(ga("cell", parcours), { many: true, deps: [t0] });
+        else dupGroup(ga("cell", parcours), { edit: "h3", deps: [t0], oops: has("misaligned") ? 2 : undefined });
+        dupGroup(ga("edu", parcours), { many: compact, deps: [t0] });
     }
 
     // ---------- compétences ----------
@@ -152,9 +220,15 @@ export function buildPlan(root, helpers, options = {}) {
         type(g("competences-eyebrow", comp));
         const t0 = title(g("competences-h2", comp));
         const groups = ga("grp", comp);
-        const gts = dupGroup(groups, { edit: "h3", deps: [t0] });
-        // Pilules dupliquées sans réédition du nom : chaque pilule garde son texte.
-        groups.forEach((grp, i) => dupGroup(ga("tile", grp), { many: true, deps: [gts[i]] }));
+        if (compact) {
+            // Mobile : un groupe posé avec ses pilules, les autres en rafale.
+            const [first] = dupGroup(groups, { many: true, deps: [t0] });
+            if (groups[0]) dupGroup(ga("tile", groups[0]), { many: true, deps: [first] });
+        } else {
+            const gts = dupGroup(groups, { edit: "h3", deps: [t0] });
+            // Pilules dupliquées sans réédition du nom : chaque pilule garde son texte.
+            groups.forEach((grp, i) => dupGroup(ga("tile", grp), { many: true, deps: [gts[i]] }));
+        }
     }
 
     // ---------- contact ----------
@@ -178,7 +252,4 @@ export function buildPlan(root, helpers, options = {}) {
         const cv = g("cta-cv");
         if (hasEgg("recruiter") && cv) T({ kind: "egg-recruiter", el: cv, deps: [ft || fb] });
     }
-
-    // ---------- mise en ligne ----------
-    T({ kind: "deploy", el: null, deps: [], final: true });
 }

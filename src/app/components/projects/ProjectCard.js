@@ -18,7 +18,7 @@ export default function ProjectCard({ project }) {
                     alt={project.imageAlt}
                     width={360}
                     height={170}
-                    sizes="(max-width: 859px) 100vw, 360px"
+                    sizes="(max-width: 859px) calc(100vw - 64px), 360px"
                 />
             </div>
             <div className="b">

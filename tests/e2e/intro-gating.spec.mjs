@@ -20,8 +20,11 @@ test('intro=fast : HUD présent, puis rejouer disponible', async ({ page }, info
   expect(await page.evaluate(() => sessionStorage.getItem('introSeen'))).toBe('1');
 });
 
-test("mobile : jamais d'intro", async ({ page }, info) => {
-  test.skip(info.project.name !== 'mobile');
+test("écran très étroit (< 320 px) : pas d'intro", async ({ browser }) => {
+  const ctx = await browser.newContext({ viewport: { width: 300, height: 640 } });
+  const page = await ctx.newPage();
   await page.goto('/?intro=fast');
+  await expect(page.locator('h1')).toBeVisible();
   await expect(page.locator('.bi-hud')).toHaveCount(0);
+  await ctx.close();
 });
