@@ -1,7 +1,29 @@
 // Plan de construction de l'intro sur la page d'accueil (spec §5.1).
 // Lit le DOM par les attributs `data-intro` posés par les composants.
 // `helpers` sont les fabriques du moteur (elles enregistrent les tâches) ;
-// `options = { snowEnabled, mistakes, eggs, layout, scope, line }`.
+// `options = { snowEnabled, mistakes, eggs, copine, layout, scope, line }`.
+
+// Easter egg « copine » sur la carte photo, en deux versions (voir eggs.js) :
+// a : elle dépose la photo elle-même, de travers, et Design la redresse plus tard ;
+// b : la photo est déposée de travers, elle la remet droite.
+// `deps` doit couvrir le texte du hero : la scène ne commence qu'une fois la
+// page prête à descendre jusqu'à la carte (`focus` : le défilement la suit).
+// Renvoie la tâche de dépôt de l'image, dont dépend la suite du hero.
+function copineScene({ T, image }, card, img, deps, variant) {
+    if (variant === "a") {
+        const im = image(img, deps, { guest: true });
+        if (!im) return null;
+        const egg = T({ kind: "egg-copine", variant: "a", el: card, focus: card, image: im, deps });
+        T({ kind: "rotate", el: card, angle: 0, fixOf: "copine", deps: [egg] });
+        return im;
+    }
+    const im = image(img, deps, { tilt: { card, angle: 10 } });
+    if (im) {
+        im.focus = card;
+        T({ kind: "egg-copine", variant: "b", el: card, focus: card, deps: [im] });
+    }
+    return im;
+}
 
 // Hero mobile (< 860 px) : version compacte, construite de haut en bas.
 // Les autres sections reprennent le plan desktop (sans erreurs : `mistakes`
@@ -30,8 +52,8 @@ function buildMobileHero(root, helpers, options) {
         let im = null;
         if (photo && isVisible(photo)) {
             const b = box(photo, [b0]);
-            im = image(q("img", photo), [b]) || b;
-            if (eggs.has("copine")) T({ kind: "egg-copine", el: photo, deps: [im] });
+            const img = q("img", photo);
+            im = (eggs.has("copine") ? copineScene(helpers, photo, img, [b], options.copine) : image(img, [b])) || b;
         }
         dupGroup([g("tag-1", hero), g("tag-2", hero), g("tag-3", hero)], { many: true, deps: [im] });
         const snowBtn = g("snow-toggle");
@@ -123,8 +145,10 @@ function buildDesktopTop(root, helpers, options) {
             const b1 = box(ctaCv, [cm]);
             if (b1) T({ kind: "resolve", el: ctaCv, comment: cm, deps: [b1] });
         }
-        type(g("cta-projects", hero), { deps: [b0] });
+        const tp = type(g("cta-projects", hero), { deps: [b0] });
         dupGroup(qa(":scope > span", g("checks", hero)), { many: true, deps: [b0] });
+        // Fin du texte du hero : l'easter egg copine attend ce point.
+        const heroText = tp || b0 || tl || th1;
 
         // Scène : trois cartes posées, images déposées, cartes latérales tournées.
         const heroTail = [];
@@ -139,8 +163,9 @@ function buildDesktopTop(root, helpers, options) {
             for (const c of [cards[1], cards[0], cards[2]]) {
                 if (!c.el || !isVisible(c.el)) continue;
                 const b = box(c.el);
-                const im = image(q("img", c.el), [b]);
-                if (c.angle === 0 && hasEgg("copine")) T({ kind: "egg-copine", el: c.el, deps: [im || b] });
+                const img = q("img", c.el);
+                if (c.angle === 0 && hasEgg("copine")) { copineScene(helpers, c.el, img, [b, heroText], options.copine); continue; }
+                const im = image(img, [b]);
                 if (c.angle > 0 && has("tilted-card")) {
                     const r1 = T({ kind: "rotate", el: c.el, angle: 18, mistake: "tilted-card", deps: [im || b] });
                     T({ kind: "rotate", el: c.el, angle: c.angle, fixOf: "tilted-card", deps: [r1] });
