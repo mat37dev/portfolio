@@ -48,11 +48,11 @@ Sur desktop (≥ 860 px), quatre curseurs construisent la page d'accueil sous le
 | `?intro=fast` | Tempo × 6 (force le lancement, sauf mouvement réduit ou fenêtre étroite) |
 | `?intro=debug` | Expose `window.__intro` (`plan()`, `play()`, `skip()`, `events`, `timeline`, `elapsed()`, `egg()`) |
 | `?seed=42` | Rend le passage reproductible |
-| `?egg=copine,theme` ou `?egg=none` | Force les easter eggs du passage (tests) |
+| `?egg=copine,theme` ou `?egg=none` | Force les easter eggs du passage (tests) ; `copine-a` ou `copine-b` imposent la version de « copine » (a : elle apporte la photo ; b : elle la remet droite) |
 | `?mistakes=caps,wrong-color` | Force les erreurs jouées (`wrong-image`, `tilted-card`, `caps`, `wrong-color`, `misaligned`, `title-too-big`) |
 | `?scope=hero` | Mobile : ne construit que le hero (mini-intro de 10 à 12 s) |
 
-Durée d'un passage complet sans skip : environ 57 s sur desktop (tempo de base 1,9, accéléré de 50 % au fil de l'avancement). À chaque lancement, chaque easter egg est tiré indépendamment : copine 1/3, panne en prod 1/4, console.log 1/4, recruteur 1/4, thème 1/5. Déclencheurs cachés : taper « ski » hors d'un champ de saisie, et une bannière dans la console.
+Durée d'un passage complet sans skip : environ 49 s sur desktop (tempo de base 2,2, + 30 % à l'ouverture, accéléré de 35 % au fil de l'avancement ; fin resserrée). À chaque lancement, chaque easter egg est tiré indépendamment : copine 1/3 (puis version a ou b à pile ou face), panne en prod 1/4, console.log 1/4, recruteur 1/4, thème 1/5. Déclencheurs cachés : taper « ski » hors d'un champ de saisie, et une bannière dans la console.
 
 ## Structure du projet
 
