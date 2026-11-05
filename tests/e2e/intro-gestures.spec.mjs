@@ -23,12 +23,22 @@ test('rotation, interrupteur et déploiement sont joués puis restaurés', async
 });
 
 test('la barre de déploiement passe par « Build… » puis « Déployé ✓ »', async ({ page }) => {
+  // La barre ne reste affichée qu'un peu plus d'une seconde : on relève chacun de
+  // ses textes au moment où il apparaît plutôt que d'espérer tomber dessus.
+  await page.addInitScript(() => {
+    window.__deploy = [];
+    new MutationObserver(() => {
+      const bar = document.querySelector('.bi-deploy');
+      const txt = bar && getComputedStyle(bar).display !== 'none' ? bar.textContent.trim() : null;
+      if (txt && window.__deploy[window.__deploy.length - 1] !== txt) window.__deploy.push(txt);
+    }).observe(document, { subtree: true, childList: true, characterData: true, attributes: true });
+  });
   await page.goto('/?intro=fast&intro=debug&seed=1');
-  const bar = page.locator('.bi-deploy');
-  await expect(bar).toBeVisible({ timeout: 60000 });
-  await expect(bar).toContainText(/Build/);
-  await expect(bar).toContainText(/Déployé/, { timeout: 5000 });
-  await expect(page.locator('.bi-replay')).toBeVisible({ timeout: 20000 });
+  await expect(page.locator('.bi-replay')).toBeVisible({ timeout: 60000 });
+  const seen = await page.evaluate(() => window.__deploy);
+  const build = seen.findIndex((t) => /Build/.test(t));
+  expect(build).toBeGreaterThan(-1);
+  expect(seen.findIndex((t) => /Déployé/.test(t))).toBeGreaterThan(build);
 });
 
 test("neige désactivée : reste éteinte après l'intro", async ({ page }) => {

@@ -22,7 +22,7 @@ const snapshot = async (page) =>
       .replace(/ style="--px:[^"]*"/g, ''),
   );
 
-for (const egg of ['none', 'copine', 'theme', 'prod']) {
+for (const egg of ['none', 'copine-a', 'copine-b', 'theme', 'prod']) {
   test(`intro complète (egg=${egg}) : DOM identique`, async ({ page }) => {
     await page.goto('/?intro=0');
     const ref = await snapshot(page);

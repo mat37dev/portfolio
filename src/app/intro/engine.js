@@ -20,7 +20,7 @@ import { bendFor, settleOffset, preClickPause, dragSpeed, approachEase, IDLE } f
 import { buildPlan as buildPlanSections } from "./plan.js";
 import { pickMistakes } from "./mistakes.js";
 import { line, lines } from "./dialogue.js";
-import { pickEggs } from "./eggs.js";
+import { pickEggs, pickCopineVariant } from "./eggs.js";
 import { introLayout } from "./gating.js";
 
 const ACC = "#2f7cf6";
@@ -36,6 +36,8 @@ const rand = (a, b) => a + RNG() * (b - a);
 const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
 const easeOut = (t) => 1 - Math.pow(1 - t, 3);
 const easeInOut = (t) => (t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2);
+// Dépasse un peu la cible avant de s'y poser.
+const easeOutBack = (t) => 1 + 2.70158 * Math.pow(t - 1, 3) + 1.70158 * Math.pow(t - 1, 2);
 const esc = (s) => String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;");
 
 const W = () => document.documentElement.clientWidth;
@@ -200,11 +202,12 @@ export function startBuildIntro({
     replayBtn.className = "bi-pill bi-btn bi-replay";
     replayBtn.textContent = "↻ Rejouer l'intro";
 
-    const M = new Cursor(world, "Mathieu Crosnier", ACC, ["box", "dup", "fix", "resolve", "egg-copine", "egg-prod", "egg-console-fix", "egg-recruiter"], "M");
+    const M = new Cursor(world, "Mathieu Crosnier", ACC, ["box", "dup", "fix", "resolve", "egg-prod", "egg-console-fix", "egg-recruiter"], "M");
     const D = new Cursor(world, "Design", WOOD, ["guide", "paint", "line", "image", "color", "comment", "title", "rotate", "toggle", "shrink", "egg-theme"], "D");
     const S = new Cursor(world, "Stagiaire", VIOLET, ["type", "edit", "dupoops", "fix-image", "egg-console"], "S");
-    // QA : vérifie derrière les autres, partage les duplications, images et corrections.
-    const Q = new Cursor(world, "QA", "#e0791a", ["dup", "dupmany", "image", "fix", "resolve", "edit"], "Q");
+    // QA : vérifie derrière les autres, partage les duplications, images et corrections,
+    // et soulage Design en fin de hero (rotations, couleurs, interrupteur neige).
+    const Q = new Cursor(world, "QA", "#e0791a", ["dup", "dupmany", "image", "fix", "resolve", "edit", "comment", "rotate", "color", "toggle"], "Q");
     const cursors = [M, D, S, Q];
     let BASE_CURSORS = cursors.length;
     const BASE_SKILLS = new Map([M, D, S].map((c) => [c, c.skills.slice()]));
@@ -264,7 +267,9 @@ export function startBuildIntro({
     let wrongs = new Map(); // img -> src de la mauvaise couverture (overlay)
     let toast = null; // panne en prod : { el, text, state }
     let chips = []; // console.log posés dans l'overlay
+    let hearts = []; // cœurs qui s'envolent de la carte photo (easter egg copine)
     let eggIds = [];
+    let copineVariant = null;
     let said = {};
 
     function buildPlan() {
@@ -293,6 +298,10 @@ export function startBuildIntro({
                       el: img,
                       file: fileNameOf(img),
                       wrong: o.wrong ? { file: fileNameOf(o.wrong), src: o.wrong.currentSrc || o.wrong.src } : null,
+                      // guest : déposée par un curseur invité, jamais choisie par l'équipe.
+                      guest: !!o.guest,
+                      // tilt : { card, angle }, la carte est laissée de travers après le dépôt.
+                      tilt: o.tilt || null,
                       deps: deps.filter(Boolean),
                   })
                 : null;
@@ -331,6 +340,7 @@ export function startBuildIntro({
             scope,
             mistakes: mobile ? [] : pickMistakes(RNG, mistakes),
             eggs: eggIds,
+            copine: copineVariant,
             line: (key) => line(RNG, key),
         });
 
@@ -371,15 +381,19 @@ export function startBuildIntro({
     const atBottom = () => ST() + H() >= document.documentElement.scrollHeight - 12;
     const unlocked = (t) => !t.el || rectW(t.el).y < ST() + H() - 40 || atBottom();
     const pick = (c) =>
-        tasks.find((t) => t.state === "wait" && !t.final && c.skills.includes(t.kind) && t.deps.every((d) => d.state === "done") && unlocked(t));
+        tasks.find((t) => t.state === "wait" && !t.final && !t.guest && c.skills.includes(t.kind) && t.deps.every((d) => d.state === "done") && unlocked(t));
     const doneRatio = () => (tasks.length ? tasks.filter((t) => t.state === "done").length / tasks.length : 0);
     const built = () => tasks.every((t) => t.final || t.state === "done");
     // Tempo global : accélère au fil de l'avancement (spec §5.3) ; le facteur de
-    // base est calibré pour un passage complet de 35–50 s sur desktop.
-    const TEMPO_BASE = 1.9;
+    // base est calibré pour un passage complet de 35–50 s sur desktop ; l'ouverture
+    // part déjà vive, l'accélération est donc plus douce qu'en mobile.
+    const TEMPO_BASE = 2.2;
     const TEMPO_MOBILE = 3.2;
+    // Desktop : coup d'accélérateur à l'ouverture (nav, pastille, titre), qui
+    // s'estompe sur les premiers 10 % du passage.
+    const opening = () => 1 + 0.3 * Math.max(0, 1 - doneRatio() / 0.1);
     // Mobile : la page entière est longue à parcourir, l'accélération est plus franche.
-    const tempo = () => (mobile ? TEMPO_MOBILE * (1 + 0.9 * doneRatio()) : TEMPO_BASE * (1 + 0.5 * doneRatio())) * tempoScale;
+    const tempo = () => (mobile ? TEMPO_MOBILE * (1 + 0.9 * doneRatio()) : TEMPO_BASE * (1 + 0.35 * doneRatio()) * opening()) * tempoScale;
 
     // ---------- primitives (générateurs, yield renvoie un dt déjà accéléré) ----------
     function* wait(t) {
@@ -543,57 +557,71 @@ export function startBuildIntro({
             yield* jobs.image(c, { ...t, wrong: null, fixing: true });
         },
         // ---- easter eggs ----
-        *["egg-copine"](c, t) {
+        // « copine », deux versions (plan.js) : a, elle dépose la photo elle-même,
+        // de travers ; b, la photo est arrivée de travers et elle la remet droite.
+        // La scène est jouée par le curseur invité lui-même (castGuests) : l'équipe
+        // continue de construire pendant ce temps, Mathieu lui répond à la fin.
+        *["egg-copine"](g, t) {
             const el = t.el;
+            const c = M;
             log("egg:copine");
-            const g = guest("copine", "#ff5c8a", "c", { scale: 0.85 });
+            log(`copine:${t.variant}`);
+            yield* untilInView(el);
             g.x = -40;
             g.y = edgeY(el);
-            yield* moveTo(g, () => ptW(el, 0.5, 0.4));
-            yield* click(g);
-            g.shape = "hand";
-            saveStyle(el);
-            el.style.transition = "none";
-            g.hold = true;
-            let k = 0;
-            while (k < 1) {
-                k = Math.min(1, k + (yield) / 0.6);
-                const dx = -30 * easeOut(k);
-                el.style.setProperty("--px", `${dx.toFixed(1)}px`);
-                el.style.setProperty("--r", "0deg");
-                const p = ptW(el, 0.5, 0.4);
-                g.x = p.x;
-                g.y = p.y;
+            g.el.classList.add("bi-show");
+            if (t.variant === "a") {
+                const im = t.image;
+                im.state = "run";
+                im.by = g.short;
+                g.shape = "hand";
+                g.chip = im.file;
+                yield* wait(0.1);
+                yield* dropImage(g, im);
+                delTok(im.el, "noimg");
+                im.state = "done";
+                im.at = elapsed;
+                log("task:image:");
+                yield* tiltCard(el, -8);
+                log("copine:a:pose");
+                D.say("ah ?", 1.2);
+                yield* wait(0.7);
+            } else {
+                const from = parseFloat(el.style.getPropertyValue("--r")) || 0;
+                yield* moveTo(g, () => handleOf(el)(from));
+                g.say("hmm…", 1);
+                yield* wait(0.9);
+                g.shape = "rotate";
+                yield* spinCard(g, el, from, 0, { overshoot: true });
+                g.shape = "arrow";
+                log("copine:b:droite");
+                yield* wait(0.3);
+                // Deux petites tapes satisfaites sur la carte.
+                yield* moveTo(g, () => ptW(el, 0.5, 0.4));
+                const py = el.style.getPropertyValue("--py");
+                for (let i = 0; i < 2; i++) {
+                    yield* click(g);
+                    let k = 0;
+                    while (k < 1) {
+                        k = Math.min(1, k + (yield) / 0.24);
+                        el.style.setProperty("--py", `${(-Math.sin(k * Math.PI) * 5).toFixed(1)}px`);
+                    }
+                }
+                if (py) el.style.setProperty("--py", py);
+                else el.style.removeProperty("--py");
             }
-            g.hold = false;
-            g.shape = "arrow";
-            g.press = 1;
-            yield* wait(0.3);
-            g.say("😍", 3);
-            yield* wait(1.4);
+            // Fin commune : 😍 et des cœurs, Mathieu répond, un coucou et elle repart.
+            g.say("😍", 2.4);
+            burstHearts(el);
+            yield* wait(1);
             c.say("…", 1.2);
-            yield* wait(1.4);
+            yield* wait(1.6);
             c.say("bon.", 1.4);
-            yield* moveTo(g, () => ({ x: -60, y: g.y }), { speed: 0.9 });
+            yield* wait(0.4);
+            yield* moveTo(g, () => ({ x: g.x + 40, y: g.y - 16 }));
+            yield* wave(g);
+            yield* moveTo(g, () => ({ x: -60, y: g.y + 30 }), { speed: 0.9, settle: false });
             dropGuest(g);
-            yield* moveTo(c, () => ptW(el, 0.5, 0.4));
-            yield* click(c);
-            c.shape = "hand";
-            c.hold = true;
-            k = 0;
-            while (k < 1) {
-                k = Math.min(1, k + (yield) / 0.5);
-                el.style.setProperty("--px", `${(-30 * (1 - easeOut(k))).toFixed(1)}px`);
-                const p = ptW(el, 0.5, 0.4);
-                c.x = p.x;
-                c.y = p.y;
-            }
-            el.style.setProperty("--px", "0px");
-            el.style.transition = "";
-            c.hold = false;
-            c.shape = "arrow";
-            c.press = 1;
-            yield* wait(0.2);
         },
         *["egg-prod"](c, t) {
             const el = t.el;
@@ -687,42 +715,12 @@ export function startBuildIntro({
             yield* moveTo(g, () => ({ x: W() + 60, y: g.y }), { speed: 0.9 });
             dropGuest(g);
         },
-        // Rotation par poignée : le curseur attrape un point au-dessus de la carte
-        // et décrit un arc ; la carte suit (--r), un badge affiche l'angle.
         *rotate(c, t) {
             const el = t.el;
             c.shape = "rotate";
-            const center = () => ptW(el, 0.5, 0.5);
-            const radius = () => rectW(el).h / 2 + 28;
-            const handleAt = (deg) => {
-                const o = center();
-                const a = (deg * Math.PI) / 180;
-                return { x: o.x + Math.sin(a) * radius(), y: o.y - Math.cos(a) * radius() };
-            };
             saveStyle(el);
             const from = parseFloat(el.style.getPropertyValue("--r")) || 0;
-            yield* moveTo(c, () => handleAt(from));
-            yield* click(c);
-            c.rot = { el, angle: from };
-            yield* wait(0.1);
-            el.style.transition = "none";
-            c.hold = true;
-            let k = 0;
-            while (k < 1) {
-                k = Math.min(1, k + (yield) / 0.7);
-                const a = from + (t.angle - from) * easeInOut(k);
-                el.style.setProperty("--r", `${a.toFixed(2)}deg`);
-                c.rot.angle = a;
-                const p = handleAt(a);
-                c.x = p.x;
-                c.y = p.y;
-            }
-            el.style.setProperty("--r", `${t.angle}deg`);
-            c.hold = false;
-            c.press = 1;
-            yield* wait(0.25);
-            c.rot = null;
-            el.style.transition = "";
+            yield* spinCard(c, el, from, t.angle);
             c.shape = "arrow";
             if (t.mistake === "tilted-card") {
                 log("mistake:tilted-card");
@@ -835,14 +833,7 @@ export function startBuildIntro({
             c.shape = "hand";
             c.chip = t.wrong ? t.wrong.file : t.file;
             yield* wait(0.15);
-            yield* moveTo(c, () => ptW(el, 0.5, 0.5), { drag: true, speed: dragSpeed(RNG) });
-            c.chip = null;
-            c.shape = "arrow";
-            c.press = 1;
-            c.prog = { el, k: 0 };
-            let k = 0;
-            while (k < 1) { k = Math.min(1, k + (yield) / 0.45); c.prog.k = k; }
-            c.prog = null;
+            yield* dropImage(c, t);
             if (t.wrong) {
                 // Erreur « mauvaise image » : la fausse couverture s'affiche (overlay), Design réagit.
                 wrongs.set(el, t.wrong.src);
@@ -855,6 +846,15 @@ export function startBuildIntro({
             wrongs.delete(el);
             delTok(el, "noimg");
             yield* wait(0.15);
+            if (t.tilt) {
+                // Easter egg copine, version b : la photo reste de travers, sans que personne ne le voie.
+                yield* untilInView(t.tilt.card);
+                yield* tiltCard(t.tilt.card, t.tilt.angle);
+                log("copine:b:tilt");
+                yield* wait(0.3);
+                c.say("parfait 👌", 1.4);
+                yield* wait(0.6);
+            }
         },
         *color(c, t) {
             const el = t.el;
@@ -970,11 +970,116 @@ export function startBuildIntro({
     const dropGuests = () => { while (cursors.length > BASE_CURSORS) dropGuest(cursors[cursors.length - 1]); };
     const edgeY = (el) => clamp(ptW(el, 0.5, 0.5).y, ST() + 100, ST() + H() - 80);
 
+    // Scènes jouées par un curseur invité (easter egg copine) : il est créé, caché
+    // hors champ, dès que la scène est prête et la joue lui-même.
+    const CAST = { "egg-copine": ["copine", "#ff5c8a", "c", { scale: 0.85 }] };
+    function castGuests() {
+        for (const t of tasks) {
+            if (!CAST[t.kind] || t.state !== "wait" || !t.deps.every((d) => d.state === "done") || !unlocked(t)) continue;
+            const g = guest(...CAST[t.kind]);
+            g.el.classList.remove("bi-show");
+            g.x = -60;
+            g.y = ST() + H() / 2;
+            t.state = "run";
+            t.by = g.short;
+            g.task = t;
+            g.gen = jobs[t.kind](g, t);
+        }
+    }
+
+    // Attend que l'élément soit entièrement à l'écran (le défilement l'amène),
+    // sans bloquer plus de 3 s si la fenêtre est trop petite pour le contenir.
+    function* untilInView(el) {
+        let n = 0;
+        while (n < 3 * tempo()) {
+            const r = el.getBoundingClientRect();
+            if (r.top >= 0 && r.bottom <= H()) return;
+            n += yield;
+        }
+    }
+    // Dépôt d'image : le curseur, fichier en main, glisse jusqu'à l'image et la charge.
+    function* dropImage(c, t) {
+        const el = t.el;
+        yield* moveTo(c, () => ptW(el, 0.5, 0.5), { drag: true, speed: dragSpeed(RNG) });
+        c.chip = null;
+        c.shape = "arrow";
+        c.press = 1;
+        c.prog = { el, k: 0 };
+        let k = 0;
+        while (k < 1) { k = Math.min(1, k + (yield) / 0.45); c.prog.k = k; }
+        c.prog = null;
+    }
+    // La carte bascule de travers en se posant (léger dépassement).
+    function* tiltCard(el, angle) {
+        saveStyle(el);
+        el.style.transition = "none";
+        let k = 0;
+        while (k < 1) {
+            k = Math.min(1, k + (yield) / 0.5);
+            el.style.setProperty("--r", `${(angle * easeOutBack(k)).toFixed(2)}deg`);
+        }
+        el.style.setProperty("--r", `${angle}deg`);
+        el.style.transition = "";
+    }
+    // Poignée de rotation : un point au-dessus de la carte, sur l'arc que décrit le curseur.
+    const handleOf = (el) => (deg) => {
+        const o = ptW(el, 0.5, 0.5);
+        const radius = rectW(el).h / 2 + 28;
+        const a = (deg * Math.PI) / 180;
+        return { x: o.x + Math.sin(a) * radius, y: o.y - Math.cos(a) * radius };
+    };
+    // Rotation par poignée : le curseur attrape la poignée et décrit un arc ;
+    // la carte suit (--r), un badge affiche l'angle.
+    function* spinCard(c, el, from, to, o = {}) {
+        const handleAt = handleOf(el);
+        const ease = o.overshoot ? easeOutBack : easeInOut;
+        yield* moveTo(c, () => handleAt(from));
+        yield* click(c);
+        c.rot = { el, angle: from };
+        yield* wait(0.1);
+        el.style.transition = "none";
+        c.hold = true;
+        let k = 0;
+        while (k < 1) {
+            k = Math.min(1, k + (yield) / 0.7);
+            const a = from + (to - from) * ease(k);
+            el.style.setProperty("--r", `${a.toFixed(2)}deg`);
+            c.rot.angle = a;
+            const p = handleAt(a);
+            c.x = p.x;
+            c.y = p.y;
+        }
+        el.style.setProperty("--r", `${to}deg`);
+        c.hold = false;
+        c.press = 1;
+        yield* wait(0.25);
+        c.rot = null;
+        el.style.transition = "";
+    }
+    // Coucou avant de partir : petit va-et-vient sur place.
+    function* wave(c) {
+        const x0 = c.x;
+        const y0 = c.y;
+        c.hold = true;
+        let k = 0;
+        while (k < 1) {
+            k = Math.min(1, k + (yield) / 1.2);
+            c.x = x0 + Math.sin(k * Math.PI * 4) * 9 * (1 - k * 0.4);
+            c.y = y0 - Math.sin(k * Math.PI) * 5;
+        }
+        c.hold = false;
+    }
+    // Petits cœurs qui s'envolent de la carte, dessinés par l'overlay (temps réel).
+    const burstHearts = (el) => {
+        const o = ptW(el, 0.5, 0.35);
+        for (let i = 0; i < 8; i++) hearts.push({ x: o.x + rand(-60, 60), y: o.y + rand(-20, 20), dx: rand(-30, 30), size: rand(12, 22), t: -i * 0.14 });
+    };
+
     let live = false;
     let destroyed = false;
     function* finalJob(c, i) {
         const spots = [{ x: -80, y: 0 }, { x: 80, y: -30 }, { x: 10, y: 60 }, { x: -10, y: -80 }];
-        const k = mobile ? 0.25 : 1; // mini-intro : fin resserrée
+        const k = mobile ? 0.25 : 0.6; // fin resserrée, plus encore sur la mini-intro
         const sx = mobile ? 0.5 : 1;
         golive.style.display = "inline-block";
         if (mobile) skipBtn.style.display = "none";
@@ -994,18 +1099,18 @@ export function startBuildIntro({
             deploy.classList.add("bi-building");
             deploy.classList.remove("bi-deployed");
             deployTxt.textContent = "Build…";
-            yield* realWait(mobile ? 0.5 : 1.2);
+            yield* realWait(mobile ? 0.5 : 0.8);
             deploy.classList.remove("bi-building");
             deploy.classList.add("bi-deployed");
             deployTxt.textContent = "Déployé ✓";
             log("deployed");
-            yield* realWait(mobile ? 0.35 : 0.8);
+            yield* realWait(mobile ? 0.35 : 0.5);
             live = true;
             guides = [];
             comments = [];
             grid.classList.add("bi-fadeout");
             rul.classList.add("bi-fadeout");
-            yield* wait(mobile ? 0.2 : 0.9);
+            yield* wait(mobile ? 0.2 : 0.6);
         } else {
             while (!live) yield;
             yield* wait((0.4 + i * 0.3) * k);
@@ -1168,6 +1273,13 @@ export function startBuildIntro({
             const w = ch.text.length * 6.9 + 22;
             s += `<g transform="translate(${ch.x},${ch.y})"><rect width="${w}" height="24" rx="6" fill="#1e1e1e" stroke="${ch.sel ? RED : "#555"}" stroke-width="${ch.sel ? 2 : 1}"/><text x="11" y="16" font-size="11.5" fill="#9cdcfe" font-family="ui-monospace,monospace">${esc(ch.text)}</text></g>`;
         }
+        hearts = hearts.filter((h) => (h.t += dt) < 1.6);
+        for (const h of hearts) {
+            if (h.t < 0) continue;
+            const k = h.t / 1.6;
+            const op = Math.min(1, k / 0.15) * (1 - k);
+            s += `<text x="${(h.x + h.dx * k).toFixed(1)}" y="${(h.y - 90 * easeOut(k)).toFixed(1)}" font-size="${(h.size * (0.6 + 0.5 * k)).toFixed(1)}" fill="#ff5c8a" opacity="${op.toFixed(2)}" text-anchor="middle">♥</text>`;
+        }
         for (const [img, src] of wrongs) {
             const r = rectW(img);
             s += `<image href="${esc(src)}" x="${r.x}" y="${r.y}" width="${r.w}" height="${r.h}" preserveAspectRatio="xMidYMid slice"/>`;
@@ -1286,7 +1398,15 @@ export function startBuildIntro({
         const maxS = document.documentElement.scrollHeight - H();
         // Mobile : on ne défile que si la tâche sort de l'écran, et on la place
         // dans la moitié basse pour garder visible ce qui vient d'être construit.
-        const desired = clamp(mobile ? y - H() * 0.55 : y - 190, 0, Math.max(0, maxS));
+        let desired = clamp(mobile ? y - H() * 0.55 : y - 190, 0, Math.max(0, maxS));
+        // Scène à regarder en entier (easter egg copine) : son élément passe avant
+        // tout le reste et reste entièrement à l'écran, calé en haut (sous la nav)
+        // pour que la suite de la page arrive à l'écran et se construise en même temps.
+        const scene = tasks.find((t) => t.state === "run" && t.focus);
+        if (scene) {
+            const r = rectW(scene.focus);
+            desired = clamp(r.y - clamp(H() - r.h - 20, 20, 90), 0, Math.max(0, maxS));
+        }
         const delta = desired - ST();
         if (Math.abs(delta) < 0.5) return;
         // Pas d'au moins 1 px : sinon l'arrondi du navigateur bloque la fin du trajet.
@@ -1322,6 +1442,7 @@ export function startBuildIntro({
         while (scriptI < script.length && elapsed >= script[scriptI][0]) { script[scriptI][1].say(script[scriptI][2]); scriptI++; }
         if (phase === "build") {
             tour(dt);
+            castGuests();
             // En mode rapide (tempoScale > 1) chaque générateur avance plusieurs
             // fois par image : sinon chaque `yield` coûte au moins une image.
             const sub = Math.max(1, Math.round(tempoScale));
@@ -1457,8 +1578,10 @@ export function startBuildIntro({
         setCast();
         // Sur mobile, seul l'easter egg « copine » a sa place (la photo est au centre).
         eggIds = pickEggs(RNG, egg).filter((id) => !mobile || id === "copine");
+        copineVariant = eggIds.includes("copine") ? pickCopineVariant(RNG, egg) : null;
         toast = null;
         chips = [];
+        hearts = [];
         tasks = buildPlan();
         guides = [];
         comments = [];
@@ -1512,6 +1635,7 @@ export function startBuildIntro({
         wrongs = new Map();
         toast = null;
         chips = [];
+        hearts = [];
         dropGuests();
         for (const c of cursors) { c.reset(); c.el.classList.remove("bi-show"); }
         wov.innerHTML = "";
