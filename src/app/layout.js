@@ -49,14 +49,14 @@ const mono = JetBrains_Mono({
 
 export const metadata = {
     metadataBase: new URL("https://mathieucrosnier.fr"),
-    title: "Mathieu Crosnier - Développeur Fullstack | Nantes",
-    description: "Portfolio de Mathieu Crosnier, développeur fullstack en Master SIN à l'EPSI Nantes, alternant chez Cloudity. Découvrez mes projets et compétences en développement web, Salesforce et applications mobiles.",
-    keywords: "Mathieu Crosnier, développeur fullstack Nantes, développeur web Nantes, alternant Salesforce, Master SIN EPSI, Next.js, React, Apex, portfolio développeur fullstack, Cloudity",
+    title: "Mathieu Crosnier – Développeur web freelance à Nantes | Sites internet, applis mobiles & IA",
+    description: "Mathieu Crosnier, développeur web freelance à Nantes : création de sites internet, d'applications web et mobiles et intégration de l'IA pour les artisans, commerces et entreprises, à Nantes et à distance.",
+    keywords: "Mathieu Crosnier, développeur web freelance Nantes, création site internet Nantes, développeur web Nantes, application mobile, intégration IA, site internet artisan, site internet commerce, Next.js, React, Symfony, Master SIN EPSI",
     authors: [{ name: "Mathieu Crosnier" }],
     alternates: { canonical: "https://mathieucrosnier.fr" },
     openGraph: {
-        title: "Mathieu Crosnier - Développeur Fullstack | Nantes",
-        description: "Portfolio de Mathieu Crosnier, développeur fullstack en Master SIN à l'EPSI Nantes, alternant chez Cloudity.",
+        title: "Mathieu Crosnier – Développeur web freelance à Nantes | Sites internet, applis mobiles & IA",
+        description: "Mathieu Crosnier, développeur web freelance à Nantes : création de sites internet, d'applications web et mobiles et intégration de l'IA pour les artisans, commerces et entreprises, à Nantes et à distance.",
         url: "https://mathieucrosnier.fr",
         siteName: "Mathieu Crosnier",
         locale: "fr_FR",
@@ -64,8 +64,8 @@ export const metadata = {
     },
     twitter: {
         card: "summary_large_image",
-        title: "Mathieu Crosnier - Développeur Fullstack | Nantes",
-        description: "Portfolio de Mathieu Crosnier, développeur fullstack en Master SIN à l'EPSI Nantes.",
+        title: "Mathieu Crosnier – Développeur web freelance à Nantes | Sites internet, applis mobiles & IA",
+        description: "Création de sites internet, d'applications web et mobiles et intégration de l'IA, à Nantes et à distance.",
     },
 };
 
@@ -80,11 +80,20 @@ const jsonLd = {
     url: "https://mathieucrosnier.fr",
     email: "mathieu.crosnier15@outlook.fr",
     image: "https://mathieucrosnier.fr/profile.jpg",
-    jobTitle: "Développeur Fullstack",
+    jobTitle: "Développeur web freelance",
     address: { "@type": "PostalAddress", addressLocality: PROFILE.city, addressCountry: "FR" },
     alumniOf: { "@type": "EducationalOrganization", name: "EPSI Nantes" },
-    worksFor: { "@type": "Organization", name: "Cloudity" },
-    knowsAbout: ["Next.js", "React", "JavaScript", "Salesforce", "Apex", "PHP", "Symfony", "React Native"],
+    knowsAbout: [
+        "Création de sites internet",
+        "Applications web et mobiles",
+        "Intégration de l'IA",
+        "Next.js",
+        "React",
+        "JavaScript",
+        "PHP",
+        "Symfony",
+        "React Native",
+    ],
     sameAs: [PROFILE.links.github, PROFILE.links.linkedin, PROFILE.links.malt],
 };
 

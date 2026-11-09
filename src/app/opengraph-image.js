@@ -69,7 +69,7 @@ export default function Image() {
                         margin: "0 0 22px 0",
                     }}
                 >
-                    Développeur Fullstack
+                    Développeur web freelance
                 </p>
                 <h1
                     style={{
@@ -96,7 +96,7 @@ export default function Image() {
                 <div style={{ display: "flex", gap: "16px" }}>
                     <Pill>React · Next.js</Pill>
                     <Pill>Symfony · PHP</Pill>
-                    <Pill>Salesforce</Pill>
+                    <Pill>Sites · Applis · IA</Pill>
                 </div>
 
                 {/* Crête de montagne - même motif que le hero du site */}

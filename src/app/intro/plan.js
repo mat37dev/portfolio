@@ -40,7 +40,7 @@ function buildMobileHero(root, helpers, options) {
         const badge = g("badge", hero);
         const bb = box(badge);
         type(badge, { deps: [bb] });
-        const th1 = type(g("h1", hero), { grow: true, typo: "Développeur fullstak", deps: [bb] });
+        const th1 = type(g("h1", hero), { grow: true, typo: "Développeur freelane", deps: [bb] });
         const tl = type(g("lead", hero), { deps: [th1] });
         const cta = g("cta-contact", hero);
         const b0 = box(cta, [tl || th1]);
@@ -120,7 +120,7 @@ function buildDesktopTop(root, helpers, options) {
         const badge = g("badge", hero);
         const bb = box(badge, nav ? [nav] : []);
         type(badge, { deps: [bb] });
-        const th1 = type(h1, { grow: true, big: has("title-too-big"), typo: "Développeur fullstak", deps: [bb] });
+        const th1 = type(h1, { grow: true, big: has("title-too-big"), typo: "Développeur freelane", deps: [bb] });
         if (th1 && has("title-too-big")) {
             const cm = T({ kind: "comment", el: h1, text: options.line("titleBig"), deps: [th1] });
             const sh = T({ kind: "shrink", el: h1, deps: [cm] });
