@@ -10,7 +10,7 @@ export default function SkillSection() {
                         Compétences
                     </div>
                     <h2 className="serif" data-intro="competences-h2">
-                        Une stack web et mobile, plus Salesforce.
+                        Une stack web, mobile et IA.
                     </h2>
                 </div>
                 {SKILL_GROUPS.map((group, i) => (

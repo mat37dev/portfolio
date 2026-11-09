@@ -44,7 +44,7 @@ for (const ms of [2000, 6000]) {
     await page.keyboard.press('Escape');
     await expect(page.locator('html')).toHaveClass(/bi-skipped/);
     expect(await snapshot(page)).toBe(ref);
-    await expect(page.locator('h1')).toHaveText('Développeur fullstack,de Salesforce au mobile.');
+    await expect(page.locator('h1')).toHaveText("Développeur freelance,du site à l'appli mobile.");
     await expect(page.locator('html')).toHaveClass(/entrance/);
   });
 }

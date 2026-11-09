@@ -4,7 +4,7 @@ test('hero : copies, CV, scène', async ({ page }, info) => {
   await page.goto('/');
   const hero = page.locator('[data-intro="hero"]');
   await expect(hero.locator('[data-intro="badge"]')).toHaveText(/Freelance disponible · Nantes/);
-  await expect(hero.locator('h1')).toHaveText('Développeur fullstack,de Salesforce au mobile.');
+  await expect(hero.locator('h1')).toHaveText("Développeur freelance,du site à l'appli mobile.");
   await expect(hero.locator('[data-intro="cta-cv"]')).toHaveAttribute('download', '');
   await expect(hero.locator('[data-intro="cta-cv"]')).toHaveAttribute('href', '/cv.pdf');
   await expect(hero.locator('[data-intro="checks"]')).toContainText('Freelance sur Malt');

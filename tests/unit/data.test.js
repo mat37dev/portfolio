@@ -35,7 +35,7 @@ test('compétences : 5 groupes, 6 outils du quotidien', () => {
 
 test('profil : copies et liens fixés', () => {
   assert.equal(PROFILE.badge, 'Freelance disponible · Nantes');
-  assert.deepEqual(PROFILE.h1, ['Développeur fullstack,', 'de Salesforce au mobile.']);
+  assert.deepEqual(PROFILE.h1, ['Développeur freelance,', "du site à l'appli mobile."]);
   assert.equal(PROFILE.links.malt, 'https://www.malt.fr/profile/mathieucrosnier');
   assert.equal(PROFILE.cv, '/cv.pdf');
 });
