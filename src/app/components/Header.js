@@ -2,8 +2,10 @@
 import { useEffect, useRef } from "react";
 import Image from "next/image";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import ThemeToggle from "@/app/components/ThemeToggle";
 import { PROFILE } from "@/app/data/profile";
+import { ARTISANS } from "@/app/data/artisans";
 
 const NAV_LINKS = [
     { id: "projets", label: "Projets" },
@@ -19,6 +21,9 @@ const NAV_LINKS = [
  */
 export default function Header() {
     const headerRef = useRef(null);
+    // La page artisans a son propre formulaire : « Me contacter » y reste.
+    const onArtisans = usePathname() === ARTISANS.path;
+    const contactHref = onArtisans ? "#contact" : "/#contact";
 
     useEffect(() => {
         const header = headerRef.current;
@@ -82,12 +87,21 @@ export default function Header() {
                                 </Link>
                             </li>
                         ))}
+                        <li>
+                            <Link
+                                href={ARTISANS.path}
+                                className={`focus-ring${onArtisans ? " is-active" : ""}`}
+                                aria-current={onArtisans ? "page" : undefined}
+                            >
+                                {ARTISANS.navLabel}
+                            </Link>
+                        </li>
                     </ul>
                 </nav>
 
                 <div className="nav-actions">
                     <ThemeToggle />
-                    <Link href="/#contact" className="pill pill-acc focus-ring">
+                    <Link href={contactHref} className="pill pill-acc focus-ring">
                         Me contacter
                     </Link>
                 </div>

@@ -21,6 +21,7 @@ const themeInitScript = `
 // Sans JavaScript, rien ne poserait `html.entrance` ni `is-visible` :
 // on force l'affichage de tout ce que les animations masquent.
 const noscriptCss =
+    ".art-list .art-item,.art-steps li>*{opacity:1!important;transform:none!important}" +
     ".in,.rv,.rv .tile,.stage .c,.stage .tag,.hero h1 .ln span{animation:none!important;opacity:1!important;transform:none!important}" +
     ".stage .c{transform:rotate(var(--r))!important}";
 
@@ -94,7 +95,13 @@ const jsonLd = {
         "Symfony",
         "React Native",
     ],
-    sameAs: [PROFILE.links.github, PROFILE.links.linkedin, PROFILE.links.malt],
+    sameAs: [
+        PROFILE.links.github,
+        PROFILE.links.linkedin,
+        PROFILE.links.malt,
+        PROFILE.links.instagram,
+        PROFILE.links.facebook,
+    ],
 };
 
 export default function RootLayout({ children }) {

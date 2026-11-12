@@ -22,6 +22,8 @@ export const PROFILE = {
         github: "https://github.com/mat37dev",
         linkedin: "https://www.linkedin.com/in/mathieu-crosnier-b78a16238/",
         malt: "https://www.malt.fr/profile/mathieucrosnier",
+        instagram: "https://www.instagram.com/mat37dev/",
+        facebook: "https://www.facebook.com/profile.php?id=61560816496604",
     },
     contact: {
         title: "Un projet, une mission, une question ?",
