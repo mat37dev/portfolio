@@ -19,6 +19,17 @@ const nextConfig = {
         // CSS intégré au HTML : plus de requêtes CSS bloquantes avant le rendu.
         inlineCss: true,
     },
+    // Adresse courte pour la bio Instagram et les messages : mathieucrosnier.fr/site.
+    // Redirection temporaire (307) pour pouvoir changer la cible sans cache navigateur.
+    async redirects() {
+        return [
+            {
+                source: "/site",
+                destination: "/creation-site-internet-nantes",
+                permanent: false,
+            },
+        ];
+    },
     async headers() {
         return [
             {
