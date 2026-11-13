@@ -26,7 +26,7 @@ const nextConfig = {
             {
                 source: "/site",
                 destination: "/creation-site-internet-nantes",
-                permanent: false,
+                permanent: true,
             },
         ];
     },

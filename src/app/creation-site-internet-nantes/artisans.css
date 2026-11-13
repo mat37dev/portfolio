@@ -45,6 +45,10 @@
 .art-hero .checks {
     justify-content: flex-start;
 }
+.art-hero .cta {
+    flex-wrap: wrap;
+    row-gap: 14px;
+}
 .art-hero .checks {
     flex-wrap: wrap;
     gap: 8px 22px;

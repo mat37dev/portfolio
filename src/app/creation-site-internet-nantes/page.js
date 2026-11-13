@@ -1,6 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
-import { Palette, PhoneCall, Rocket, Search, Smartphone, Wrench } from "lucide-react";
+import { Palette, Phone, PhoneCall, Rocket, Search, Smartphone, Wrench } from "lucide-react";
 import Reveal from "@/app/components/Reveal";
 import ArtisanContact from "@/app/components/artisans/ArtisanContact";
 import HeroMock from "@/app/components/artisans/HeroMock";
@@ -40,6 +40,7 @@ const jsonLd = {
         name: PROFILE.name,
         url: "https://mathieucrosnier.fr",
         jobTitle: PROFILE.role,
+        telephone: "+33784956130",
     },
 };
 
@@ -66,6 +67,10 @@ export default function ArtisansPage() {
                         <div className="cta">
                             <a href="#contact" className="pill pill-acc focus-ring">
                                 Demander ma maquette <span className="ar">→</span>
+                            </a>
+                            <a href={PROFILE.phone.href} className="pill pill-ghost focus-ring">
+                                <Phone size={16} aria-hidden="true" />
+                                {PROFILE.phone.display}
                             </a>
                             <a href="#etapes" className="more focus-ring">
                                 Comment ça se passe <span className="ar ar-down">↓</span>

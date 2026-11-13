@@ -19,6 +19,9 @@ export default function Footer() {
                     <Link href={ARTISANS.path} className="focus-ring">
                         {ARTISANS.navLabel}
                     </Link>
+                    <Link href={PROFILE.legalPath} className="focus-ring">
+                        Mentions légales
+                    </Link>
                     {LINKS.map((l) => (
                         <a key={l.href} href={l.href} target="_blank" rel="noopener noreferrer" className="focus-ring">
                             {l.label}

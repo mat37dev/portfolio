@@ -1,5 +1,6 @@
 "use client";
 import { useState } from "react";
+import Link from "next/link";
 import { PROFILE } from "@/app/data/profile";
 import { ARTISANS } from "@/app/data/artisans";
 
@@ -82,7 +83,13 @@ export default function ArtisanContact() {
                     </button>
                 </form>
                 <p className="form-status" role="status" aria-live="polite">
-                    {status === "error" && "Une erreur est survenue, écrivez-moi directement par e-mail."}
+                    {status === "error" && "Une erreur est survenue, appelez-moi ou écrivez-moi directement."}
+                </p>
+                <p className="form-note">
+                    Ces informations servent uniquement à vous recontacter.{" "}
+                    <Link href={PROFILE.legalPath} className="focus-ring">
+                        Confidentialité
+                    </Link>
                 </p>
                 <div className="checks">
                     {contact.checks.map((c) => (
@@ -91,6 +98,10 @@ export default function ArtisanContact() {
                 </div>
                 <p className="alt2">
                     ou directement :{" "}
+                    <a href={PROFILE.phone.href} className="focus-ring">
+                        {PROFILE.phone.display}
+                    </a>{" "}
+                    ·{" "}
                     <a href={`mailto:${PROFILE.email}`} className="focus-ring">
                         {PROFILE.email}
                     </a>

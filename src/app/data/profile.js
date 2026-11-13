@@ -17,6 +17,8 @@ export const PROFILE = {
     stageTags: ["Sites · Applis · IA", "7 projets à voir", "React · Next.js · Symfony"],
     photoCaption: "Mathieu · Nantes",
     email: "mathieu.crosnier15@outlook.fr",
+    phone: { display: "07 84 95 61 30", href: "tel:+33784956130" },
+    legalPath: "/mentions-legales",
     cv: "/cv.pdf",
     links: {
         github: "https://github.com/mat37dev",

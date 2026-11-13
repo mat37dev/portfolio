@@ -1508,6 +1508,15 @@ a {
 .contact .checks {
     margin-top: 18px;
 }
+.contact .form-note {
+    margin-top: 4px;
+    font-size: 13px;
+    color: var(--mute);
+}
+.contact .form-note a {
+    color: var(--ink);
+    border-bottom: 1px solid var(--line);
+}
 .contact .alt2 {
     margin-top: 18px;
     font-size: 15px;

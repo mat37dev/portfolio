@@ -1,5 +1,6 @@
 "use client";
 import { useState } from "react";
+import Link from "next/link";
 import { PROFILE } from "@/app/data/profile";
 
 const { contact, email } = PROFILE;
@@ -61,6 +62,12 @@ export default function ContactSection() {
                 </form>
                 <p className="form-status" role="status" aria-live="polite">
                     {status === "error" && "Une erreur est survenue, écrivez-moi directement par e-mail."}
+                </p>
+                <p className="form-note">
+                    Votre adresse sert uniquement à vous répondre.{" "}
+                    <Link href={PROFILE.legalPath} className="focus-ring">
+                        Confidentialité
+                    </Link>
                 </p>
                 <div className="checks" data-intro="contact-checks">
                     {contact.checks.map((c) => (
