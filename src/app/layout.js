@@ -79,7 +79,7 @@ const jsonLd = {
     "@type": "Person",
     name: "Mathieu Crosnier",
     url: "https://mathieucrosnier.fr",
-    email: "mathieu.crosnier15@outlook.fr",
+    email: "mathieu@mathieucrosnier.fr",
     image: "https://mathieucrosnier.fr/profile.jpg",
     jobTitle: "Développeur web freelance",
     address: { "@type": "PostalAddress", addressLocality: PROFILE.city, addressCountry: "FR" },
