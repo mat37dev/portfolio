@@ -16,7 +16,7 @@ export const PROFILE = {
     checks: ["Nantes ou à distance", "Réponse sous 24 h", "Freelance sur Malt"],
     stageTags: ["Sites · Applis · IA", "7 projets à voir", "React · Next.js · Symfony"],
     photoCaption: "Mathieu · Nantes",
-    email: "mathieu.crosnier15@outlook.fr",
+    email: "mathieu@mathieucrosnier.fr",
     phone: { display: "07 84 95 61 30", href: "tel:+33784956130" },
     legalPath: "/mentions-legales",
     cv: "/cv.pdf",

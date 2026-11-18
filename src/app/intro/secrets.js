@@ -59,7 +59,7 @@ const BANNER = [
     "        /        \\  /      \\    /  \\",
     "  _____/          \\/        \\__/    \\_____",
     "",
-    "  Curieux ? Le code de cette intro est maison. mathieu.crosnier15@outlook.fr",
+    "  Curieux ? Le code de cette intro est maison. mathieu@mathieucrosnier.fr",
     "  Astuce : tapez ski ici puis Entrée, ou « ski » au clavier directement sur la page.",
     "",
 ].join("\n");
